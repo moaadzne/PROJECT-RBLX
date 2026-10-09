@@ -680,6 +680,8 @@ function DataService.Track(player)
 		carriedOut = {}, -- [uid] = voleur : creatures de ce joueur portees par un voleur
 		passes = {}, -- [nom] = true (ShopService)
 		randomAllowed = false, -- achat aleatoire permis (PolicyService), faux tant que pas verifie
+		pickupMult = 1, -- BigNet
+		pickChoice = nil, -- espece choisie pour Pick a Creature
 		carrying = nil, -- { creature, victim, slot } : creature volee portee (StealService)
 		lockCycle = nil, -- cycle dont la fenetre est verrouillee (LagoonService)
 		lockActive = false,

@@ -11,6 +11,7 @@ local LagoonService = require(Services.LagoonService)
 local StealService = require(Services.StealService)
 local MountService = require(Services.MountService)
 local RoyalService = require(Services.RoyalService)
+local ShopService = require(Services.ShopService)
 local WaveService = require(Services.WaveService)
 local UpgradeService = require(Services.UpgradeService)
 local PetService = require(Services.PetService)
@@ -19,7 +20,7 @@ local DebugService = require(Services.DebugService)
 -- WaveService en dernier : ses crochets (OnCalm, OnFront) sont branches avant le premier cycle
 for _, service in ipairs({
 	DataService, PlotService, CreatureService, IntroService, LagoonService, StealService, MountService, RoyalService,
-	UpgradeService, PetService, WaveService, DebugService,
+	ShopService, UpgradeService, PetService, WaveService, DebugService,
 }) do
 	service.Start()
 end
