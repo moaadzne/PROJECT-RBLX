@@ -440,6 +440,8 @@ Repère réaliste : sur 299 R$, le jeu touche 70 % = 209 R$ ≈ **0,79 $** via D
 
 ## 9 bis. Deep Dive : le tirage (demande de Moaad, 09/10)
 
+> **Calendrier (décision de D, 09/10)** : Deep Dive sort en **semaine 2** (première mise à jour), réglé avec les données de la semaine 1. Au lancement : boutique minimale du §9 (3 passes + Tide Egg / Pick a Creature).
+
 ### Le prompt (demande de Moaad, améliorée)
 > Ride the Tsunami a un système de tirage au sort, **Deep Dive**, qui est le moteur principal de collection rare et de revenu.
 > Chaque plongée tire une récompense dans un pool à raretés claires (Common → Mythic), avec une animation courte, fluide et spectaculaire, et un multi-tirage ×10.
@@ -484,7 +486,7 @@ Principe : **tout le monde tire, les payeurs tirent plus et plus profond.**
 - Les créatures **Abyssal** et toutes celles obtenues par Deep Dive sont **liées** : on ne peut ni les voler ni les échanger. Un joueur qui paie ne se fait pas prendre ce qu'il a payé, et ça empêche la revente contre de l'argent réel.
 - Elles comptent dans le Codex et les classements.
 - **Pays restreints** (`ArePaidRandomItemsRestricted`) : Deep Dive est caché et remplacé par la **Pearl Shop**, l'achat direct d'un objet précis du pool à prix fixe (Legendary 1 500 Pearls, Abyssal 8 000 Pearls).
-- Le **Tide Egg** du §9 est remplacé par Deep Dive. Pick a Creature devient une ligne de la Pearl Shop.
+- **À partir de la semaine 2**, le **Tide Egg** du §9 est remplacé par Deep Dive. Pick a Creature devient une ligne de la Pearl Shop.
 
 ### Interface (B)
 - Bouton **DIVE** dans le HUD (pas de pop-up automatique).

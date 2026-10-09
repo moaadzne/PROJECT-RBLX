@@ -59,6 +59,7 @@ Règle : chaque vidéo finit sur le nom « Ride the Tsunami » (1 s, logo). Les 
 - [ ] Monétisation activée sur le jeu (paramètres de la place).
 - [ ] Analytics : événements personnalisés (première prise, premier dépôt, premier vol, première monture, Marée Royale gagnée) via AnalyticsService ; funnel d'onboarding configuré.
 - [ ] **Codes promo** : Roblox n'a pas de système intégré ; A ajoute un RF `RedeemCode(code)` (1 fois par joueur, sauvegardé). Codes de lancement : `TSUNAMI` (pièces), un code par créateur.
+- [ ] Déclarer les tirages payants (Tide Egg) dans le questionnaire de l'expérience sur Creator Hub (à vérifier : intitulé exact de la question).
 - [ ] Questionnaire de maturité rempli, description, icône, 3 miniatures.
 - [ ] Groupe Roblox créé, lien sur la page.
 **Jour J**
@@ -66,7 +67,7 @@ Règle : chaque vidéo finit sur le nom « Ride the Tsunami » (1 s, logo). Les 
 - [ ] Poster les vidéos 1 et 2, puis une vidéo par jour.
 - [ ] Toutes les 2 h : erreurs serveur (Creator Hub, Error report), joueurs simultanés, plaintes dans le groupe.
 **J+3** : couper la pire miniature, corriger le plus gros point de sortie du funnel, mise à jour rapide.
-**J+7** : bilan D1/D7, CTR et coût par visite. Décision sur les échanges (semaine 2) et sur la porte payante.
+**J+7** : bilan D1/D7, CTR et coût par visite. Réglage de **Deep Dive** (GDD §9 bis) avec ces données, pour la mise à jour de la semaine 2. Décision sur les échanges (semaine 2) et sur la porte payante.
 
 ## Sources
 - [Roblox, Ads Manager (doc)](https://create.roblox.com/docs/production/promotion/ads-manager), [sponsoring d'expériences](https://create.roblox.com/docs/production/promotion/sponsoring-experiences)
