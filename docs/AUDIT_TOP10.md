@@ -85,6 +85,8 @@ Indicateurs à regarder en premier : taux de clic de la miniature, % de joueurs 
 
 Moaad a décidé que les règles halal ne s'appliquent plus à Tide Rush : **vol entre joueurs** et **tirages payants en Robux** sont autorisés. Restent obligatoires : probabilités affichées, `PolicyService:GetPolicyInfoForPlayerAsync().ArePaidRandomItemsRestricted` avec une alternative sans tirage pour les pays concernés, règles de la communauté et de monétisation de Roblox, aucune propriété intellectuelle copiée, et rien qui puisse faire sanctionner le jeu vu le public mineur.
 
+> **Décision de D (09/10)** : thème gardé, 5 changements + vol complet. Titre recommandé : « Ride the Tsunami » (« Steal a Fish » existe déjà, donc « Steal a Sea Creature » est trop proche). **Aucune protection payante au lancement**, ni porte renforcée ni piège en Robux. Détails dans GDD v2 §0, §4.6–4.8, §9.
+
 ### 6.1 Les deux nouvelles options, évaluées comme le reste
 | Option | Impact top 10 | Effort | Risque |
 |---|---|---|---|

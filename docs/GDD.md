@@ -1,9 +1,31 @@
-# GDD — Reef Keepers (Tide Rush) · v1
+# GDD — Tide Rush : Steal & Ride (concept Reef Keepers) · v2
 
-Auteur : E (concept & game design), le 2026-10-09. Direction choisie par Moaad : **A. Reef Keepers** (docs/DIRECTIONS.md).
-Statut : v1 complète et perfectible. Les chiffres sont des **valeurs de départ** à régler par playtest, pas des mesures.
+Auteur : E (concept & game design). v1 le 2026-10-09, **v2 le 2026-10-09** après la levée des règles halal par Moaad et la décision de D (vol, monture, Marée Royale, monétisation v2). Cohérent avec docs/AUDIT_TOP10.md §6.
+Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ** à régler par playtest, pas des mesures.
+
+**Changements v2** : §0 (titre et miniatures), §2 (boucle avec vol), §4.6 Monture, §4.7 Vol, §4.8 Marée Royale, §7 Social, §8 (protection des nouveaux), §9 Monétisation v2, §11 Impact, §12 Phase 1 v2, §13 Config, §14. Les autres sections de la v1 restent valables.
 
 ---
+
+## 0. Hook : titre et miniatures
+
+### 3 titres (verbe + objet)
+| Titre | Vérification (recherche web, 09/10) | Avis |
+|---|---|---|
+| **Ride the Tsunami** | Aucun jeu connu trouvé sous ce titre. Proches : « Escape The Tsunami », « Escape Tsunami For Brainrots ». | **Recommandé.** Unique, filmable, dit la promesse que les autres n'ont pas (surfer la vague). |
+| Steal a Sea Creature | Pas de jeu trouvé, mais **« Steal a Fish »** existe déjà (vol + poissons) : trop proche, on serait vu comme un clone. | À éviter comme titre principal. |
+| Catch, Steal & Ride | Rien trouvé. Plus long, moins clair en 5 s. | Bon sous-titre. |
+
+**Titre de travail en attendant le choix de Moaad : « Steal a Sea Creature ».**
+
+**Recommandation** : nom affiché **« Ride the Tsunami 🌊 Steal & Ride »**. « Steal » reste dans le titre pour la recherche Roblox, mais la promesse forte est la monture sur la vague.
+Limite : ma recherche web ne remplace pas la recherche Roblox. **Moaad doit taper les 3 titres dans la recherche Roblox avant de publier.**
+
+### 3 miniatures à tester en A/B
+1. **Surf** : un avatar debout sur une raie géante dorée qui glisse sur la crête d'une vague énorme, bouche ouverte de joie. Ciel orange. Texte « RIDE IT! ».
+2. **Vol** : un avatar qui court avec une créature arc-en-ciel dans les bras, un autre joueur qui le poursuit, la vague juste derrière. Texte « STEAL IT! ».
+3. **Rareté** : une tortue Giant arc-en-ciel au centre, brillante, entourée de petites créatures normales, un avatar choqué. Texte « RAINBOW GIANT? ».
+Règles : 3 éléments maximum, lisible sur un téléphone, couleurs saturées, aucune personne réelle ni personnage existant.
 
 ## 1. Univers et histoire courte
 
@@ -51,13 +73,13 @@ Objectif : à 30 s, le joueur a **ri ou souri une fois**, a **une créature à l
 
 ## 2. Boucle principale
 
-**Boucle de 60 s (un cycle de vague, Config.Wave existant)** :
-1. **Calme (35 s)** : la plage se couvre de créatures (bébés). Tu cours, tu les attrapes (sac limité).
-2. **Alerte (7 s)** : tu rentres au lagon ou tu montes sur une tour.
-3. **Vague** : ce que tu portes est perdu si elle te prend (pas d'écran de mort, retour au lagon).
-4. **Dépôt** : en entrant dans ton lagon, tes créatures vont dans les bassins libres. Elles nagent, **grandissent** et rapportent des pièces chaque seconde.
+**Boucle de 60 s (un cycle de vague)** : chaque phase a un rôle.
+1. **Calme (35 s) : attraper.** La plage se couvre de créatures. Tu cours (ou tu montes ta créature), tu les attrapes et tu rentres les déposer. Les lagons sont **fermés** par une barrière de corail.
+2. **Alerte (7 s) : choisir.** Les barrières de tous les lagons **tombent**. Tu choisis : défendre chez toi, aller voler chez un voisin, ou surfer la vague si tu as une Giant.
+3. **Vague (~17 s) : la fenêtre de vol.** Les voleurs foncent, les propriétaires défendent, les surfeurs glissent sur la crête. Sur la plage, la vague emporte ce que tu portes.
+4. **Reflux (2,5 s) : le verdict.** Les barrières remontent. Un voleur qui n'est pas rentré chez lui perd la créature volée, qui retourne chez son propriétaire.
 
-**Décision intéressante à chaque cycle** : aller loin (zones rares) ou rester prudent ; garder un bébé rare pour le faire grandir ou le relâcher contre des pièces ; attendre une marée spéciale pour viser une mutation.
+**Décisions à chaque cycle** : aller loin ou rester prudent ; voler ou défendre ; garder une créature pour la monter ou pour son revenu ; verrouiller son lagon maintenant ou garder le verrou pour plus tard.
 
 ## 3. Couches de progression
 
@@ -144,6 +166,45 @@ Une seule mutation par créature. Le tirage se fait côté serveur à l'appariti
 ### 4.5 Compagnons (système existant, rhabillé)
 On garde Config.Pets et Config.Eggs **tels quels** (œufs en pièces uniquement, probabilités affichées, 3 équipés, 40 en inventaire). Ce sont des « esprits du récif » qui suivent le joueur et boostent le revenu. Seul le texte change. Pas de nouveau modèle exigé en Phase 1 (sphères colorées acceptables).
 
+### 4.6 Monture
+- Espèces montables (grandes formes) : **Reef Hatchling** (tortue), **Coral Ray**, **Star Whale Calf**, **Abyss Serpent**.
+- Montables à partir du stade **Adult**. Bouton « Monter » sur le billboard du bassin ou dans l'inventaire. Une seule monture active.
+- Vitesse : Adult **×1,3**, Giant **×1,6**, multipliée par l'amélioration Speed.
+- **Les Giant surfent la vague** : un joueur sur une Giant n'est jamais pris. Quand la vague l'atteint, il glisse sur la crête (animation de surf) jusqu'à la limite des lagons, et **garde son sac**. C'est le moment vidéo du jeu.
+- Une créature montée continue de rapporter son revenu (pas de punition), ne peut pas être volée, et **ne peut pas porter une créature volée** : pour voler, il faut descendre. Ça garde le vol lisible et la poursuite possible.
+
+### 4.7 Vol entre lagons (version complète)
+**Fenêtre** : de l'alerte à la fin de la vague (≈ 24 s). En dehors, les barrières sont fermées et le vol est impossible.
+
+**Voler**
+- Entrer dans un lagon ouvert, toucher une créature dans un bassin (maintien de 1,0 s, interrompu si on bouge) : elle saute dans tes bras.
+- **1 créature volée à la fois.** Un voleur porteur va **×0,8** moins vite et ne peut pas monter.
+- **Rentrer chez soi avant la fin du reflux** : la créature est à toi, avec son stade et sa mutation. Sinon, elle retourne chez son propriétaire.
+- Pris par la vague sur la plage (s'il fait un détour) : la créature retourne chez son propriétaire.
+
+**Défendre**
+- **Le propriétaire touche le voleur** avant qu'il rentre : la créature revient dans son bassin et le voleur est repoussé (petit recul, pas de dégâts).
+- Alerte immédiate du propriétaire : son, flèche vers le voleur et la créature qui brille au-dessus de lui.
+- **Verrou gratuit** : bouton « Fermer le lagon ». Il garde la barrière levée pendant **1 vague complète**, puis recharge pendant **4 cycles** (≈ 4 min).
+- **Hors ligne** : un joueur absent n'a pas de lagon sur le serveur, il ne peut donc pas être volé. On ne perd jamais rien en dormant.
+- **Après un vol réussi chez toi** : ton lagon est **protégé pendant les 2 vagues suivantes** (anti-acharnement), et tu reçois un marqueur **« Revanche »** : la barrière du voleur s'ouvre pour toi dès le début de l'alerte suivante.
+
+**Ce qu'on ne peut pas voler**
+- La **dernière** créature d'un lagon (on garde toujours au moins 1 créature).
+- Une créature **montée**.
+- Les créatures d'un joueur en **protection débutant** : ses **15 premières minutes de jeu cumulé**, ou tant qu'il a moins de 4 créatures. Pendant ce temps, il ne peut pas voler non plus.
+- Max **3 vols subis par joueur et par 10 minutes** ; au-delà, le lagon est verrouillé automatiquement.
+
+**Pourquoi c'est équilibré** : un nouveau ne perd jamais rien pendant qu'il apprend. Un petit garde toujours sa dernière créature, sa monture et un verrou gratuit. Le gros joueur, qui a beaucoup à perdre, a aussi le plus de raisons de défendre. La vague donne une fenêtre courte, donc chacun joue « 24 s de tension, 35 s de calme ».
+
+**Pas de protection payante au lancement** (décision de D). À réévaluer selon les données, jamais sous forme d'immunité totale.
+
+### 4.8 Marée Royale (compétition sans vol)
+- À chaque **marée spéciale** (toutes les 8 vagues, §4.4), une manche Marée Royale démarre pour tout le serveur pendant ce cycle.
+- Score = valeur (revenu/s) des créatures attrapées **et** volées pendant ce cycle. Classement en direct en haut de l'écran.
+- **Top 3** : couronne d'or, d'argent ou de bronze au-dessus de la tête jusqu'à la marée spéciale suivante, et pièces = 5 / 3 / 2 min de leur revenu.
+- **Créature royale** : une créature **unique par serveur** apparaît au bout de la zone pendant la manche, toujours mutée (Golden en Phase 1). Le premier qui la ramène chez lui la garde. Elle se vole comme les autres ensuite : c'est la cible de tout le serveur.
+
 ## 5. Économie (prête pour Config)
 
 ### 5.1 Revenu
@@ -194,11 +255,13 @@ Formule : `cost(n) = 1e6 × 5^(n−1)`. **Remis à zéro** : pièces, améliorat
 
 ## 7. Social
 
-- **Visite de lagon** : bouton « Visiter » sur le panneau de chaque lagon (8 lagons visibles sur la carte, ce qui est déjà le cas). Un « J'aime » par visiteur et par jour. Badge « Plus beau lagon du serveur ».
-- **Pêche à plusieurs** : +10 % de chance de mutation pour chaque ami (Roblox friends) présent dans la même zone, plafonné à +30 %. Bonus multiplicatif sur la probabilité, affiché.
-- **Léviathan** (§5.5) : un cadeau d'un joueur à tout le serveur.
-- **Cadeaux** (Phase 2) : donner une créature à un ami du serveur. Échange limité (1 par heure, ami Roblox uniquement) pour éviter les arnaques ; pas d'échange contre des Robux.
-- Pas de vol, pas de PvP.
+- **Vol et revanche** (§4.7) : le cœur social. Chaque vol crée une histoire entre deux joueurs.
+- **Marée Royale** (§4.8) : compétition visible, couronnes.
+- **Monture** visible par tous (§4.6) : on montre sa Giant arc-en-ciel.
+- **Visite de lagon** et « J'aime » : gardés (Phase 2).
+- **Pêche à plusieurs** : +10 % de chance de mutation par ami Roblox dans la même zone, plafonné à +30 % (Phase 2).
+- **Échanges** : **mise à jour de la semaine 2**, pas au lancement. Raison : il faut une interface anti-arnaque solide (double confirmation, aperçu des valeurs), et au lancement le vol couvre déjà le besoin de « prendre la créature des autres ». Règles : entre joueurs du même serveur, après 30 min de jeu cumulé, jamais contre des Robux.
+- Léviathan (§5.5) : reporté en mise à jour.
 
 ## 8. Onboarding
 
@@ -212,29 +275,29 @@ Formule : `cost(n) = 1e6 × 5^(n−1)`. **Remis à zéro** : pièces, améliorat
 - Min 2–4 : 5 bassins pleins, premier Juvenile (3 min) avec animation de croissance et « ×2 revenu ! ».
 - Min 1–3 : deuxième marée **forcée Golden** pour ce joueur (promesse du §1 ter), pour qu'il voie une mutation tôt. Ensuite le calendrier normal reprend.
 - Min 6–8 : ouverture du Codex (« 3/50 »), première récompense de case.
+- Min 8–15 : protection débutant active (bouclier visible). Vers 12 min, un message unique : « Dans 3 min, ton lagon pourra être visité par des voleurs pendant la vague… et toi aussi tu pourras voler ! » avec le bouton Verrou mis en avant.
 - Min 8–10 : Coral Coast mis en avant (« créatures Uncommon, ×5 revenu »), premier Shell Egg proposé si les pièces suffisent.
 
-## 9. Monétisation à prix fixe
+## 9. Monétisation v2
 
-Principe : on vend du **confort, de la vitesse et de l'expression**, jamais l'accès au contenu. Tout reste atteignable gratuitement. Aucune caisse, aucun œuf, aucune pièce vendus contre des Robux.
+Règles halal levées par Moaad (09/10). Restent obligatoires : **probabilités affichées avant tout achat aléatoire**, `PolicyService:GetPolicyInfoForPlayerAsync(player).ArePaidRandomItemsRestricted` → l'achat aléatoire est **caché** et remplacé par un achat direct, `ProcessReceipt` idempotent, règles de monétisation Roblox.
+Garde-fous gardés pour éviter une sanction et des plaintes de parents : pas de faux compte à rebours, pas d'achat aléatoire présenté comme gratuit, aucune immunité au vol vendue.
 
-| Produit | Type | Prix (R$) | Ce que ça fait | Pourquoi ce prix |
-|---|---|---|---|---|
-| Tide Pass « Fast Growth » | Gamepass | 299 | Croissance ×2 (durées /2) | Le cœur du jeu ; achat « fan » principal |
-| Big Net | Gamepass | 149 | Rayon de ramassage ×1,5 | Confort, petit prix d'entrée |
-| Extra Pool | Gamepass | 249 | +1 bassin (MaxSlots 10 → 11) | Valeur durable, plafonnée à 1 |
-| Deep Pockets | Gamepass | 199 | +2 places de sac | Confort |
-| VIP Keeper | Gamepass | 399 | Titre doré, chat tag, décor VIP, +10 % pièces | Statut social, achat « soutien » |
-| Coin Rush 15 min | Produit développeur | 39 | ×2 pièces pendant 15 min (cumul max 2 h) | Micro-achat ponctuel, pas d'obligation |
-| Growth Rush 15 min | Produit développeur | 39 | Croissance ×2 pendant 15 min | Idem |
-| Packs de décor de lagon | Produit développeur (contenu fixe affiché) | 49–149 | Coraux, lumières, cascades, sol | Expression, visible en visite |
-| Traînées / skins de filet | Produit développeur | 49–99 | Cosmétique pur | Expression |
-| Serveur privé | Roblox | 0 au lancement, puis 100/mois | Jouer entre amis | Standard |
+### Boutique de lancement (minimale, pour mesurer la conversion)
+| Produit | Type | Prix (R$) | Effet |
+|---|---|---|---|
+| Fast Growth | Gamepass | 299 | Croissance ×2 |
+| Big Net | Gamepass | 149 | Rayon de ramassage ×1,5 |
+| VIP Rider | Gamepass | 399 | Titre, traînée de monture, +10 % pièces, +10 % vitesse de monture |
+| **Tide Egg** | Produit développeur (aléatoire, probas affichées) | 79 | Une créature de la zone, avec 10 % de chance de Golden |
+| **Pick a Creature** (alternative sans tirage, montrée **à la place** du Tide Egg si `ArePaidRandomItemsRestricted`) | Produit développeur | 149 | Le joueur choisit l'espèce, en Baby normal |
 
-Ce qu'on **ne vend pas** : pièces, œufs, créatures, mutations, chance de mutation, Écaille du Léviathan, rangs, cases du Codex.
-UX : aucun pop-up d'achat non demandé, aucun compte à rebours sur une offre, pas de « Plus que X ! ». La boutique est un bouton du HUD.
+Probabilités du Tide Egg en Phase 1 (affichées sur le bouton) : Pebble Crab 50 %, Sand Star 35 %, Reef Hatchling 15 % ; puis Golden 10 % sur le résultat.
 
-Repère réaliste : sur un pass à 299 R$, le jeu reçoit 70 % = 209 R$ ≈ **0,79 $** via DevEx (100 000 R$ = 380 $). Aucun revenu n'est promis : tout dépend du trafic, qu'on ne connaît pas.
+### Plus tard (selon les données)
+Œufs Robux par zone (49 / 149 / 399), Extra Pool (249), Deep Pockets (199), boosts de 15 min (39), packs de pièces (montants qui valent des heures de jeu, pas des semaines), cosmétiques de lagon et de monture, serveur privé.
+
+Repère réaliste : sur 299 R$, le jeu touche 70 % = 209 R$ ≈ **0,79 $** via DevEx. Aucun revenu promis.
 
 ## 10. Rétention et KPI
 
@@ -256,48 +319,50 @@ Repère réaliste : sur un pass à 299 R$, le jeu reçoit 70 % = 209 R$ ≈ **0,
 - Taux de payeurs et revenu par joueur (suivi, pas d'objectif poussé dans le design).
 - Ticket « je suis bloqué » : nombre de joueurs qui stagnent > 20 min sans nouvelle créature (alerte d'équilibrage).
 
-## 11. Impact pour l'équipe
+## 11. Impact pour l'équipe (v2)
 
 ### A — Serveur
-- **Config** : remplacer Items par Creatures (même structure + champs `growth`), ajouter `Stages`, `Mutations`, `Tides`, `Codex`, `Rank`, `Offline` (bloc proposé §13).
-- **Schéma de données v2** avec migration depuis v1 : `display` passe de `{itemId}` à `{ {id, mut, born} }` ; les anciens trésors deviennent l'espèce correspondante (table §4.2), `born = maintenant`, sans mutation. Ajout `codex`, `rank`, `scales`, `lastSeen`, `daily`.
-- **WaveService** : type de marée par cycle (calendrier déterministe à partir de `cycle`), exposé dans `wave.tide` et en attribut `Tide`.
-- **TreasureService → CreatureService** : tirage de mutation à l'apparition, attributs `Mutation`.
-- **Income** : formule §5.1 ; stade calculé depuis `born` ; revenu hors ligne à la connexion.
-- **Remotes (contrat v2, additif)** : `state.display[i] = {id, mut, stage, nextStageAt}`, `state.codex`, `state.rank`, `wave.tide`, `wave.nextSpecial` ; Notify `grow`, `mutation`, `codexNew`, `offline` ; RF `TideRank()`, `SummonLeviathan()`, `LikeLagoon(plot)`.
-- Produits Roblox : MarketplaceService ProcessReceipt idempotent pour les boosts.
+- Config : Creatures, Stages, Mutations, Tides, **Mount, Steal, Royal, Shop** (§13).
+- Schéma de données v2 + migration v1 (display → `{id, mut, born}`), plus `playTime`, `lockReadyAt`, `protectedUntil`.
+- WaveService : type de marée par cycle ; **phases qui pilotent l'ouverture des lagons** (attribut `Open` par plot).
+- **StealService** : prise (maintien 1 s), portage (1 max, vitesse ×0,8), retour à la fin du reflux, contact propriétaire → retour, protections (débutant, dernière créature, montée, 2 vagues après un vol, 3 vols / 10 min), verrou + recharge, revanche. Tout est validé côté serveur.
+- **MountService** : monter/descendre, vitesse, Giant = jamais pris par la vague + surf.
+- **RoyalService** : score par cycle spécial, top 3, couronnes, créature royale unique.
+- Revenu stade × mutation, hors ligne.
+- Remotes (v2, additif) : RF `Mount(uid|nil)`, `LockLagoon()`, `StartSteal(plot, slot)` ; Notify `stealStart`, `stolen`, `stealFail`, `recovered`, `royal`, `grow`, `mutation` ; `wave.tide`, `wave.royal`.
+- Marketplace : 3 gamepasses, Tide Egg + Pick a Creature selon PolicyService.
 
 ### B — Interface
-- HUD : bandeau de marée (type courant + prochaine spéciale), revenu/s.
-- Bassins : billboard compact par créature (nom, stade, mutation, barre jusqu'au prochain stade).
-- Écrans : Codex (grille 10×5, probabilités), écran « Pendant ton absence », Tide Rank (ce qu'on garde / perd, très clair), boutique (§9, sans pop-up), quêtes.
-- Onboarding §8 (flèche, textes uniques, bouton qui pulse une fois).
-- Mobile d'abord : tout à un doigt, boutons ≥ 44 px.
+- Intro de 30 s (§1 ter) sans HUD, puis fondu.
+- **HUD de vol** : alerte « Ton lagon est ouvert ! », flèche vers le voleur, barre de maintien, bouton Verrou avec recharge, marqueur Revanche, bouclier débutant visible.
+- **HUD Marée Royale** : classement top 3 en direct, couronnes.
+- Bouton Monter/Descendre, bandeau de marée, billboard de bassin (stade, mutation, barre).
+- Boutique minimale avec probabilités visibles et bascule PolicyService.
+- Mobile d'abord : tout à un doigt.
 
 ### C — Monde
-- **10 modèles de créatures** low-poly stylisés (le plus gros poste), Root invisible comme les Items actuels, ≤ 1 500 triangles chacun.
-- Variantes de mutation **sans nouveau modèle** : 4 presets (Golden, Glow, Storm, Rainbow) appliqués par script (couleur, matériau, ParticleEmitter, PointLight) dans `ReplicatedStorage.Assets.FX.Mutations`.
-- Socles → **bassins** d'eau (même noms Pedestal1..10 et attributs pour ne pas casser le serveur).
-- Ambiance des marées : Lighting/Atmosphere presets par type (Golden, Night, Storm, Rainbow), changés en tween côté client.
-- Phase 2+ : modèle du Léviathan (unique, décoratif, au large).
+- **3 modèles** pour la Phase 1 : Pebble Crab, Sand Star, Reef Hatchling (**montable** : siège, posture du joueur, animation de surf).
+- Barrière de corail par lagon (visuel ouvert / fermé, son), portes qui ne gênent pas la poursuite.
+- Preset FX Golden, presets d'ambiance Golden Tide.
+- Couronnes (3 accessoires), effet « créature royale » (lumière + faisceau).
+- Sons : prise, vol, alerte, barrière, surf.
 
-## 12. Prototype Phase 1 (qualité finale, petit périmètre)
+## 12. Prototype Phase 1 v2 (qualité finale, petit périmètre)
 
 **Dedans :**
+- Les 30 premières secondes du §1 ter, **son compris** : c'est le premier livrable jugé.
 - 1 zone : Shallows (les autres zones fermées par une barrière de récif « bientôt »).
-- 1 lagon par joueur, 5→10 bassins (Slots existant).
-- 2 espèces : Pebble Crab, Sand Star (2 modèles finaux).
-- Croissance 4 stades, hors ligne inclus.
-- Marées : Normal + **Golden Tide** uniquement (1 preset de mutation).
-- Vague, tours, améliorations Speed/Bag/Slots, sauvegarde v2 avec migration.
-- Les 30 premières secondes du §1 ter, **son compris**, au niveau final. C'est le premier livrable jugé.
-- HUD : pièces, revenu, bandeau de marée, billboard de bassin.
-- Créatures vivantes : yeux, nage, réaction à l'approche, pile sur la tête quand on les porte.
-- Codex limité aux 2 espèces (Normal + Golden = 4 cases).
+- **3 espèces** : Pebble Crab, Sand Star, **Reef Hatchling** (montable, apparaît dans Shallows à 10 % pendant cette phase).
+- Croissance 4 stades, hors ligne inclus. Pour tester la monture vite, durées Common/Uncommon du §4.3.
+- **Monture** (Adult ×1,3, Giant ×1,6 + surf).
+- **Vol complet** (§4.7) avec toutes les protections.
+- Marées : Normal + **Golden Tide** ; **Marée Royale** à chaque Golden Tide.
+- Améliorations Speed/Bag/Slots, sauvegarde v2 avec migration.
+- Boutique minimale (§9) avec bascule PolicyService.
 
-**Dehors (Phase 2+)** : zones 2–5, autres mutations, Rainbow, compagnons rhabillés, Léviathan, Tide Rank, quêtes, visites, boutique Robux, événements.
+**Dehors** : zones 2–5, autres mutations, Codex complet, Léviathan, Tide Rank, échanges (semaine 2), visites, quêtes, compagnons.
 
-**Critère de sortie de la Phase 1** : sur un téléphone moyen à 60 FPS, un nouveau joueur dépose sa première créature en moins de 60 s, voit un Juvenile et une Golden en moins de 10 min, et a envie de revenir voir sa créature grandir.
+**Critère de sortie** : sur un téléphone moyen à 60 FPS, un nouveau joueur dépose sa première créature en < 60 s, monte une créature en < 15 min, vit un vol (subi ou réussi) dans sa première session après la protection, et revient le lendemain.
 
 ## 13. Bloc Config proposé (pour A)
 
@@ -361,8 +426,23 @@ Config.Rank = { baseCost = 1e6, costMult = 5, incomeBonus = { 0.25, 0.50, 0.75, 
 function Config.GetRankCost(rank: number): number
 	return Config.Rank.baseCost * Config.Rank.costMult ^ (rank - 1)
 end
+
+-- v2 : monture, vol, Maree Royale, boutique
+Config.Mount = { species = { ReefHatchling = true, CoralRay = true, StarWhaleCalf = true, AbyssSerpent = true }, minStage = "Adult", speedMult = { Adult = 1.3, Giant = 1.6 }, giantSurfs = true }
+Config.Steal = {
+	grabHold = 1.0, carrySpeedMult = 0.8, maxCarry = 1,
+	lockDurationWaves = 1, lockCooldownCycles = 4,
+	protectAfterStolenWaves = 2, maxStolenPer10Min = 3,
+	newbieMinutes = 15, newbieMinCreatures = 4,
+}
+Config.Royal = { onSpecialTides = true, rewardMinutes = { 5, 3, 2 }, uniquePerServer = 1, royalMutation = "Golden" }
+Config.Shop = {
+	Passes = { FastGrowth = 299, BigNet = 149, VIPRider = 399 }, -- ids Roblox a remplir
+	TideEgg = { price = 79, odds = { { "PebbleCrab", 50 }, { "SandStar", 35 }, { "ReefHatchling", 15 } }, goldenChance = 10 },
+	PickCreature = { price = 149 }, -- remplace TideEgg si ArePaidRandomItemsRestricted
+}
 ```
 
-## 14. Questions ouvertes pour Moaad (non bloquantes)
-1. Garder le nom **Tide Rush** ou renommer le jeu **Reef Keepers** ? (Proposition : « Tide Rush: Reef Keepers ».)
-2. Prix exacts des gamepasses : valeurs de départ ci-dessus, à ajuster après les premiers tests.
+## 14. Questions ouvertes pour Moaad
+1. Titre : **« Ride the Tsunami »** (recommandé) ? À vérifier dans la recherche Roblox avant de publier.
+2. Prix de la boutique de lancement : valeurs de départ, à ajuster après 1 semaine de données.
