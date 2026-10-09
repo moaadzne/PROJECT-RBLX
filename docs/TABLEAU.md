@@ -52,7 +52,9 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-05 | A | StealService et toutes les protections du §4.7 | fait |
 | P1-06 | A | MountService (les Titan surfent la vague) | fait ; à aligner sur les stades renommés |
 | P1-07 | A | RoyalService (score, top 3, créature unique) | fait |
-| P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | en cours (ShopService) |
+| P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | fait (ShopService, ids à 0 en attendant Moaad) |
+| P1-35 | A | Roster v3 + stades Juvenile/Adult/Elder/Titan dans Config, migration et services | à faire |
+| P1-36 | A, B, C | Île ouverte (GDD §3 bis de E) : vague à direction variable, biomes, boussole, carte | en attente de la spec de E |
 | P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
 | P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | fait (Onboarding) |
 | P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | fait (a24dbc7) |
