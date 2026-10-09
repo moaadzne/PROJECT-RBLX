@@ -27,13 +27,14 @@ Règle qui en découle, pour toute l'équipe : **on ne modifie plus dans Studio 
 | `ReplicatedStorage.Remotes` | `src/ReplicatedStorage/Remotes` | **optionnel** : seulement si A y met des `*.model.json` (sinon les remotes de Studio restent intactes) |
 | `ServerScriptService` | `src/ServerScriptService` | Main + Services |
 | `StarterPlayer.StarterPlayerScripts` | `src/StarterPlayer/StarterPlayerScripts` | TideClient |
+| `StarterPlayer.StarterCharacterScripts` | `src/StarterPlayer/StarterCharacterScripts` | **optionnel** : Animate, sons du personnage |
 | `StarterGui` | `src/StarterGui` | optionnel |
 | `ReplicatedFirst` | `src/ReplicatedFirst` | optionnel |
 
-**Jamais touchés** : Workspace (Map, Terrain), Lighting, `ReplicatedStorage.Assets`, MaterialService, SoundService, ServerStorage (DevNotes, Backup_Template), StarterCharacterScripts.
+**Jamais touchés** : Workspace (Map, Terrain), Lighting, `ReplicatedStorage.Assets`, MaterialService, SoundService, ServerStorage (DevNotes, Backup_Template).
 
 **Protection de l'existant** (vérifiée le 09/10 avec l'API de `rojo serve` 7.5.1) :
-- Les 6 nœuds mappés ont `"$ignoreUnknownInstances": true`. Rojo n'y supprime donc **rien** de ce qui existe seulement dans Studio : remotes v1, interface construite dans Studio, etc.
+- Les 7 nœuds mappés ont `"$ignoreUnknownInstances": true`. Rojo n'y supprime donc **rien** de ce qui existe seulement dans Studio : remotes v1, interface construite dans Studio, etc.
 - Sans ce réglage, Rojo **vidait** StarterGui et ReplicatedFirst, même quand leur dossier est absent du repo. C'est corrigé.
 - Ce réglage ne vaut que pour le nœud lui-même. **À l'intérieur** de `Services` et du LocalScript `TideClient`, le repo fait foi : un module supprimé du repo est supprimé dans Studio. C'est voulu, et ces deux endroits sont aujourd'hui identiques au repo (vérifié sur le .rbxl).
 - Conséquence : un script supprimé ou renommé **au premier niveau** (par exemple `ServerScriptService.Main`) reste dans Studio comme orphelin. L'étape 8 les liste, et rien n'est supprimé sans l'accord de D.
