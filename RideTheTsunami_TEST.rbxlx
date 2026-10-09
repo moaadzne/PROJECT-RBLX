@@ -1,13 +1,155 @@
 <roblox version="4">
-  <Item class="ReplicatedStorage" referent="0">
+  <Item class="ReplicatedFirst" referent="0">
+    <Properties>
+      <string name="Name">ReplicatedFirst</string>
+    </Properties>
+    <Item class="LocalScript" referent="1">
+      <Properties>
+        <string name="Name">LoadingScreen</string>
+        <string name="Source"><![CDATA[-- LoadingScreen : ecran de chargement maison (VISION_TON §4 et §6.1) a la place de celui de Roblox.
+-- Image de la baie (id dans l'attribut LoadingImage de ReplicatedFirst, fourni par C ; sinon fond sombre),
+-- titre, barre fine. Disparait quand le jeu est charge et que le personnage existe (2 s au moins, 25 s au plus) ;
+-- la camera d'arrivee (TideClient/Onboarding) prend alors le relais.
+local ContentProvider = game:GetService("ContentProvider")
+local Players = game:GetService("Players")
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local TweenService = game:GetService("TweenService")
+
+local MIN_TIME = 2
+local MAX_TIME = 25
+local FADE_TIME = 0.4
+local OSWALD = "rbxasset://fonts/families/Oswald.json"
+local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "TR_Loading"
+gui.IgnoreGuiInset = true
+gui.ScreenInsets = Enum.ScreenInsets.None
+gui.DisplayOrder = 1000
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
+
+ReplicatedFirst:RemoveDefaultLoadingScreen()
+
+local root = Instance.new("CanvasGroup")
+root.Name = "Root"
+root.Size = UDim2.fromScale(1, 1)
+root.BackgroundColor3 = Color3.fromRGB(8, 12, 20)
+root.BorderSizePixel = 0
+root.Parent = gui
+
+local image = ReplicatedFirst:GetAttribute("LoadingImage")
+if type(image) == "string" and image ~= "" then
+	local picture = Instance.new("ImageLabel")
+	picture.Name = "Bay"
+	picture.Size = UDim2.fromScale(1, 1)
+	picture.BackgroundTransparency = 1
+	picture.Image = image
+	picture.ScaleType = Enum.ScaleType.Crop
+	picture.Parent = root
+end
+
+-- voile sombre en bas : le titre reste lisible sur l'image
+local shade = Instance.new("Frame")
+shade.Name = "Shade"
+shade.AnchorPoint = Vector2.new(0, 1)
+shade.Position = UDim2.fromScale(0, 1)
+shade.Size = UDim2.fromScale(1, 0.45)
+shade.BackgroundColor3 = Color3.new(0, 0, 0)
+shade.BorderSizePixel = 0
+shade.Parent = root
+local shadeGradient = Instance.new("UIGradient")
+shadeGradient.Rotation = 90
+shadeGradient.Transparency = NumberSequence.new(1, 0.25)
+shadeGradient.Parent = shade
+
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.AnchorPoint = Vector2.new(0, 1)
+title.Position = UDim2.new(0, 48, 1, -78)
+title.Size = UDim2.new(1, -96, 0, 64)
+title.BackgroundTransparency = 1
+title.FontFace = Font.new(OSWALD, Enum.FontWeight.Bold)
+title.Text = "RIDE THE TSUNAMI"
+title.TextColor3 = Color3.fromRGB(242, 245, 248)
+title.TextScaled = true
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = root
+local titleSize = Instance.new("UITextSizeConstraint")
+titleSize.MaxTextSize = 56
+titleSize.MinTextSize = 28
+titleSize.Parent = title
+
+local status = Instance.new("TextLabel")
+status.Name = "Status"
+status.AnchorPoint = Vector2.new(0, 1)
+status.Position = UDim2.new(0, 50, 1, -52)
+status.Size = UDim2.new(1, -100, 0, 20)
+status.BackgroundTransparency = 1
+status.FontFace = Font.new(BUILDER, Enum.FontWeight.Bold)
+status.Text = "LOADING"
+status.TextColor3 = Color3.fromRGB(150, 162, 178)
+status.TextSize = 15
+status.TextXAlignment = Enum.TextXAlignment.Left
+status.Parent = root
+
+local track = Instance.new("Frame")
+track.Name = "Track"
+track.AnchorPoint = Vector2.new(0, 1)
+track.Position = UDim2.new(0, 50, 1, -40)
+track.Size = UDim2.new(1, -100, 0, 3)
+track.BackgroundColor3 = Color3.new(1, 1, 1)
+track.BackgroundTransparency = 0.8
+track.BorderSizePixel = 0
+track.Parent = root
+local fill = Instance.new("Frame")
+fill.Name = "Fill"
+fill.Size = UDim2.fromScale(0, 1)
+fill.BackgroundColor3 = Color3.fromRGB(38, 196, 196)
+fill.BorderSizePixel = 0
+fill.Parent = track
+
+-- Progression : chargement du jeu + file de ressources ; jamais en arriere, jamais a 100 % avant la fin
+local start = os.clock()
+local shown = 0
+local function ready(): boolean
+	return game:IsLoaded() and player.Character ~= nil
+end
+
+while os.clock() - start < MAX_TIME do
+	local elapsed = os.clock() - start
+	if ready() and elapsed >= MIN_TIME then
+		break
+	end
+	local queue = ContentProvider.RequestQueueSize
+	local target = if game:IsLoaded() then 0.7 + 0.25 * math.clamp(1 - queue / 50, 0, 1) else math.clamp(elapsed / 10, 0, 0.6)
+	shown = math.max(shown, math.min(target, 0.95))
+	fill.Size = UDim2.fromScale(shown, 1)
+	task.wait(0.1)
+end
+
+fill.Size = UDim2.fromScale(1, 1)
+task.wait(0.1)
+local fade = TweenService:Create(root, TweenInfo.new(FADE_TIME, Enum.EasingStyle.Quad), { GroupTransparency = 1 })
+fade:Play()
+fade.Completed:Wait()
+gui:Destroy()
+]]></string>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="ReplicatedStorage" referent="2">
     <Properties>
       <string name="Name">ReplicatedStorage</string>
     </Properties>
-    <Item class="Folder" referent="1">
+    <Item class="Folder" referent="3">
       <Properties>
         <string name="Name">Shared</string>
       </Properties>
-      <Item class="ModuleScript" referent="2">
+      <Item class="ModuleScript" referent="4">
         <Properties>
           <string name="Name">Config</string>
           <string name="Source"><![CDATA[-- Ride the Tsunami (Reef Keepers). Configuration partagee (serveur + client).
@@ -111,8 +253,8 @@ Config.Intro = {
 		{ species = "GhostCrab", mutation = "", side = -4, out = 34 },
 		{ species = "CushionStar", mutation = "Golden", side = 8, out = 48 },
 	},
-	-- les lagons sont adosses a des remparts : la plage d'intro est dans le passage voisin (diagonale)
-	angleOffset = 22.5,
+	-- decalage d'angle de la plage d'intro par rapport a l'axe crique -> lagon (0 : en face de la breche du lagon)
+	angleOffset = 0,
 	goldenTide = "Golden", -- deuxieme maree du joueur
 	goldenCount = 5, -- creatures personnelles de cette maree, dont au moins une mutee
 }
@@ -395,11 +537,11 @@ return Config
       </Item>
     </Item>
   </Item>
-  <Item class="ServerScriptService" referent="3">
+  <Item class="ServerScriptService" referent="5">
     <Properties>
       <string name="Name">ServerScriptService</string>
     </Properties>
-    <Item class="Script" referent="4">
+    <Item class="Script" referent="6">
       <Properties>
         <string name="Name">Main</string>
         <token name="RunContext">0</token>
@@ -460,11 +602,11 @@ end
 ]]></string>
       </Properties>
     </Item>
-    <Item class="Folder" referent="5">
+    <Item class="Folder" referent="7">
       <Properties>
         <string name="Name">Services</string>
       </Properties>
-      <Item class="ModuleScript" referent="6">
+      <Item class="ModuleScript" referent="8">
         <Properties>
           <string name="Name">CreatureFactory</string>
           <string name="Source"><![CDATA[-- CreatureFactory : clone les creatures d'Assets.Creatures, pretes a poser (plage ou bassin).
@@ -657,7 +799,7 @@ return CreatureFactory
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="7">
+      <Item class="ModuleScript" referent="9">
         <Properties>
           <string name="Name">CreatureService</string>
           <string name="Source"><![CDATA[-- CreatureService : creatures de l'ile, par anneaux autour de la crique (apparition, mutation tiree a l'apparition selon la maree),
@@ -1168,7 +1310,7 @@ return CreatureService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="8">
+      <Item class="ModuleScript" referent="10">
         <Properties>
           <string name="Name">DataService</string>
           <string name="Source"><![CDATA[-- DataService : profils joueurs en memoire, DataStore avec verrou de session par profil,
@@ -2006,7 +2148,7 @@ return DataService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="9">
+      <Item class="ModuleScript" referent="11">
         <Properties>
           <string name="Name">DebugService</string>
           <string name="Source"><![CDATA[-- DebugService : ServerStorage.TR_Debug (BindableFunction), cree seulement dans Studio.
@@ -2206,7 +2348,7 @@ return DebugService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="10">
+      <Item class="ModuleScript" referent="12">
         <Properties>
           <string name="Name">IntroService</string>
           <string name="Source"><![CDATA[-- IntroService : les premieres minutes d'un nouveau joueur (GDD 1 ter).
@@ -2251,8 +2393,8 @@ local function waitUntil(player, profile, t)
 	return alive(player, profile)
 end
 
--- Direction de la crique vers la plage d'intro du joueur : celle de son lagon, tournee vers le passage
--- voisin (les lagons sont adosses a des remparts, les passages vers la plage sont en diagonale)
+-- Direction de la crique vers la plage d'intro du joueur : celle de son lagon (sortie et breche face a la mer),
+-- tournee de Config.Intro.angleOffset si le decor l'impose
 local function outwardOf(player)
 	local index = PlotService.GetIndex(player)
 	local outward = index and PlotService.OutwardOf(index) or Vector3.new(0, 0, -1)
@@ -2420,7 +2562,7 @@ return IntroService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="11">
+      <Item class="ModuleScript" referent="13">
         <Properties>
           <string name="Name">LagoonService</string>
           <string name="Source"><![CDATA[-- LagoonService : ouverture des lagons pilotee par la vague (GDD 2, 4.7).
@@ -2678,11 +2820,11 @@ local function ejectIntruders()
 		if root then
 			local index = plotAt(root.Position)
 			if index and not LagoonService.CanEnter(player, index) then
-				-- devant l'entree du lagon, cote crique, tourne vers la crique
-				local spot = PlotService.EntranceOf(index)
+				-- devant la sortie du lagon, cote mer (dans la breche de la falaise), tourne vers la mer
+				local spot = PlotService.ExitOf(index)
 				local center = PlotService.CenterOf(index)
 				local target = Vector3.new(spot.X, math.max(root.Position.Y, center.Y + EJECT_HEIGHT), spot.Z)
-				character:PivotTo(CFrame.lookAt(target, target + (spot - center) * Vector3.new(1, 0, 1)))
+				character:PivotTo(CFrame.lookAt(target, target + PlotService.OutwardOf(index)))
 				root.AssemblyLinearVelocity = Vector3.zero
 				local profile = DataService.Get(player)
 				if profile then
@@ -2793,7 +2935,7 @@ return LagoonService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="12">
+      <Item class="ModuleScript" referent="14">
         <Properties>
           <string name="Name">MountService</string>
           <string name="Source"><![CDATA[-- MountService : monture (GDD 4.6) et verification de la vitesse reelle.
@@ -3137,7 +3279,7 @@ return MountService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="13">
+      <Item class="ModuleScript" referent="15">
         <Properties>
           <string name="Name">Net</string>
           <string name="Source"><![CDATA[-- Net : remotes du jeu, limite de frequence, notifications, etat de la vague (global ou propre a un joueur).
@@ -3348,7 +3490,7 @@ return Net
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="14">
+      <Item class="ModuleScript" referent="16">
         <Properties>
           <string name="Name">PetService</string>
           <string name="Source"><![CDATA[-- PetService : oeufs (pieces du jeu uniquement, jamais de Robux) et compagnons equipes.
@@ -3450,7 +3592,7 @@ return PetService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="15">
+      <Item class="ModuleScript" referent="17">
         <Properties>
           <string name="Name">PlotService</string>
           <string name="Source"><![CDATA[-- PlotService : lagons des joueurs (attribution, creatures dans les bassins, verrous des bassins),
@@ -3477,10 +3619,10 @@ local CHARACTER_TIMEOUT = 10
 local INCOME_TICK = 1
 local MAX_INCOME_DT = 5
 
--- [index] = { model, center, box? | radius? | bounds?, owner }. Emprise du lagon, par ordre de priorite :
--- PlotN.Bounds (Part tournee, convention de C pour l'ile ouverte), attributs Center + Radius, ancien rectangle MinX..MaxZ.
+-- [index] = { model, center, radius? | box? | bounds?, owner }. Emprise du lagon, par ordre de priorite :
+-- attributs Center + Radius (convention de l'ile ouverte, construite par C), Part PlotN.Bounds, ancien rectangle MinX..MaxZ.
 local plots = {}
-local ENTRANCE_GAP = 5
+local EXIT_GAP = 5
 local plotOf = {} -- [player] = index
 local knownStages = {} -- [player] = { [uid] = stage } : pour detecter un changement de stade
 
@@ -3567,26 +3709,25 @@ function PlotService.OutwardOf(index)
 	return flat.Unit
 end
 
--- Point juste devant l'entree du lagon, cote crique (l'entree de C fait face au centre de l'ile)
-function PlotService.EntranceOf(index)
+-- Point juste devant la sortie du lagon, cote mer : Center + o * (Radius + 5), o = direction de la crique
+-- vers le lagon. Sur l'ile de C, il tombe dans la breche de la falaise en face du lagon.
+function PlotService.ExitOf(index)
 	local plot = plots[index]
 	if not plot then
 		return nil
 	end
-	local c = Config.Island.center
-	local inward = Vector3.new(c.X - plot.center.X, 0, c.Z - plot.center.Z)
-	inward = inward.Magnitude > 0.01 and inward.Unit or Vector3.new(0, 0, -1)
+	local outward = PlotService.OutwardOf(index)
 	local extent
-	if plot.box then
-		local cf, size = plot.box.CFrame, plot.box.Size
-		extent = math.abs(inward:Dot(cf.RightVector)) * size.X / 2 + math.abs(inward:Dot(cf.LookVector)) * size.Z / 2
-	elseif plot.radius then
+	if plot.radius then
 		extent = plot.radius
+	elseif plot.box then
+		local cf, size = plot.box.CFrame, plot.box.Size
+		extent = math.abs(outward:Dot(cf.RightVector)) * size.X / 2 + math.abs(outward:Dot(cf.LookVector)) * size.Z / 2
 	else
 		local b = plot.bounds
 		extent = Vector2.new(b.maxX - b.minX, b.maxZ - b.minZ).Magnitude / 2
 	end
-	return plot.center + inward * (extent + ENTRANCE_GAP)
+	return plot.center + outward * (extent + EXIT_GAP)
 end
 
 function PlotService.OwnerOf(index)
@@ -3905,10 +4046,10 @@ function PlotService.Start()
 		local center, radius = model:GetAttribute("Center"), model:GetAttribute("Radius")
 		local minX, maxX = model:GetAttribute("MinX"), model:GetAttribute("MaxX")
 		local minZ, maxZ = model:GetAttribute("MinZ"), model:GetAttribute("MaxZ")
-		if type(index) == "number" and box and box:IsA("BasePart") then
-			plots[index] = { model = model, center = box.Position, box = box, owner = nil }
-		elseif type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
+		if type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
 			plots[index] = { model = model, center = center, radius = radius, owner = nil }
+		elseif type(index) == "number" and box and box:IsA("BasePart") then
+			plots[index] = { model = model, center = box.Position, box = box, owner = nil }
 		elseif type(index) == "number" and minX and maxX and minZ and maxZ then
 			plots[index] = {
 				model = model,
@@ -3941,7 +4082,7 @@ return PlotService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="16">
+      <Item class="ModuleScript" referent="18">
         <Properties>
           <string name="Name">RoyalService</string>
           <string name="Source"><![CDATA[-- RoyalService : Maree Royale (GDD 4.8). A chaque maree speciale, une manche pour tout le serveur pendant le cycle.
@@ -4117,7 +4258,7 @@ return RoyalService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="17">
+      <Item class="ModuleScript" referent="19">
         <Properties>
           <string name="Name">SelfTest</string>
           <string name="Source"><![CDATA[-- SelfTest : rejoue d'un coup les verifications essentielles (TR_Debug "selftest", Studio, pendant un playtest).
@@ -4580,7 +4721,7 @@ return SelfTest
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="18">
+      <Item class="ModuleScript" referent="20">
         <Properties>
           <string name="Name">ShopService</string>
           <string name="Source"><![CDATA[-- ShopService : boutique de lancement (GDD 9). Prix fixes ; ids Roblox dans Config.Shop (0 = desactive).
@@ -4781,7 +4922,7 @@ return ShopService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="19">
+      <Item class="ModuleScript" referent="21">
         <Properties>
           <string name="Name">Stats</string>
           <string name="Source"><![CDATA[-- Stats : calculs purs (revenu, croissance, depot, mutations, Codex, hors ligne, tirages).
@@ -5124,7 +5265,7 @@ return Stats
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="20">
+      <Item class="ModuleScript" referent="22">
         <Properties>
           <string name="Name">StealService</string>
           <string name="Source"><![CDATA[-- StealService : vol entre lagons (GDD 4.7). Tout est verifie cote serveur, rien n'est cru du client.
@@ -5509,7 +5650,7 @@ return StealService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="21">
+      <Item class="ModuleScript" referent="23">
         <Properties>
           <string name="Name">UpgradeService</string>
           <string name="Source"><![CDATA[-- UpgradeService : achat des ameliorations (Speed, Bag, Slots) avec les pieces du jeu.
@@ -5574,7 +5715,7 @@ return UpgradeService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="22">
+      <Item class="ModuleScript" referent="24">
         <Properties>
           <string name="Name">WaveService</string>
           <string name="Source"><![CDATA[-- WaveService : cycle de la vague (calm, warning, wave, recede), simulee en maths, type de maree du cycle
@@ -5865,7 +6006,7 @@ return WaveService
         </Properties>
       </Item>
     </Item>
-    <Item class="ModuleScript" referent="23">
+    <Item class="ModuleScript" referent="25">
       <Properties>
         <string name="Name">TestWorld</string>
         <string name="Source"><![CDATA[-- TestWorld : ile de TEST generee au demarrage du serveur (version de test seulement, pas la carte finale de C).
@@ -6047,15 +6188,15 @@ return TestWorld
       </Properties>
     </Item>
   </Item>
-  <Item class="StarterPlayer" referent="24">
+  <Item class="StarterPlayer" referent="26">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="25">
+    <Item class="StarterPlayerScripts" referent="27">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="26">
+      <Item class="LocalScript" referent="28">
         <Properties>
           <string name="Name">TideClient</string>
           <string name="Source"><![CDATA[-- TideClient : point d'entree client (LocalScript dans StarterPlayerScripts).
@@ -6220,7 +6361,7 @@ startAll(FOUNDATION)
 startAll(SCREENS)
 ]]></string>
         </Properties>
-        <Item class="ModuleScript" referent="27">
+        <Item class="ModuleScript" referent="29">
           <Properties>
             <string name="Name">Ambience</string>
             <string name="Source"><![CDATA[-- Ambience : ambiance des marées et barrieres des lagons, cote client.
@@ -6479,7 +6620,7 @@ return Ambience
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="28">
+        <Item class="ModuleScript" referent="30">
           <Properties>
             <string name="Name">ChatStyle</string>
             <string name="Source"><![CDATA[-- ChatStyle : chat Roblox (TextChatService) a nos couleurs, police et position (VISION_TON §6.1).
@@ -6548,7 +6689,7 @@ return ChatStyle
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="29">
+        <Item class="ModuleScript" referent="31">
           <Properties>
             <string name="Name">Components</string>
             <string name="Source"><![CDATA[-- Components : briques d'interface generiques, style « jeu console » (DIRECTION_V2) : panneaux sombres
@@ -6980,7 +7121,7 @@ return Components
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="30">
+        <Item class="ModuleScript" referent="32">
           <Properties>
             <string name="Name">Feel</string>
             <string name="Source"><![CDATA[-- Feel : ressenti et camera maison (VISION_TON §3 « Ressenti et camera », §6.1), controles standards gardes.
@@ -7120,7 +7261,7 @@ return Feel
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="31">
+        <Item class="ModuleScript" referent="33">
           <Properties>
             <string name="Name">Fx</string>
             <string name="Source"><![CDATA[-- Fx : effets visuels cote client (particules, secousse camera, flash, fondu, lueur des bords,
@@ -7425,7 +7566,7 @@ return Fx
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="32">
+        <Item class="ModuleScript" referent="34">
           <Properties>
             <string name="Name">Hud</string>
             <string name="Source"><![CDATA[-- Hud : HUD « jeu console » (DIRECTION_V2). Porte-monnaie (pieces + revenu), bandeau de marée (type,
@@ -8199,7 +8340,7 @@ return Hud
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="33">
+        <Item class="ModuleScript" referent="35">
           <Properties>
             <string name="Name">MountButton</string>
             <string name="Source"><![CDATA[-- MountButton : bouton RIDE / GET OFF (GDD v2 §4.6, contrat v2.1).
@@ -8274,7 +8415,7 @@ return MountButton
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="34">
+        <Item class="ModuleScript" referent="36">
           <Properties>
             <string name="Name">NameTags</string>
             <string name="Source"><![CDATA[-- NameTags : etiquette maison au-dessus des autres joueurs (VISION_TON §6.1 ; A met DisplayDistanceType = None).
@@ -8465,7 +8606,7 @@ return NameTags
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="35">
+        <Item class="ModuleScript" referent="37">
           <Properties>
             <string name="Name">Notifications</string>
             <string name="Source"><![CDATA[-- Notifications : toasts empiles a droite (3 max, 2,5 s, priorite vague > recompenses > infos)
@@ -8869,7 +9010,7 @@ return Notifications
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="36">
+        <Item class="ModuleScript" referent="38">
           <Properties>
             <string name="Name">Onboarding</string>
             <string name="Source"><![CDATA[-- Onboarding (GDD §1 ter et §8) :
@@ -9288,7 +9429,7 @@ return Onboarding
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="37">
+        <Item class="ModuleScript" referent="39">
           <Properties>
             <string name="Name">PoolBillboards</string>
             <string name="Source"><![CDATA[-- PoolBillboards : etiquette au-dessus de chaque bassin occupe du lagon du joueur
@@ -9570,7 +9711,7 @@ return PoolBillboards
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="38">
+        <Item class="ModuleScript" referent="40">
           <Properties>
             <string name="Name">Prompts</string>
             <string name="Source"><![CDATA[-- Prompts : interface maison de toutes les invites ProximityPrompt en Style Custom (VISION_TON §6.1 ;
@@ -9755,7 +9896,7 @@ return Prompts
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="39">
+        <Item class="ModuleScript" referent="41">
           <Properties>
             <string name="Name">RoyalHud</string>
             <string name="Source"><![CDATA[-- RoyalHud : Maree Royale (GDD v2 §4.8, contrat v2.1).
@@ -9877,7 +10018,7 @@ return RoyalHud
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="40">
+        <Item class="ModuleScript" referent="42">
           <Properties>
             <string name="Name">Settings</string>
             <string name="Source"><![CDATA[-- Settings : reglages du joueur (graphismes, volume, reduire les animations, taille de l'interface).
@@ -9948,7 +10089,7 @@ return Settings
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="41">
+        <Item class="ModuleScript" referent="43">
           <Properties>
             <string name="Name">Sfx</string>
             <string name="Source"><![CDATA[-- Sfx : sons cote client. Cherche ReplicatedStorage.Assets.Sounds.<nom> (fournis par C, T-012).
@@ -10086,7 +10227,7 @@ return Sfx
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="42">
+        <Item class="ModuleScript" referent="44">
           <Properties>
             <string name="Name">Shop</string>
             <string name="Source"><![CDATA[-- Shop : boutique de lancement (GDD v2 §9, contrat v2.1). Style console. S'ouvre seulement sur demande
@@ -10538,7 +10679,7 @@ return Shop
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="43">
+        <Item class="ModuleScript" referent="45">
           <Properties>
             <string name="Name">StealHud</string>
             <string name="Source"><![CDATA[-- StealHud : interface du vol entre lagons (GDD v2 §4.7, contrat v2.1). Style console, textes courts.
@@ -11169,7 +11310,7 @@ return StealHud
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="44">
+        <Item class="ModuleScript" referent="46">
           <Properties>
             <string name="Name">Store</string>
             <string name="Source"><![CDATA[-- Store : etat client (snapshot serveur + vague du joueur) et appels reseau (contrat des remotes v2 de A,
@@ -12058,7 +12199,7 @@ return Store
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="45">
+        <Item class="ModuleScript" referent="47">
           <Properties>
             <string name="Name">Theme</string>
             <string name="Source"><![CDATA[-- Theme : systeme visuel « jeu console » (docs/DIRECTION_V2.md, prime sur la bible) :
@@ -12778,7 +12919,7 @@ return Theme
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="46">
+        <Item class="ModuleScript" referent="48">
           <Properties>
             <string name="Name">Util</string>
             <string name="Source"><![CDATA[-- Util : outils partages cote client (signal, nettoyage, tweens, ressort, formats, coordonnees ecran).
@@ -12997,7 +13138,7 @@ return Util
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="47">
+        <Item class="ModuleScript" referent="49">
           <Properties>
             <string name="Name">World</string>
             <string name="Source"><![CDATA[-- World : rendu client des creatures (le serveur ne les bouge jamais, contrat v2).
@@ -13272,7 +13413,7 @@ return World
       </Item>
     </Item>
   </Item>
-  <Item class="Workspace" referent="48">
+  <Item class="Workspace" referent="50">
     <Properties>
       <string name="Name">Workspace</string>
       <bool name="NeedsPivotMigration">false</bool>
