@@ -12,7 +12,14 @@ Aucun prix n'est donné : je n'ai pas de source vérifiée. À chiffrer avec Moa
 | **Pack premium** (marketplace externe, licence commerciale) | une série cohérente, souvent riggée | coût ; vérifier la licence (usage commercial Roblox) ; import FBX + conversion |
 | **Modéliste sur mesure** | style unique, une famille cohérente, rig adapté | délai, coût, brief précis nécessaire (ce document sert de brief) |
 
-**Recommandation** : lundi, tester `generate_mesh` sur 2 espèces (une commune, une légendaire) avec le brief §2. Si le rendu ne tient pas sur la hero shot, passer au modéliste/pack pour les créatures **seulement** (le décor reste en _DecorLib). On garde un style unique : jamais deux sources mélangées dans un même lagon.
+### Avis franc : les assets gratuits peuvent-ils atteindre le niveau visé ?
+- **Décor : oui, probablement.** Le pack nature stylisé (70 MeshParts, 23 SurfaceAppearance) et les 8 autres assets de _DecorLib suffisent pour une hero shot de qualité, à condition de les assembler avec soin (échelle, lumière, densité de détails). À confirmer lundi sur la capture. Pour les monuments des zones 2 à 5 (arche de corail, temple, bateau pirate, cristaux), je n'ai rien dans _DecorLib : il faudra soit en trouver, soit les faire faire.
+- **Créatures : non, je ne compte pas dessus.** Les créatures sont le cœur du jeu : on les voit de près, dans son lagon, en permanence, et en série (plusieurs espèces × 3 tailles × mutations). Il faut une **famille cohérente** (même style, mêmes proportions, même qualité). Le Creator Store gratuit ne fournit pas ça : on trouve des modèles isolés de styles différents. La génération IA dans Studio peut servir de prototype, mais je n'ai aucune preuve qu'elle atteigne le niveau console en série cohérente, et ses modèles n'ont pas de squelette.
+
+**Recommandation** : un **modéliste sur mesure** pour les créatures (à défaut, un pack premium cohérent avec une licence commerciale vérifiée). Ce document sert de brief. Le décor reste en _DecorLib.
+- Lundi : tester quand même `generate_mesh` sur 2 espèces (une commune, une légendaire). Ça ne coûte rien et ça donne des placeholders pour A et B. Si, contre mon attente, le rendu tient à côté de la hero shot, on revoit la recommandation.
+- On garde un style unique : jamais deux sources mélangées dans un même lagon.
+- Le coût et le délai d'un modéliste sont à demander à Moaad : je n'ai pas de chiffre sourcé.
 
 ## 2. Règles de modélisation (brief commun)
 - Style : rond, pattes/nageoires épaisses, gros yeux brillants, 2–3 couleurs à plat + dégradé doux. Aucun personnage connu, aucun mème.
@@ -66,6 +73,6 @@ Tout en CFrame local, calculé avec dt, jamais côté serveur (bible §6 Techniq
 - **Perf** : une seule boucle RenderStepped pour toutes les créatures ; on n'anime que celles à < 120 studs de la caméra ; au-delà, figées.
 
 ## 6. Ordre lundi
-1. Dossier `Assets.Creatures` + 1 placeholder conforme §2 pour débloquer A et B.
-2. `generate_mesh` : bébé tortue + hippocampe, jugés dans la hero shot.
-3. Verdict à D : on garde la génération, ou on passe à modéliste/pack.
+1. Dossier `Assets.Creatures` + 1 placeholder conforme §2 pour débloquer A et B (outil de dev uniquement, jamais dans une capture montrée à Moaad).
+2. `generate_mesh` : bébé tortue + hippocampe, jugés à côté de la hero shot.
+3. Verdict à D : modéliste/pack (recommandé), ou génération si le test surprend.

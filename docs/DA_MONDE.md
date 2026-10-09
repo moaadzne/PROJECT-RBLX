@@ -12,6 +12,23 @@ Le serveur dépend de ces noms et attributs (review/review_context.md, « Map fa
 
 Règle C : je **remplace le visuel**, je **garde les objets porteurs**. Les PedestalN restent (mêmes noms, Slot, LockGui) ; ils deviennent les « points d'ancrage » des bassins. Si le passage socles → bassins demande de déplacer/renommer quoi que ce soit, c'est une demande à D puis à A, pas une modif C.
 
+## 0 bis. Ce qui faisait moche (et comment c'est évité)
+Verdict de Moaad au dernier test : « rien ne va, tout est à revoir ». Il a vu l'ancienne carte en blocs, avec l'avatar par défaut. Causes concrètes :
+
+| Cause | Pourquoi ça fait « Roblox 2010 » | Parade |
+|---|---|---|
+| **Formes en blocs** (Parts rectangulaires : decks, arches, tours, cabanes) | angles droits partout, aucune silhouette organique | uniquement des MeshParts biseautés (_DecorLib, pack nature) ; plus aucun Part visible de plus de 4 studs, sauf s'il est caché sous le terrain |
+| **SmoothPlastic / couleurs plates** | surfaces sans matière, rendu « jouet en plastique » | SurfaceAppearance sur tout objet principal ; MaterialVariant sable mouillé, bois patiné, pierre de corail ; SmoothPlastic interdit sur toute surface de plus de 2×2 studs |
+| **Échelle incohérente** (objets trop gros ou trop petits par rapport à l'avatar, grandes surfaces vides) | le monde paraît faux et vide | gabarit d'échelle : avatar ≈ 5 studs, porte de cabane ≈ 7, palmier 18–28, phare ≈ 60 ; un détail de premier plan tous les 8–10 studs le long des chemins |
+| **Grands aplats vides** (plage uniforme de 264 studs de large) | rien pour l'œil, profondeur nulle | variation du terrain (dunes, sable mouillé, flaques, rochers), touffes d'herbe, coquillages, laisse de mer au rivage |
+| **Lumière plate** (Technology pas en Future, pas d'ombres douces) | aucun volume, couleurs ternes | Future, soleil bas rasant, Atmosphere, Bloom discret, ColorCorrection (§3) ; ombres du soleil sur tous les gros objets |
+| **Palette sans direction** (couleurs de blocs au hasard, arches criardes) | patchwork, aucune identité | palette verrouillée §3 ; aucune couleur hors palette sans validation |
+| **UI et textes 3D génériques** (étiquettes « BASE i », « ▲ SAFE » en police par défaut) | look de prototype | panneaux en bois sculpté ou en MeshPart, police unique de l'UI (avec B) |
+| **Avatar par défaut** dans le test Studio | le personnage gris tue l'ambiance de la capture | pour les captures : avatar de Moaad ou un avatar habillé (test Studio ou téléphone) ; en jeu, les joueurs ont leur propre avatar |
+| **Horizon vide** (océan qui s'arrête, ciel sans relief) | le monde a l'air d'une maquette | îles lointaines en silhouette, bateaux à l'horizon, nuages, Atmosphere qui fond le lointain |
+
+Règle de passage : **rien n'est montré à Moaad tant que la checklist §5 n'est pas entièrement verte.**
+
 ## 1. Le lagon du joueur (remplace les socles)
 
 ### Plan d'une base (vue de dessus, Z croissant = vers l'arrière)
@@ -112,7 +129,7 @@ Cible : contrôle final sur téléphone de Moaad (le Mac est trop faible pour ju
 Règles : tout mouvement d'ambiance (palmes, nage, défilement d'écume) côté client avec dt ; `RenderFidelity Automatic` sur les MeshParts de décor ; `CastShadow = false` sur les petits props (coquillages, herbes, coraux) ; `CanCollide/CanQuery/CanTouch = false` sur le décor non marchable.
 
 ## 5. Plan de la hero shot (lundi 12/10)
-Objectif : **une capture qui pourrait servir de miniature** (pilier 1). Vue depuis Plot1 vers la zone 1, au coucher du soleil.
+Objectif : **une capture qui pourrait servir de miniature** (pilier 1). Vue depuis Plot1 vers la zone 1, au coucher du soleil. C'est le **niveau final dès la première capture**, pas un brouillon : si la checklist de validation n'est pas entièrement verte, on ne la montre pas à Moaad, on corrige d'abord.
 
 ### Cadre
 - **Caméra** : position (-112, 14, 78), regarde vers (-60, 3, -110). FOV 60. Légère plongée (~6°). Format 16:9, puis recadrage 1:1 pour vérifier que la miniature tient.
@@ -129,16 +146,24 @@ Objectif : **une capture qui pourrait servir de miniature** (pilier 1). Vue depu
 | 6 | Pack nature (rochers, herbes, buissons) | lisières X -132, bord de l'îlot | casser les lignes droites |
 | 7 | Radeau | dans l'eau, (-40, -2, -130) | point d'intérêt milieu |
 | 8 | Phare | îlot rocheux, (+105, 0, -110) | monument zone 1, fond |
-- Créatures : 2–3 placeholders (sphères stylisées aux couleurs de rareté) dans les bassins, à remplacer dès qu'on a les modèles.
-- À masquer pour la capture : Gates et Towers en blocs (Transparency locale, pas de suppression).
+- Créatures : **pas de placeholder dans le cadre**. Des sphères colorées feraient « prototype ». Si on n'a pas encore de vraies créatures lundi, le cadre montre les bassins avec de l'eau, des coraux et des coquillages, sans créature.
+- Personnage : un avatar habillé se tient sur le ponton, de dos, et regarde la plage (il donne l'échelle). Jamais l'avatar gris par défaut.
+- À masquer pour la capture : Gates, Towers, decks et arches en blocs, panneaux « BASE i » (Transparency locale, pas de suppression).
 
 ### Lumière de la capture
 Technology **Future** (à passer à la main). ClockTime 17,05, GeographicLatitude 15 (existant). Bloom Intensity ~0,4, Threshold 1,5. ColorCorrection « TideColor » : Saturation +0,1, Contrast +0,05, Tint très légèrement chaud. SunRays Intensity ~0,05. Atmosphere Density 0,3, Haze 1, Color #FFB25A, Decay #16A0A8.
 
 ### Validation
 1. Capture plein écran sur le Mac (résolution), puis **test sur téléphone** (Studio Device Emulator ne suffit pas pour le rendu).
-2. Checklist : la silhouette du phare se lit ; le lagon de Plot1 se lit comme « à moi » ; aucune surface SmoothPlastic grise visible ; aucun bloc de l'ancienne carte dans le cadre.
+2. Checklist (tout doit être vrai) :
+   - la silhouette du phare se lit, et le lagon de Plot1 se lit comme « à moi » ;
+   - aucun Part rectangulaire visible, aucune surface SmoothPlastic, aucun bloc de l'ancienne carte dans le cadre ;
+   - l'échelle est cohérente avec l'avatar (gabarit §0 bis) ;
+   - le premier plan, le milieu et le fond ont chacun un point d'intérêt, et l'horizon n'est pas vide ;
+   - toutes les couleurs sont dans la palette §3 ;
+   - recadrée en 1:1, la capture tient comme miniature.
 3. FPS sur téléphone ≥ 55 en regardant ce cadre.
+4. Si un point est rouge, on ne montre pas la capture : on corrige, ou on signale à D ce qui manque (souvent un asset).
 
 ## 6. Ce qu'il me faut
 - Liste des créatures et des marées **[GDD de E]**.
