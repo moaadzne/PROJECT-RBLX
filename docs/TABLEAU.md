@@ -13,6 +13,7 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 | E | Tide Rush · E Concept | `claude/laughing-lovelace-8xixq7` |
 
 ## Décisions
+- **D, 09/10** : **Deep Dive** (GDD §9 bis : tirage payant en Pearls, avec garantie de rareté visible, créatures liées non volables, alternative PolicyService) = **première mise à jour (semaine 2)**, pas au lancement. Au lancement : la boutique minimale déjà codée par A (3 passes + Tide Egg ou Pick a Creature). Le lancement se concentre sur le nombre de joueurs et la rétention ; Dive arrive avec les données de la semaine 1. À prévoir au lancement : déclarer les tirages payants dans le questionnaire de l'expérience sur Creator Hub (à vérifier).
 - **D, 09/10** : vague de gameplay plus imposante. **Hauteur d'environ 30, plateformes des tours d'environ 34**, au lieu de 22 et 26. A fixe les valeurs finales selon le temps de montée des rampes ; C construit les tours en conséquence. La crête visuelle ne dépasse jamais une plateforme où l'on est à l'abri, par cohérence. La houle de 55 à l'horizon (C) et la vague d'intro restent les moments « plus haut que tout ». Bassins creusés (SUNK_POOLS, PedestalN abaissés de 3,5) validés, sous réserve de l'accord direct de A.
 - **D, 09/10** : secret de la Phase 1 (GDD §6 bis) = **la marée extrême fusionne avec le point d'intérêt « récif à marée basse »**. Environ 1 fois par heure, la mer se retire plus loin et révèle le récif, avec des créatures rares pendant un temps limité. Les signes arrivent sans texte : mouettes, mer qui recule, son. L'épave reste un repère visible ; son secret complet (ce qui émerge) passe à la semaine 2.
 - **D, 09/10** : île ouverte (GDD §3 bis), **version intermédiaire au lancement**. Île d'environ 600×600 avec la crique centrale et les 8 lagons ; **vague venant des 4 directions** (N/E/S/O, annoncée, jamais deux fois de suite la même) ; 3 points d'intérêt (belvédère, épave, récif à marée basse) ; 8 tours ; boussole et direction de la vague dans le HUD, sans carte. L'île de 800×800, la jungle, la grotte et la carte arrivent dans la première grosse mise à jour. Objectif : garder le test public vers le 29/10.
@@ -42,6 +43,10 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 - Calendrier visé : Studio du 12 au 19/10 → test fermé du 20 au 23/10 → premier test public vers le 26/10 (A/B des miniatures, petit budget pub décidé par Moaad) → une mise à jour par semaine.
 - Modéliste de créatures : pas de dépense avant le test fermé ; prototype avec generate_mesh et le Creator Store.
 - E écrit le GDD v2. A, B et C démarrent le noyau commun (contrat v2, données, créatures, HUD, lagon).
+
+## Semaine 2 (première mise à jour), prévu
+- Deep Dive (GDD §9 bis) : A = DiveService + produits Pearls ; B = écran Dive + bouton HUD ; C = FX de plongée + variante Abyssal.
+- Échanges entre joueurs ; secret complet de l'épave.
 
 ## Phase 1 v2 — en cours (référence : docs/GDD.md v2)
 Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux + PolicyService. Les échanges arrivent en semaine 2.
