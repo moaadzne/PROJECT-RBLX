@@ -12,6 +12,7 @@ local DataService = require(Services.DataService)
 local PlotService = require(Services.PlotService)
 local CreatureService = require(Services.CreatureService)
 local IntroService = require(Services.IntroService)
+local StealService = require(Services.StealService)
 local WaveService = require(Services.WaveService)
 local SelfTest = require(Services.SelfTest)
 
@@ -27,6 +28,8 @@ local HELP = table.concat({
 	"tide Normal|Golden         -> maree du prochain cycle",
 	"grow minutes [joueur]      -> vieillit les creatures des bassins",
 	"intro [joueur]             -> rejoue l'intro",
+	"playtime minutes [joueur]  -> temps de jeu cumule (protection debutant)",
+	"steal voleur vole          -> le voleur prend une creature du vole (sans protections)",
 	"home [joueur]              -> teleport a la base",
 	"creatures                  -> creatures par zone (+ personnelles)",
 	"save [joueur]              -> sauvegarde immediate",
@@ -104,6 +107,22 @@ function commands.grow(minutes, name)
 	end
 	DataService.MarkDirty(player)
 	return "ok"
+end
+
+function commands.playtime(minutes, name)
+	local player = findPlayer(name)
+	local profile = player and DataService.Get(player)
+	if not profile or type(minutes) ~= "number" then
+		return "usage : playtime minutes [joueur]"
+	end
+	profile.data.playTime = minutes * 60
+	DataService.MarkDirty(player)
+	return "ok"
+end
+
+function commands.steal(thiefName, victimName)
+	local thief, victim = findPlayer(thiefName), Players:FindFirstChild(tostring(victimName))
+	return thief and victim and StealService.ForceGrab(thief, victim) and "ok" or "usage : steal voleur vole"
 end
 
 function commands.intro(name)

@@ -27,6 +27,8 @@ local caught = {} -- [player] = true pendant la vague en cours
 local exposed = {} -- [player] = true si sur la plage pendant la vague
 local calmHooks = {}
 local frontHooks = {}
+local phaseHooks = {}
+local caughtHooks = {}
 
 local function now()
 	return workspace:GetServerTimeNow()
@@ -43,7 +45,16 @@ local function publish(phase, phaseStart, phaseEnd, startTime)
 		tide = cycleTide,
 		nextSpecial = Config.NextSpecial(cycle),
 	}
+	if Config.Royal.onSpecialTides and cycleTide ~= "Normal" then
+		wave.royal = { active = true, endsAt = startTime + TRAVEL_TIME + W.recedeTime }
+	end
 	Net.SetWave(wave)
+	for _, hook in ipairs(phaseHooks) do
+		local ok, err = pcall(hook, phase, wave)
+		if not ok then
+			warn("[TideRush] crochet de phase : " .. tostring(err))
+		end
+	end
 end
 
 local function runHooks(hooks, ...)
@@ -77,6 +88,12 @@ end
 
 local function sweep(player, profile)
 	caught[player] = true
+	for _, hook in ipairs(caughtHooks) do
+		local ok, err = pcall(hook, player, profile)
+		if not ok then
+			warn("[TideRush] crochet de prise : " .. tostring(err))
+		end
+	end
 	local lost = profile.bag
 	profile.bag = {}
 	profile.sweptUntil = os.clock() + W.caughtDelay + SWEPT_EXTRA
@@ -108,7 +125,9 @@ local function checkPlayers(prevFront, front)
 				local pos = root.Position
 				if pos.Z < Config.BaseLineZ then
 					exposed[player] = true
-					if pos.Z <= front and pos.Z >= prevFront - W.thickness and feetY(humanoid, root) < W.height then
+					-- sur une Giant, il surfe la crete : jamais pris
+					if not profile.surfing and pos.Z <= front and pos.Z >= prevFront - W.thickness
+						and feetY(humanoid, root) < W.height then
 						sweep(player, profile)
 					end
 				end
@@ -195,6 +214,19 @@ end
 function WaveService.OnFront(callback)
 	table.insert(frontHooks, callback)
 end
+
+-- callback(phase, wave) a chaque changement de phase de la vague globale
+function WaveService.OnPhase(callback)
+	table.insert(phaseHooks, callback)
+end
+
+-- callback(player, profile) quand la vague prend un joueur (avant que son sac soit vide)
+function WaveService.OnCaught(callback)
+	table.insert(caughtHooks, callback)
+end
+
+-- Duree d'un cycle complet (calme + alerte + trajet + reflux), en secondes
+WaveService.CycleTime = W.calmTime + W.warningTime + TRAVEL_TIME + W.recedeTime
 
 function WaveService.Forget(player)
 	caught[player] = nil

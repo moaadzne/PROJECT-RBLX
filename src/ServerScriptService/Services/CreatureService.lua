@@ -34,7 +34,8 @@ local LEGENDARY_ORDER = 5
 
 local rng = Random.new()
 local folder = nil
-local active = {} -- [model] = { species, mutation, zone, pos, owner (UserId) ? }
+local active = {} -- [model] = { species, mutation, zone, pos, owner (UserId) ?, royal ? }
+local captureHooks = {}
 local zoneCounts = {} -- creatures partagees seulement
 local towerCenters = {}
 local lastBagFull = {}
@@ -88,7 +89,7 @@ function CreatureService.FindSpot(zoneIndex)
 	return nil
 end
 
-local function place(species, mutation, ground, zoneIndex, owner)
+local function place(species, mutation, ground, zoneIndex, owner, royal)
 	local basePos = ground + Vector3.new(0, CreatureFactory.RestOffset(species) + GROUND_BOB + GROUND_GAP, 0)
 	local model = CreatureFactory.Create(species, basePos, {
 		mutation = mutation,
@@ -97,12 +98,13 @@ local function place(species, mutation, ground, zoneIndex, owner)
 		bob = GROUND_BOB,
 		beacon = true,
 		owner = owner,
+		royal = royal,
 	})
 	if not model then
 		return nil
 	end
 	model.Parent = folder
-	active[model] = { species = species, mutation = mutation, zone = zoneIndex, pos = basePos, owner = owner }
+	active[model] = { species = species, mutation = mutation, zone = zoneIndex, pos = basePos, owner = owner, royal = royal }
 	return model
 end
 
@@ -122,7 +124,7 @@ end
 
 local function remove(model, info)
 	active[model] = nil
-	if not info.owner then
+	if not info.owner and not info.royal then
 		zoneCounts[info.zone] -= 1
 	end
 	model:Destroy()
@@ -209,7 +211,7 @@ local function collect(player, profile, model, info)
 	remove(model, info)
 
 	local d = profile.data
-	table.insert(profile.bag, { species = info.species, mutation = info.mutation })
+	table.insert(profile.bag, { species = info.species, mutation = info.mutation, royal = info.royal })
 	d.stats.pickups += 1
 	if info.mutation ~= "" then
 		d.stats.mutationsFound += 1
@@ -228,8 +230,13 @@ local function collect(player, profile, model, info)
 		isNew = isNew,
 		text = ("%s%s (%d/%d)"):format(info.mutation ~= "" and (info.mutation .. " ") or "", def.name, #profile.bag, bagMax),
 	})
+	for _, hook in ipairs(captureHooks) do
+		task.spawn(hook, player, info.species, info.mutation, Stats.BabyIncome(info.species, info.mutation))
+	end
 	local rarity = Config.Rarities[def.rarity]
-	if rarity and rarity.order >= LEGENDARY_ORDER then
+	if info.royal then
+		Net.NotifyAll("info", { text = ("%s caught the Royal %s!"):format(player.DisplayName, def.name) }, player)
+	elseif rarity and rarity.order >= LEGENDARY_ORDER then
 		Net.NotifyAll("info", { text = ("%s caught a %s!"):format(player.DisplayName, def.name) }, player)
 	end
 	DataService.MarkDirty(player)
@@ -358,15 +365,57 @@ local function spawnLoop()
 	end
 end
 
+-- callback(player, species, mutation, value) a chaque capture (Maree Royale)
+function CreatureService.OnCapture(callback)
+	table.insert(captureHooks, callback)
+end
+
+-- Creature royale : unique sur la plage, au bout de la derniere zone ouverte, toujours mutee
+function CreatureService.SpawnRoyal(mutation)
+	for _, info in pairs(active) do
+		if info.royal then
+			return false
+		end
+	end
+	local zoneIndex, best, bestIncome = nil, nil, -1
+	for i, zone in ipairs(Config.Zones) do
+		if zone.open then
+			zoneIndex = i
+			for _, entry in ipairs(zone.creatures) do
+				local income = Config.Creatures[entry[1]].income
+				if income > bestIncome then
+					best, bestIncome = entry[1], income
+				end
+			end
+		end
+	end
+	if not zoneIndex then
+		return false
+	end
+	local zone = Config.Zones[zoneIndex]
+	for _ = 1, SPAWN_TRIES do
+		local x = rng:NextNumber(Config.Beach.xMin + EDGE_MARGIN, Config.Beach.xMax - EDGE_MARGIN)
+		local z = rng:NextNumber(zone.zMin + ZONE_MARGIN, zone.zMin + ZONE_MARGIN * 4)
+		local ground = not nearTower(x, z) and CreatureService.GroundAt(x, z)
+		if ground and place(best, mutation, ground, zoneIndex, nil, true) then
+			return true
+		end
+	end
+	return false
+end
+
 function CreatureService.Counts()
-	local personal = 0
+	local personal, royal = 0, 0
 	for _, info in pairs(active) do
 		if info.owner then
 			personal += 1
+		elseif info.royal then
+			royal += 1
 		end
 	end
 	local counts = table.clone(zoneCounts)
 	counts.personal = personal
+	counts.royal = royal
 	return counts
 end
 

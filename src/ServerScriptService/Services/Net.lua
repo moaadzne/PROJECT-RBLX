@@ -9,7 +9,12 @@ local REMOTES = {
 	GoHome = "RemoteFunction",
 	HatchEgg = "RemoteFunction",
 	EquipPet = "RemoteFunction",
+	LockLagoon = "RemoteFunction",
+	StartSteal = "RemoteFunction",
+	Mount = "RemoteFunction",
+	ChoosePick = "RemoteFunction",
 	StateChanged = "RemoteEvent",
+	RoyalBoard = "RemoteEvent",
 	WaveState = "RemoteEvent",
 	Notify = "RemoteEvent",
 }
@@ -116,6 +121,10 @@ function Net.NotifyAll(kind, data, except)
 			Remotes.Notify:FireClient(player, kind, data)
 		end
 	end
+end
+
+function Net.FireAll(name, ...)
+	Remotes[name]:FireAllClients(...)
 end
 
 function Net.SendState(player, state)

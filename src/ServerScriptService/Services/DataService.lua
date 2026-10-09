@@ -497,6 +497,27 @@ function DataService.BuildState(profile)
 		walkSpeed = Stats.WalkSpeed(d),
 		homeReadyAt = profile.homeReadyAt,
 		intro = INTRO_NAMES[d.introStep] or "done",
+		newbie = Stats.IsNewbie(d),
+		playTime = math.floor(d.playTime),
+		mount = profile.mountUid,
+		carrying = profile.carrying and {
+			species = profile.carrying.creature.id,
+			mutation = profile.carrying.creature.mut,
+			victim = profile.carrying.victim.UserId,
+			victimName = profile.carrying.victim.DisplayName,
+		} or false,
+		lockActive = profile.lockActive,
+		lockReadyAt = d.lockReadyAt,
+		shield = profile.shield,
+		protectedUntil = d.protectedUntil,
+		revenge = profile.revenge and { userId = profile.revenge.userId, name = profile.revenge.name } or false,
+		crown = profile.crown,
+		passes = {
+			FastGrowth = profile.passes.FastGrowth == true,
+			BigNet = profile.passes.BigNet == true,
+			VIPRider = profile.passes.VIPRider == true,
+		},
+		shop = { randomAllowed = profile.randomAllowed },
 		codex = codex,
 		codexCount = Stats.CodexCount(d),
 		codexTotal = Stats.CodexTotal(),
@@ -658,6 +679,15 @@ function DataService.Track(player)
 		carryMult = 1, -- ralenti quand il porte une creature volee (StealService)
 		carriedOut = {}, -- [uid] = voleur : creatures de ce joueur portees par un voleur
 		passes = {}, -- [nom] = true (ShopService)
+		randomAllowed = false, -- achat aleatoire permis (PolicyService), faux tant que pas verifie
+		carrying = nil, -- { creature, victim, slot } : creature volee portee (StealService)
+		lockCycle = nil, -- cycle dont la fenetre est verrouillee (LagoonService)
+		lockActive = false,
+		shield = "",
+		revenge = nil, -- { userId, name, cycle } (LagoonService)
+		crown = 0, -- Maree Royale (RoyalService)
+		surfing = false, -- sur une Giant pendant la vague (MountService)
+		movedByServerAt = 0, -- os.clock du dernier teleport serveur (verification de vitesse)
 	}
 	profiles[player] = profile
 	setupLeaderstats(player)

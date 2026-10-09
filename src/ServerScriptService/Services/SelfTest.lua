@@ -245,7 +245,9 @@ local function checkCreatures(check)
 		end
 	end
 	local models = folder:GetChildren()
-	check(#models == total + counts.personal, ("%d modeles pour %d comptes"):format(#models, total + counts.personal))
+	local expected = total + counts.personal + counts.royal
+	check(#models == expected, ("%d modeles pour %d comptes"):format(#models, expected))
+	check(counts.royal <= 1, "une seule creature royale")
 	for index, model in ipairs(models) do
 		local species = model:GetAttribute("CreatureId")
 		local def = Config.Creatures[species]
@@ -257,11 +259,12 @@ local function checkCreatures(check)
 			and type(model:GetAttribute("BaseYaw")) == "number" and type(model:GetAttribute("SpinSpeed")) == "number"
 			and type(model:GetAttribute("Bob")) == "number" and model:GetAttribute("Rarity") == (def and def.rarity),
 			"attributs " .. model.Name)
-		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil then
+		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil and not model:GetAttribute("Royal") then
 			check(model:GetAttribute("Zone") == Config.ZoneAt(pos.Z) and pos.Z < Config.BaseLineZ, "zone " .. model.Name)
 			for other = index + 1, #models do
 				local otherPos = models[other]:GetAttribute("BasePos")
-				if typeof(otherPos) == "Vector3" and models[other]:GetAttribute("Owner") == nil then
+				if typeof(otherPos) == "Vector3" and models[other]:GetAttribute("Owner") == nil
+					and not models[other]:GetAttribute("Royal") then
 					local gap = Vector2.new(pos.X - otherPos.X, pos.Z - otherPos.Z).Magnitude
 					check(gap >= MIN_SPACING, ("ecart %.1f studs"):format(gap))
 				end
@@ -298,7 +301,7 @@ local function checkPlots(check)
 				check(lock ~= nil and lock.Enabled == (slot > slots), ("cadenas socle %d"):format(slot))
 			end
 			local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-			check(humanoid ~= nil and humanoid.WalkSpeed == Stats.WalkSpeed(d), "WalkSpeed " .. player.Name)
+			check(humanoid ~= nil and humanoid.WalkSpeed == PlotService.SpeedOf(profile), "WalkSpeed " .. player.Name)
 		end
 	end
 	for index = 1, Config.MaxPlayersPerServer do

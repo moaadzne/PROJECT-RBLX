@@ -67,6 +67,11 @@ function Stats.CreatureCount(data)
 	return count
 end
 
+-- Protection debutant : peu de temps de jeu ou peu de creatures (ni voler ni etre vole)
+function Stats.IsNewbie(data)
+	return data.playTime < Config.Steal.newbieMinutes * 60 or Stats.CreatureCount(data) < Config.Steal.newbieMinCreatures
+end
+
 function Stats.FindCreature(data, uid)
 	for slot, creature in ipairs(data.pools) do
 		if creature and creature.uid == uid then

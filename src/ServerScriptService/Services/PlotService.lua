@@ -63,18 +63,30 @@ function PlotService.GetIndex(player)
 	return plotOf[player]
 end
 
+function PlotService.PedestalOf(index, slot)
+	return plots[index] and pedestalOf(plots[index].model, slot)
+end
+
 function PlotService.GetModel(index)
 	return plots[index] and plots[index].model
 end
 
-function PlotService.IsInOwnPlot(player, position)
-	local index = plotOf[player]
-	local bounds = index and plots[index].bounds
+function PlotService.IsInPlot(index, position)
+	local bounds = plots[index] and plots[index].bounds
 	if not bounds then
 		return false
 	end
 	return position.X >= bounds.minX and position.X <= bounds.maxX
 		and position.Z >= bounds.minZ and position.Z <= bounds.maxZ
+end
+
+function PlotService.IsInOwnPlot(player, position)
+	local index = plotOf[player]
+	return index ~= nil and PlotService.IsInPlot(index, position)
+end
+
+function PlotService.OwnerOf(index)
+	return plots[index] and plots[index].owner
 end
 
 -- Palier visuel du lagon, a partir du revenu (C l'utilise pour le decor)
@@ -194,12 +206,17 @@ local function checkGrowth(player, profile, now)
 	end
 end
 
+-- Vitesse autorisee : amelioration Speed x monture x ralenti du porteur de creature volee
+function PlotService.SpeedOf(profile)
+	return Stats.WalkSpeed(profile.data) * profile.mountMult * profile.carryMult
+end
+
 function PlotService.ApplySpeed(player)
 	local profile = DataService.Get(player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if humanoid and profile and profile.loaded then
-		humanoid.WalkSpeed = Stats.WalkSpeed(profile.data)
+		humanoid.WalkSpeed = PlotService.SpeedOf(profile)
 	end
 end
 
@@ -229,6 +246,10 @@ function PlotService.SendHome(player)
 	end
 	if player.Character ~= character or not root.Parent then
 		return false
+	end
+	local profile = DataService.Get(player)
+	if profile then
+		profile.movedByServerAt = os.clock()
 	end
 	character:PivotTo(target)
 	root.AssemblyLinearVelocity = Vector3.zero
@@ -351,6 +372,7 @@ local function incomeLoop()
 		local unixNow = os.time()
 		for player, profile in DataService.All() do
 			if profile.loaded and not profile.leaving then
+				profile.data.playTime += dt
 				local income = Stats.Income(profile.data, unixNow)
 				if income > 0 then
 					DataService.AddCoins(player, income * dt)

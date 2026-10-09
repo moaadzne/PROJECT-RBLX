@@ -120,7 +120,7 @@ local function addBeacon(root, color)
 end
 
 -- opts = { mutation = string, stage = number, zone = number, bob = number, beacon = boolean,
---          slot = number?, uid = string?, born = number?, owner = number?, royal = boolean? }
+--          slot = number?, uid = string?, born = number?, owner = number?, royal = boolean?, noSpin = boolean? }
 function CreatureFactory.Create(species, basePos, opts)
 	local def = Config.Creatures[species]
 	if not def then
@@ -172,7 +172,9 @@ function CreatureFactory.Create(species, basePos, opts)
 	if opts.beacon and rarity and rarity.order >= BEACON_MIN_ORDER and model.PrimaryPart then
 		addBeacon(model.PrimaryPart, rarity.color)
 	end
-	CollectionService:AddTag(model, SPIN_TAG)
+	if not opts.noSpin then
+		CollectionService:AddTag(model, SPIN_TAG)
+	end
 	return model
 end
 
