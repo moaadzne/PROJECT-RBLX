@@ -137,7 +137,33 @@ local function defaultState()
 		equipped = {},
 		stats = {},
 		policy = {},
+		mounts = {},
+		mount = nil,
+		protection = { active = false, endsAt = nil },
 	}
+end
+
+-- HYPOTHESES (vol, monture, bouclier : forme provisoire en attendant le detail de A) :
+--   state.mounts = {uid...} (creatures montables), state.mount = uid de la monture active ou nil,
+--   state.protection = {active, endsAt} (bouclier debutant). Remotes : StealAttempt, LockLagoon, Mount, Dismount.
+local function normalizeMounts(raw: any): { string }
+	local out = {}
+	if type(raw) == "table" then
+		for _, m in ipairs(raw) do
+			local uid = if type(m) == "table" then m.uid else m
+			if uid ~= nil then
+				table.insert(out, tostring(uid))
+			end
+		end
+	end
+	return out
+end
+
+local function normalizeProtection(raw: any)
+	if type(raw) ~= "table" then
+		return { active = false, endsAt = nil }
+	end
+	return { active = raw.active == true, endsAt = optNumber(raw.endsAt) }
 end
 
 local function normalizePets(rawPets: any, rawEquipped: any)
@@ -196,6 +222,9 @@ local function normalizeState(raw: any)
 		equipped = equipped,
 		stats = type(raw.stats) == "table" and table.clone(raw.stats) or {},
 		-- PolicyService expose par A (bascule Tide Egg -> Pick a Creature) ; absent = prudence (restreint)
+		mounts = normalizeMounts(raw.mounts),
+		mount = if raw.mount ~= nil and raw.mount ~= "" and raw.mount ~= false then tostring(raw.mount) else nil,
+		protection = normalizeProtection(raw.protection),
 		policy = {
 			paidRandomRestricted = if type(raw.policy) == "table" and type(raw.policy.paidRandomItemsRestricted) == "boolean"
 				then raw.policy.paidRandomItemsRestricted
@@ -321,6 +350,8 @@ local function demoState()
 		walkSpeed = 18,
 		intro = "done",
 		stats = { pickups = 3 },
+		mounts = { "3" },
+		protection = { active = true, endsAt = Store.Now() + 200 },
 		policy = { paidRandomItemsRestricted = false },
 	}
 end
@@ -622,12 +653,50 @@ function Store.StealAttempt(plot: number, slot: number): (boolean, any)
 	return call("StealAttempt", plot, slot)
 end
 
+-- Mode demo : la monture et le verrou sont simules localement
+local function demoPatch(patch: { [string]: any })
+	local nextState = table.clone(state)
+	nextState.policy = { paidRandomItemsRestricted = state.policy.paidRandomRestricted }
+	for k, v in patch do
+		nextState[k] = v
+	end
+	setState(nextState)
+end
+
 function Store.Mount(mountId: string): (boolean, any)
+	if demoActive then
+		demoPatch({ mount = mountId })
+		return true, nil
+	end
 	return call("Mount", mountId)
 end
 
 function Store.Dismount(): (boolean, any)
+	if demoActive then
+		demoPatch({ mount = false })
+		return true, nil
+	end
 	return call("Dismount")
+end
+
+function Store.LockLagoon(): (boolean, any)
+	if demoActive then
+		local plot = Util.Find(workspace, "Map", "Plots", "Plot" .. state.plot)
+		if plot then
+			plot:SetAttribute("LockedUntil", Store.Now() + 60)
+			plot:SetAttribute("LockReadyAt", Store.Now() + 300)
+		end
+		return true, nil
+	end
+	return call("LockLagoon")
+end
+
+-- Le serveur propose-t-il cette fonction ? (les boutons d'une fonction absente restent caches)
+function Store.HasRemote(name: string): boolean
+	if demoActive then
+		return true
+	end
+	return remotes ~= nil and remotes:FindFirstChild(name) ~= nil
 end
 
 ---------------------------------------------------------------- Demarrage

@@ -13,7 +13,8 @@ local SIREN_AT = 3 -- s avant la vague : sirene + pulsation rouge
 local PULSE_HZ = 1.5 -- sous la limite de 3 clignotements par seconde (bible §5)
 local BIG_GAIN = 0.05 -- un gain > 5 % des pieces fait rebondir la piece
 local ALERT_TIME = 4
-local LEADERBOARD_ROWS = 5
+local LEADERBOARD_ROWS = 3 -- top 3 de la Maree Royale (+ ma ligne si je suis plus bas)
+local MEDALS = { Color3.fromRGB(255, 204, 64), Color3.fromRGB(205, 215, 230), Color3.fromRGB(215, 140, 80) }
 local HOLD_MAX = 150 -- s : meme retenu par l'onboarding, le HUD finit par apparaitre
 
 local PHASE_TEXT = {
@@ -60,6 +61,8 @@ local actions: { [string]: any } = {}
 local boardGroup: CanvasGroup
 local boardTitle: TextLabel
 local boardRows: { Frame } = {}
+local leftColumn: Frame
+local statuses: { [string]: Frame } = {}
 
 ---------------------------------------------------------------- Construction
 local function canvas(props: { [string]: any }): CanvasGroup
@@ -71,9 +74,22 @@ local function canvas(props: { [string]: any }): CanvasGroup
 		BackgroundTransparency = 1,
 		GroupTransparency = 1,
 		Visible = props.Visible ~= false,
-		Parent = hudRoot,
+		LayoutOrder = props.LayoutOrder or 0,
+		Parent = props.Parent or hudRoot,
 	})
 	return group
+end
+
+-- Colonne gauche sous le porte-monnaie : pastilles d'etat (bouclier, revanche...) puis classement
+local function buildLeftColumn()
+	leftColumn = Theme.Create("Frame", {
+		Name = "LeftColumn",
+		BackgroundTransparency = 1,
+		Position = UDim2.fromOffset(12, 172),
+		Size = UDim2.fromOffset(240, 260),
+		Parent = hudRoot,
+	})
+	Theme.List(leftColumn, Enum.FillDirection.Vertical, 6)
 end
 
 local function buildWallet()
@@ -281,8 +297,10 @@ end
 local function buildLeaderboard()
 	boardGroup = canvas({
 		Name = "RoyalTide",
-		Position = UDim2.fromOffset(12, 172),
-		Size = UDim2.fromOffset(230, 52 + LEADERBOARD_ROWS * 28 + 16),
+		Parent = leftColumn,
+		LayoutOrder = 100,
+		-- titre (40) + top 3 + ma ligne (28 chacune) + marges de la plaque (6 + 6) + bas (4)
+		Size = UDim2.fromOffset(230, 40 + (LEADERBOARD_ROWS + 1) * 28 + 16),
 		Visible = false,
 	})
 	table.insert(fadeGroups, boardGroup)
@@ -582,6 +600,55 @@ function Hud.SetAction(id: string, opts: { [string]: any })
 	return action
 end
 
+-- Pastille d'etat dans la colonne gauche (bouclier debutant, revanche...). opts = nil pour l'enlever.
+-- opts : icon, text, color (couleur du texte et du liseré), order
+function Hud.SetStatus(id: string, opts: { icon: string?, text: string, color: Color3?, order: number? }?)
+	local chip = statuses[id]
+	if not opts then
+		if chip then
+			chip:Destroy()
+			statuses[id] = nil
+		end
+		return
+	end
+	local color = opts.color or Theme.Colors.Text
+	if not chip then
+		chip = Theme.Plate({
+			Name = "Status_" .. id,
+			Size = UDim2.fromOffset(220, 32),
+			Radius = 10,
+			Accent = color,
+		})
+		chip.LayoutOrder = opts.order or 10
+		Theme.Text({
+			Name = "Text",
+			Position = UDim2.fromOffset(10, 2),
+			Size = UDim2.new(1, -20, 1, -2),
+			TextSize = Theme.TextSize.Small,
+			FontFace = Theme.Fonts.Title,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			ZIndex = 3,
+			Parent = chip,
+		})
+		chip.Parent = leftColumn
+		statuses[id] = chip
+		Theme.Pop(chip, 0.12)
+	end
+	local label = chip:FindFirstChild("Text") :: TextLabel
+	label.Text = (if opts.icon then opts.icon .. " " else "") .. opts.text
+	label.TextColor3 = color
+	local accent = chip:FindFirstChild("Accent") :: Frame?
+	if accent then
+		accent.BackgroundColor3 = color
+	end
+end
+
+-- Bouton d'action deja cree (nil sinon)
+function Hud.GetAction(id: string)
+	return actions[id]
+end
+
 -- Classement : rows = {{name, score, isMe}} tries, nil pour cacher. Le joueur hors top 5 s'ajoute en 6e ligne.
 function Hud.SetLeaderboard(rows: { { name: string, score: number, isMe: boolean? } }?, title: string?)
 	if not rows then
@@ -607,6 +674,7 @@ function Hud.SetLeaderboard(rows: { { name: string, score: number, isMe: boolean
 			local nameLabel = row:FindFirstChild("Player") :: TextLabel
 			local scoreLabel = row:FindFirstChild("Score") :: TextLabel
 			rankLabel.Text = tostring(index)
+			rankLabel.TextColor3 = MEDALS[index] or Theme.Colors.Text
 			nameLabel.Text = r.name
 			scoreLabel.Text = Config.Format(r.score)
 			row.BackgroundTransparency = if r.isMe then 0.75 else 1
@@ -634,6 +702,7 @@ function Hud.Init(ctx)
 	buildTide()
 	buildAlert()
 	buildActions()
+	buildLeftColumn()
 	buildLeaderboard()
 	-- places reservees (GDD v2) : creees cachees pour figer la disposition
 	Hud.SetAction("mount", { icon = "🐢", label = "Ride", color = Theme.Colors.Lagoon, order = 2, hotkey = "R", visible = false })
