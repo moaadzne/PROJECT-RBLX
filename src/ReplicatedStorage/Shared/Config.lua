@@ -1,5 +1,6 @@
--- Tide Rush : configuration partagee (serveur + client)
--- Tout l'equilibrage du jeu est ici : objets, zones, vague, ameliorations, compagnons.
+-- Tide Rush : Reef Keepers. Configuration partagee (serveur + client).
+-- Tout l'equilibrage du jeu est ici : creatures, croissance, marees, mutations, zones, vague,
+-- ameliorations, compagnons. Le client lit les memes chiffres (probabilites affichees).
 
 local Config = {}
 
@@ -13,7 +14,86 @@ Config.Rarities = {
 	Legendary = { order = 5, label = "Legendary", color = Color3.fromRGB(255, 195, 45) },
 }
 
--- Tresors : revenu par seconde une fois poses sur un socle de la base
+-- Creatures (GDD 4.2) : revenu par seconde d'un bebe sans mutation
+Config.Creatures = {
+	PebbleCrab = { name = "Pebble Crab", rarity = "Common", income = 1 },
+	SandStar = { name = "Sand Star", rarity = "Common", income = 2 },
+	BubblePuffer = { name = "Bubble Puffer", rarity = "Uncommon", income = 6 },
+	ReefHatchling = { name = "Reef Hatchling", rarity = "Uncommon", income = 10 },
+	LanternSeahorse = { name = "Lantern Seahorse", rarity = "Rare", income = 30 },
+	CoralRay = { name = "Coral Ray", rarity = "Rare", income = 50 },
+	InkOctopus = { name = "Ink Octopus", rarity = "Epic", income = 150 },
+	MoonJelly = { name = "Moon Jelly", rarity = "Epic", income = 250 },
+	StarWhaleCalf = { name = "Star Whale Calf", rarity = "Legendary", income = 800 },
+	AbyssSerpent = { name = "Abyss Serpent", rarity = "Legendary", income = 1500 },
+}
+
+-- Anciens tresors -> especes : modeles de repli tant que Assets.Creatures manque
+Config.LegacyItemToCreature = {
+	Shell = "PebbleCrab", Starfish = "SandStar", Pearl = "BubblePuffer", BlueCrab = "ReefHatchling",
+	CoralCrown = "LanternSeahorse", GoldenCrab = "CoralRay", TreasureChest = "InkOctopus",
+	AbyssCrystal = "MoonJelly", MoonPearl = "StarWhaleCalf", TideHeart = "AbyssSerpent",
+}
+
+-- Stades de croissance (GDD 4.3) : echelle appliquee par le client, multiplicateur de revenu
+Config.Stages = {
+	{ id = "Baby", scale = 0.6, mult = 1 },
+	{ id = "Juvenile", scale = 0.8, mult = 2 },
+	{ id = "Adult", scale = 1.0, mult = 4 },
+	{ id = "Giant", scale = 1.5, mult = 8 },
+}
+-- Minutes cumulees depuis le depot pour atteindre Juvenile, Adult, Giant
+Config.GrowthMinutes = {
+	Common = { 3, 15, 60 },
+	Uncommon = { 5, 30, 120 },
+	Rare = { 10, 60, 240 },
+	Epic = { 20, 120, 480 },
+	Legendary = { 30, 240, 1200 },
+}
+
+-- Mutations (GDD 4.4) : tirees a l'apparition sur la plage, une seule par creature
+Config.Mutations = {
+	Golden = { mult = 3, label = "Golden" },
+	Glow = { mult = 2, label = "Glow" },
+	Storm = { mult = 5, label = "Storm" },
+	Rainbow = { mult = 10, label = "Rainbow" },
+}
+-- Chances en % par creature apparue, selon la maree. Affichees au joueur.
+-- Phase 1 : Normal + Golden seulement (Night, Storm, Rainbow en Phase 2).
+Config.Tides = {
+	Normal = { label = "Normal Tide", odds = { { "Golden", 0.5 } } },
+	Golden = { label = "Golden Tide", odds = { { "Golden", 30 } } },
+}
+-- Calendrier fixe : tous les `every` cycles, une maree speciale prise dans `rotation`
+Config.TideSchedule = { every = 8, rotation = { "Golden" } }
+-- Variantes du Reef Codex (Normal = sans mutation)
+Config.CodexVariants = { "Normal", "Golden" }
+Config.Codex = { newEntryIncomeMult = 50, speciesBonus = 0.05 }
+
+-- Revenu hors ligne : part du revenu, plafond, duree minimale pour l'ecran "Pendant ton absence"
+Config.Offline = { incomeRate = 0.5, maxHours = 8, minSeconds = 60 }
+
+-- Palier visuel du lagon (attribut LagoonTier 1..5) : revenu/s minimal de chaque palier [a caler par E]
+Config.LagoonTiers = { 0, 25, 250, 2500, 25000 }
+
+-- Intro d'un nouveau joueur (GDD 1 ter). Positions relatives au centre X de sa base et a BaseLineZ.
+Config.Intro = {
+	waveDelay = 18, -- s entre le chargement et l'alerte de la vague d'intro
+	warningTime = 2,
+	startZ = -414, -- 9 s de trajet a Config.Wave.speed
+	recedeTime = 2.5,
+	creatures = {
+		{ species = "PebbleCrab", mutation = "", dx = 0, dz = -10 },
+		{ species = "SandStar", mutation = "", dx = -12, dz = -24 },
+		{ species = "PebbleCrab", mutation = "", dx = 12, dz = -30 },
+		{ species = "PebbleCrab", mutation = "", dx = -4, dz = -38 },
+		{ species = "SandStar", mutation = "Golden", dx = 8, dz = -52 },
+	},
+	goldenTide = "Golden", -- deuxieme maree du joueur
+	goldenCount = 5, -- creatures personnelles de cette maree, dont au moins une mutee
+}
+
+-- Anciens tresors : gardes seulement pour les modeles de repli (Assets.Items) et l'ancien client
 Config.Items = {
 	Shell = { name = "Seashell", rarity = "Common", income = 1 },
 	Starfish = { name = "Starfish", rarity = "Common", income = 2 },
@@ -27,16 +107,18 @@ Config.Items = {
 	TideHeart = { name = "Tide Heart", rarity = "Legendary", income = 1500 },
 }
 
--- Quand un tresor ne trouve pas de place, il est vendu : revenu x ce multiplicateur
+-- Creature relachee (lagon plein) : revenu bebe (mutation comprise) x ce multiplicateur
 Config.SellMultiplier = 20
 
 -- Zones de la plage (Z diminue en s'eloignant de la base)
+-- open = false : zone fermee (Phase 1 = Shallows seule). La plage se remplit au debut du calme,
+-- puis se recharge toutes les spawnEvery secondes pendant le calme ; la vague emporte tout.
 Config.Zones = {
-	{ name = "Shallows", rarity = "Common", zMin = -150, zMax = -25, maxItems = 14, spawnEvery = 2.5, items = { { "Shell", 70 }, { "Starfish", 30 } } },
-	{ name = "Coral Coast", rarity = "Uncommon", zMin = -280, zMax = -150, maxItems = 12, spawnEvery = 3.5, items = { { "Pearl", 65 }, { "BlueCrab", 35 } } },
-	{ name = "Sunken Reef", rarity = "Rare", zMin = -420, zMax = -280, maxItems = 10, spawnEvery = 5, items = { { "CoralCrown", 65 }, { "GoldenCrab", 35 } } },
-	{ name = "Pirate Cove", rarity = "Epic", zMin = -570, zMax = -420, maxItems = 8, spawnEvery = 8, items = { { "TreasureChest", 65 }, { "AbyssCrystal", 35 } } },
-	{ name = "Abyss Shore", rarity = "Legendary", zMin = -740, zMax = -570, maxItems = 6, spawnEvery = 12, items = { { "MoonPearl", 70 }, { "TideHeart", 30 } } },
+	{ name = "Shallows", rarity = "Common", open = true, zMin = -150, zMax = -25, maxItems = 14, spawnEvery = 2.5, creatures = { { "PebbleCrab", 70 }, { "SandStar", 30 } } },
+	{ name = "Coral Coast", rarity = "Uncommon", open = false, zMin = -280, zMax = -150, maxItems = 12, spawnEvery = 3.5, creatures = { { "BubblePuffer", 65 }, { "ReefHatchling", 35 } } },
+	{ name = "Sunken Reef", rarity = "Rare", open = false, zMin = -420, zMax = -280, maxItems = 10, spawnEvery = 5, creatures = { { "LanternSeahorse", 65 }, { "CoralRay", 35 } } },
+	{ name = "Wreck Cove", rarity = "Epic", open = false, zMin = -570, zMax = -420, maxItems = 8, spawnEvery = 8, creatures = { { "InkOctopus", 65 }, { "MoonJelly", 35 } } },
+	{ name = "Abyss Shore", rarity = "Legendary", open = false, zMin = -740, zMax = -570, maxItems = 6, spawnEvery = 12, creatures = { { "StarWhaleCalf", 70 }, { "AbyssSerpent", 30 } } },
 }
 
 Config.Beach = { xMin = -116, xMax = 116, groundY = 0 }
@@ -84,7 +166,7 @@ Config.MaxEquippedPets = 3
 Config.MaxPetInventory = 40
 
 Config.PickupRadius = 6
-Config.TreasureSpacing = 7 -- ecart minimal entre deux tresors au sol (studs)
+Config.CreatureSpacing = 7 -- ecart minimal entre deux creatures au sol (studs)
 Config.HomeCooldown = 20
 Config.MaxPlayersPerServer = 8
 
@@ -105,6 +187,37 @@ function Config.GetEgg(id: string)
 		end
 	end
 	return nil
+end
+
+-- Stade (1..4) d'une creature deposee a `born`, et heure du stade suivant (0 si dernier stade).
+-- Fonction pure, partagee : le client calcule la meme progression que le serveur.
+function Config.StageAt(rarity: string, born: number, now: number): (number, number)
+	local minutes = Config.GrowthMinutes[rarity] or Config.GrowthMinutes.Common
+	local age = math.max(0, now - born)
+	for i, threshold in ipairs(minutes) do
+		local at = threshold * 60
+		if age < at then
+			return i, born + at
+		end
+	end
+	return #minutes + 1, 0
+end
+
+-- Type de maree d'un cycle (1, 2, 3...) : calendrier deterministe
+function Config.TideFor(cycle: number): string
+	local schedule = Config.TideSchedule
+	if cycle > 0 and cycle % schedule.every == 0 then
+		local n = cycle // schedule.every
+		return schedule.rotation[(n - 1) % #schedule.rotation + 1]
+	end
+	return "Normal"
+end
+
+-- Prochaine maree speciale apres le cycle donne : { tide, cycle }
+function Config.NextSpecial(cycle: number)
+	local every = Config.TideSchedule.every
+	local nextCycle = (cycle // every + 1) * every
+	return { tide = Config.TideFor(nextCycle), cycle = nextCycle }
 end
 
 -- Index de zone (1..5) pour une position Z, 0 = base / hors zone

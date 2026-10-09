@@ -37,7 +37,7 @@ local function buy(player, kind)
 	if kind == "Speed" then
 		PlotService.ApplySpeed(player)
 	elseif kind == "Slots" then
-		d.display = Stats.NormalizeDisplay(d)
+		d.pools = Stats.NormalizePools(d)
 		PlotService.RenderDisplay(player)
 	end
 

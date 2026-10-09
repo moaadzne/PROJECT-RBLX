@@ -15,7 +15,7 @@ local DataService = {}
 
 local STORE_NAME = "TideRush_Players"
 local KEY_PREFIX = "u_"
-local SCHEMA_VERSION = 1
+local SCHEMA_VERSION = 2
 local LOAD_TRIES = 3
 local AUTOSAVE_EVERY = 90
 local AUTOSAVE_STAGGER = 0.5
@@ -28,7 +28,11 @@ local SHUTDOWN_TIMEOUT = 25
 local FLUSH_EVERY = 0.1
 local KICK_MESSAGE = "You joined Tide Rush on another server."
 
-local STAT_KEYS = { "pickups", "deposited", "sold", "caught", "wavesSurvived", "eggsHatched", "upgradesBought", "coinsEarned" }
+local STAT_KEYS = {
+	"pickups", "deposited", "released", "caught", "wavesSurvived", "eggsHatched", "upgradesBought", "coinsEarned",
+	"mutationsFound", "offlineCoins",
+}
+local INTRO_NAMES = { [0] = "intro", [1] = "golden", [2] = "done" }
 
 local SESSION_ID = HttpService:GenerateGUID(false)
 
@@ -80,12 +84,14 @@ local function defaultData()
 		v = SCHEMA_VERSION,
 		coins = 0,
 		levels = { Speed = 0, Bag = 0, Slots = 0 },
-		display = {},
+		pools = {}, -- [slot] = { uid, id, mut, born } | false
+		creatureSeq = 0,
+		codex = {}, -- [species] = { [variant] = true }
+		introStep = 0, -- 0 intro a jouer, 1 maree Golden personnelle a venir, 2 fini
 		pets = {},
 		equipped = {},
 		petSeq = 0,
 		stats = stats,
-		collection = {},
 		firstJoin = now,
 		lastSeen = now,
 		legacy = {},
@@ -98,37 +104,21 @@ local function keepLegacy(d, field, value)
 	table.insert(d.legacy[field], value)
 end
 
--- Valide et complete des donnees lues (DataStore = donnees externes, jamais fiables)
-function DataService._Sanitize(raw)
-	local d = defaultData()
-	if type(raw) ~= "table" then
-		d.display = Stats.NormalizeDisplay(d)
-		return d
+local function sanitizeLevels(d, raw)
+	if type(raw.levels) ~= "table" then
+		return
 	end
-	if type(raw.legacy) == "table" then
-		d.legacy = deepCopy(raw.legacy)
-	end
-	d.coins = math.floor(num(raw.coins, 0, 0))
-	if type(raw.levels) == "table" then
-		for kind, def in pairs(Config.Upgrades) do
-			local level = math.floor(num(raw.levels[kind], 0, 0))
-			if level > def.maxLevel then
-				keepLegacy(d, "levels", { kind = kind, level = level })
-				level = def.maxLevel
-			end
-			d.levels[kind] = level
+	for kind, def in pairs(Config.Upgrades) do
+		local level = math.floor(num(raw.levels[kind], 0, 0))
+		if level > def.maxLevel then
+			keepLegacy(d, "levels", { kind = kind, level = level })
+			level = def.maxLevel
 		end
+		d.levels[kind] = level
 	end
+end
 
-	local rawDisplay = type(raw.display) == "table" and raw.display or {}
-	d.display = rawDisplay
-	d.display = Stats.NormalizeDisplay(d)
-	for slot, itemId in ipairs(rawDisplay) do
-		if type(itemId) == "string" and itemId ~= "" and d.display[slot] ~= itemId then
-			keepLegacy(d, "display", itemId)
-		end
-	end
-
+local function sanitizePets(d, raw)
 	local seen, maxSeq = {}, 0
 	if type(raw.pets) == "table" then
 		for _, pet in ipairs(raw.pets) do
@@ -157,26 +147,111 @@ function DataService._Sanitize(raw)
 			end
 		end
 	end
+end
 
-	if type(raw.stats) == "table" then
-		for _, key in ipairs(STAT_KEYS) do
-			d.stats[key] = math.floor(num(raw.stats[key], 0, 0))
-		end
+local function sanitizeStats(d, raw)
+	if type(raw.stats) ~= "table" then
+		return
 	end
-	if type(raw.collection) == "table" then
-		for itemId, value in pairs(raw.collection) do
-			local count = math.floor(num(value, 0, 0))
-			if count > 0 then
-				if Config.Items[itemId] then
-					d.collection[itemId] = count
-				else
-					keepLegacy(d, "collection", { id = itemId, count = count })
+	for _, key in ipairs(STAT_KEYS) do
+		d.stats[key] = math.floor(num(raw.stats[key], 0, 0))
+	end
+end
+
+-- Une creature deposee valide : { uid, id, mut, born }, sinon nil
+local function sanitizeCreature(raw, now)
+	if type(raw) ~= "table" or type(raw.uid) ~= "string" or type(raw.id) ~= "string" or not Config.Creatures[raw.id] then
+		return nil
+	end
+	local mut = raw.mut
+	if mut ~= "" and not Config.Mutations[mut] then
+		return nil
+	end
+	local born = num(raw.born, nil, 0, now) -- jamais dans le futur (horloges de serveurs differentes)
+	if not born then
+		return nil
+	end
+	return { uid = raw.uid, id = raw.id, mut = mut, born = math.floor(born) }
+end
+
+-- Donnees v1 (trésors) : on repart de zero, l'ancien contenu est range dans legacy.v1
+local function migrateV1(d, raw)
+	d.legacy.v1 = deepCopy({
+		coins = raw.coins,
+		levels = raw.levels,
+		display = raw.display,
+		collection = raw.collection,
+	})
+	sanitizePets(d, raw)
+	sanitizeStats(d, raw)
+	if type(raw.stats) == "table" then
+		d.stats.released = math.floor(num(raw.stats.sold, 0, 0))
+	end
+	d.firstJoin = num(raw.firstJoin, d.firstJoin, 0)
+	d.lastSeen = os.time() -- pas de revenu hors ligne calcule sur l'ancien jeu
+end
+
+-- Valide et complete des donnees lues (DataStore = donnees externes, jamais fiables)
+function DataService._Sanitize(raw)
+	local d = defaultData()
+	if type(raw) ~= "table" then
+		d.pools = Stats.NormalizePools(d)
+		return d
+	end
+	if type(raw.legacy) == "table" then
+		d.legacy = deepCopy(raw.legacy)
+	end
+	if num(raw.v, 1) < SCHEMA_VERSION then
+		migrateV1(d, raw)
+		d.pools = Stats.NormalizePools(d)
+		return d
+	end
+
+	local now = os.time()
+	d.coins = math.floor(num(raw.coins, 0, 0))
+	sanitizeLevels(d, raw)
+	sanitizePets(d, raw)
+	sanitizeStats(d, raw)
+
+	local slots = Stats.Slots(d)
+	local seenUid, maxSeq = {}, 0
+	local rawPools = type(raw.pools) == "table" and raw.pools or {}
+	for slot = 1, math.max(slots, #rawPools) do
+		local value = rawPools[slot]
+		if value then
+			local creature = sanitizeCreature(value, now)
+			if creature and not seenUid[creature.uid] and slot <= slots then
+				seenUid[creature.uid] = true
+				d.pools[slot] = creature
+				local n = tonumber(creature.uid)
+				if n and n > maxSeq then
+					maxSeq = n
 				end
+			else
+				keepLegacy(d, "pools", deepCopy(value))
 			end
 		end
 	end
+	d.pools = Stats.NormalizePools(d)
+	d.creatureSeq = math.max(math.floor(num(raw.creatureSeq, 0, 0)), maxSeq)
+
+	if type(raw.codex) == "table" then
+		for species, variants in pairs(raw.codex) do
+			if type(species) == "string" and Config.Creatures[species] and type(variants) == "table" then
+				for variant, value in pairs(variants) do
+					if value == true and (variant == "Normal" or Config.Mutations[variant]) then
+						d.codex[species] = d.codex[species] or {}
+						d.codex[species][variant] = true
+					end
+				end
+			else
+				keepLegacy(d, "codex", { species = species, variants = deepCopy(variants) })
+			end
+		end
+	end
+	d.introStep = math.floor(num(raw.introStep, 0, 0, 2))
 	d.firstJoin = num(raw.firstJoin, d.firstJoin, 0)
-	d.lastSeen = num(raw.lastSeen, d.lastSeen, 0)
+	d.lastSeen = num(raw.lastSeen, d.lastSeen, 0, now)
 	return d
 end
 
@@ -327,31 +402,65 @@ local function setupLeaderstats(player)
 	folder.Parent = player
 end
 
+-- Creature telle que le client la recoit (contrat v2)
+function DataService.CreatureView(creature, now)
+	local stage, nextStageAt = Stats.Stage(creature, now)
+	return {
+		uid = creature.uid,
+		species = creature.id,
+		mutation = creature.mut,
+		born = creature.born,
+		stage = stage,
+		nextStageAt = nextStageAt,
+		income = Stats.CreatureIncome(creature, now),
+	}
+end
+
 function DataService.BuildState(profile)
 	local d = profile.data
+	local now = os.time()
 	local pets = {}
 	for _, pet in ipairs(d.pets) do
 		table.insert(pets, { uid = pet.uid, id = pet.id })
 	end
+	local pools = {}
+	for slot, creature in ipairs(d.pools) do
+		pools[slot] = creature and DataService.CreatureView(creature, now) or false
+	end
+	local bag = {}
+	for i, entry in ipairs(profile.bag) do
+		bag[i] = { species = entry.species, mutation = entry.mutation }
+	end
+	local codex = {}
+	for species, variants in pairs(d.codex) do
+		codex[species] = table.clone(variants)
+	end
+	local income = Stats.Income(d, now)
 	return {
 		loaded = profile.loaded,
 		saveEnabled = profile.saveEnabled,
+		serverNow = workspace:GetServerTimeNow(),
 		coins = d.coins,
-		income = Stats.Income(d),
-		baseIncome = Stats.BaseIncome(d),
+		income = income,
+		baseIncome = Stats.BaseIncome(d, now),
 		petBoost = Stats.PetBoost(d),
-		bag = table.clone(profile.bag),
+		codexBonus = Stats.CodexBonus(d),
+		bag = bag,
 		bagMax = Stats.BagMax(d),
 		levels = table.clone(d.levels),
 		slots = Stats.Slots(d),
-		display = table.clone(d.display),
+		pools = pools,
 		plot = profile.plot,
+		lagoonTier = Stats.LagoonTier(income),
 		walkSpeed = Stats.WalkSpeed(d),
 		homeReadyAt = profile.homeReadyAt,
+		intro = INTRO_NAMES[d.introStep] or "done",
+		codex = codex,
+		codexCount = Stats.CodexCount(d),
+		codexTotal = Stats.CodexTotal(),
 		pets = pets,
 		equipped = table.clone(d.equipped),
 		stats = table.clone(d.stats),
-		collection = table.clone(d.collection),
 	}
 end
 
@@ -368,6 +477,11 @@ local function push(player)
 		leaderstats.Income.Value = Config.Format(state.income) .. "/s"
 	end
 	player:SetAttribute("Pets", Stats.EquippedIds(profile.data))
+	local carried = {}
+	for i, entry in ipairs(profile.bag) do
+		carried[i] = entry.species .. ":" .. entry.mutation
+	end
+	player:SetAttribute("Bag", table.concat(carried, ","))
 end
 
 function DataService.Get(player)
@@ -419,6 +533,28 @@ function DataService.Save(player)
 	return profile ~= nil and profile.loaded and save(profile, false) == "ok"
 end
 
+-- Revenu hors ligne (GDD 5.1) : part du revenu depuis lastSeen, croissance comprise, plafonne
+local function payOffline(profile)
+	local d = profile.data
+	local now = os.time()
+	local seconds = math.min(math.max(0, now - d.lastSeen), Config.Offline.maxHours * 3600)
+	if seconds < Config.Offline.minSeconds then
+		return
+	end
+	local coins = math.floor(Stats.IncomeBetween(d, d.lastSeen, d.lastSeen + seconds) * Config.Offline.incomeRate)
+	d.lastSeen = now
+	if coins <= 0 then
+		return
+	end
+	DataService.AddCoins(profile.player, coins)
+	d.stats.offlineCoins += coins
+	Net.Notify(profile.player, "offline", {
+		seconds = seconds,
+		coins = coins,
+		text = ("While you were away, your reef earned %s coins."):format(Config.Format(coins)),
+	})
+end
+
 local function onLoaded(profile, record, err)
 	local player = profile.player
 	local isNew = false
@@ -437,15 +573,18 @@ local function onLoaded(profile, record, err)
 	end
 	profile.loaded = true
 	player:SetAttribute("Loaded", true)
+	if profile.saveEnabled and not isNew then
+		payOffline(profile)
+	end
 	for _, hook in ipairs(loadedHooks) do
 		task.spawn(hook, player, profile)
 	end
 	if not profile.saveEnabled then
 		Net.Notify(player, "saveOff", { text = "Your progress can't be saved right now. Rejoin later to keep it." })
 	elseif isNew then
-		Net.Notify(player, "welcome", { text = "Welcome to Tide Rush! Grab treasures and beat the wave." })
+		Net.Notify(player, "welcome", { isNew = true, text = "Welcome, Keeper!" })
 	else
-		Net.Notify(player, "welcome", { text = "Welcome back!" })
+		Net.Notify(player, "welcome", { isNew = false, text = "Welcome back, Keeper!" })
 	end
 	DataService.MarkDirty(player)
 end
@@ -471,6 +610,7 @@ function DataService.Track(player)
 		homeReadyAt = 0,
 		coinCarry = 0,
 		sweptUntil = 0,
+		introActive = false, -- vague d'intro personnelle en cours (IntroService)
 	}
 	profiles[player] = profile
 	setupLeaderstats(player)
@@ -588,9 +728,9 @@ function DataService.Start()
 	end)
 	Net.Handle("GetState", function(player)
 		local profile = profiles[player]
-		return profile and DataService.BuildState(profile) or nil, Net.GetWave()
-	end, function()
-		return nil, Net.GetWave()
+		return profile and DataService.BuildState(profile) or nil, Net.GetWaveFor(player)
+	end, function(player)
+		return nil, Net.GetWaveFor(player)
 	end)
 	task.spawn(flushLoop)
 	task.spawn(autosaveLoop)
