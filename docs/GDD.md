@@ -3,7 +3,7 @@
 Auteur : E (concept & game design). v1 le 2026-10-09, **v2 le 2026-10-09** après la levée des règles halal par Moaad et la décision de D (vol, monture, Marée Royale, monétisation v2). Cohérent avec docs/AUDIT_TOP10.md §6.
 Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ** à régler par playtest, pas des mesures.
 
-**Changements v3 (Direction v2, 09/10)** : secrets et plot twist (§6 bis), contenu sans fin (§6 ter), île ouverte (§3 bis), vraies espèces (§4.2), stades Juvenile/Adult/Elder/Titan, 30 s tendues (§1 ter), ton des textes, Config (§13).
+**Changements v3 (Direction v2, 09/10)** : secrets et plot twist (§6 bis), contenu sans fin (§6 ter), île ouverte (§3 bis), tirage Deep Dive (§9 bis), vraies espèces (§4.2), stades Juvenile/Adult/Elder/Titan, 30 s tendues (§1 ter), ton des textes, Config (§13).
 
 **Changements v2** : §0 (titre et miniatures), §2 (boucle avec vol), §4.6 Monture, §4.7 Vol, §4.8 Marée Royale, §7 Social, §8 (protection des nouveaux), §9 Monétisation v2, §11 Impact, §12 Phase 1 v2, §13 Config, §14. Les autres sections de la v1 restent valables.
 
@@ -437,6 +437,55 @@ Probabilités du Tide Egg en Phase 1 (affichées sur le bouton) : Ghost Crab 50 
 Œufs Robux par zone (49 / 149 / 399), Extra Pool (249), Deep Pockets (199), boosts de 15 min (39), packs de pièces (montants qui valent des heures de jeu, pas des semaines), cosmétiques de lagon et de monture, serveur privé.
 
 Repère réaliste : sur 299 R$, le jeu touche 70 % = 209 R$ ≈ **0,79 $** via DevEx. Aucun revenu promis.
+
+## 9 bis. Deep Dive : le tirage (demande de Moaad, 09/10)
+
+### Le prompt (demande de Moaad, améliorée)
+> Ride the Tsunami a un système de tirage au sort, **Deep Dive**, qui est le moteur principal de collection rare et de revenu.
+> Chaque plongée tire une récompense dans un pool à raretés claires (Common → Mythic), avec une animation courte, fluide et spectaculaire, et un multi-tirage ×10.
+> Les objets les plus rares (créatures et variantes **exclusives**) s'obtiennent **surtout en payant** : la monnaie premium, les **Pearls**, s'achète en Robux.
+> On en gagne aussi **un peu en jouant** : environ une plongée gratuite par semaine pour un joueur régulier. Ça suffit pour goûter au système et espérer, pas pour tout avoir.
+> Obligatoire : probabilités affichées avant chaque achat, garantie (pity) contre la malchance, alternative sans tirage dans les pays où `ArePaidRandomItemsRestricted` est vrai, aucune fausse rareté.
+
+### Monnaie : Pearls
+| Source | Quantité |
+|---|---|
+| Packs Robux | 100 = 99 R$ · 550 = 499 R$ · 1 200 = 999 R$ · 2 600 = 1 999 R$ |
+| Défis du jour (les 3) | 3 / jour |
+| Victoire Marée Royale (top 1) | 5 |
+| Paliers de jours joués (§6) | 10 à 30 |
+Joueur régulier gratuit : environ **20–30 Pearls par semaine**, donc environ 1 plongée gratuite par semaine. Les packs Robux ne donnent pas de bonus caché : le prix au Pearl baisse visiblement avec la taille du pack.
+
+### La plongée
+- **1 plongée = 100 Pearls**, **10 plongées = 900 Pearls** (une gratuite).
+- Animation de 3 s : la caméra plonge dans une fosse sombre ; une lueur de la couleur de la rareté monte des profondeurs avant la révélation. Passable après la première. Le ×10 révèle une grille de 10 cartes qui se retournent une par une (2 s au total).
+- **Pool fixe par saison** (pas de rotation hebdomadaire au lancement) :
+
+| Rareté | Chance | Contenu |
+|---|---|---|
+| Common | 55 % | Créature commune de l'île, 50–200 pièces |
+| Rare | 30 % | Créature Uncommon/Rare, traînée de monture |
+| Epic | 12 % | Créature Epic, ou créature avec mutation garantie (Golden ou Storm) |
+| Legendary | 2,9 % | Créature Legendary (Manta Ray, Whale Shark) en Adult |
+| Mythic | 0,1 % | **Variante exclusive Abyssal** (peau noire, bioluminescence rouge) : uniquement par Deep Dive |
+
+- **Pity** : une Legendary garantie au plus tard à la **80e plongée** sans Legendary ; une Mythic garantie à la **400e**. Les compteurs sont visibles.
+- **Pas de doublons inutiles** : un doublon se convertit en **Shards**, et 10 Shards de la même espèce = +1 stade de croissance. Même un mauvais tirage sert.
+
+### Règles avec le reste du jeu
+- Les créatures **Abyssal** et toutes celles obtenues par Deep Dive sont **liées** : on ne peut ni les voler ni les échanger. Un joueur qui paie ne se fait pas prendre ce qu'il a payé, et ça empêche la revente contre de l'argent réel.
+- Elles comptent dans le Codex et les classements.
+- **Pays restreints** (`ArePaidRandomItemsRestricted`) : Deep Dive est caché et remplacé par la **Pearl Shop**, l'achat direct d'un objet précis du pool à prix fixe (Legendary 1 500 Pearls, Abyssal 8 000 Pearls).
+- Le **Tide Egg** du §9 est remplacé par Deep Dive. Pick a Creature devient une ligne de la Pearl Shop.
+
+### Interface (B)
+- Bouton **DIVE** dans le HUD (pas de pop-up automatique).
+- Écran Deep Dive : probabilités sur l'écran principal (pas cachées), compteurs de pity, solde de Pearls, boutons ×1 et ×10.
+
+### Limites à connaître
+- Roblox impose les probabilités affichées et le respect de PolicyService. Les règles évoluent : vérifier les règles de monétisation Roblox avant la sortie.
+- Plus le gratuit est dur, plus la majorité non payante part. On garde donc l'environ 1 plongée gratuite par semaine et on règle selon les données (rétention D7 contre conversion).
+- Repère réaliste : sur un pack de 499 R$, le jeu touche environ 349 R$, soit environ 1,33 $ via DevEx. Aucun revenu promis.
 
 ## 10. Rétention et KPI
 
