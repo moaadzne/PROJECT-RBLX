@@ -99,8 +99,8 @@ Config.Intro = {
 		{ species = "GhostCrab", mutation = "", side = -4, out = 34 },
 		{ species = "CushionStar", mutation = "Golden", side = 8, out = 48 },
 	},
-	-- les lagons sont adosses a des remparts : la plage d'intro est dans le passage voisin (diagonale)
-	angleOffset = 22.5,
+	-- decalage d'angle de la plage d'intro par rapport a l'axe crique -> lagon (0 : en face de la breche du lagon)
+	angleOffset = 0,
 	goldenTide = "Golden", -- deuxieme maree du joueur
 	goldenCount = 5, -- creatures personnelles de cette maree, dont au moins une mutee
 }
