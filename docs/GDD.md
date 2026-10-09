@@ -444,5 +444,5 @@ Config.Shop = {
 ```
 
 ## 14. Questions ouvertes pour Moaad
-1. Titre : ~~choisi~~ → **« Ride the Tsunami 🌊 Steal & Ride »** (validé par Moaad le 09/10). Dernière vérification dans la recherche Roblox avant de publier.
+1. Titre : **« Ride the Tsunami 🌊 Steal & Ride »** (validé par Moaad le 09/10). Dernière vérification dans la recherche Roblox avant de publier.
 2. Prix de la boutique de lancement : valeurs de départ, à ajuster après 1 semaine de données.
