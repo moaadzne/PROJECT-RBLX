@@ -99,6 +99,8 @@ Config.Intro = {
 		{ species = "GhostCrab", mutation = "", side = -4, out = 34 },
 		{ species = "CushionStar", mutation = "Golden", side = 8, out = 48 },
 	},
+	-- les lagons sont adosses a des remparts : la plage d'intro est dans le passage voisin (diagonale)
+	angleOffset = 22.5,
 	goldenTide = "Golden", -- deuxieme maree du joueur
 	goldenCount = 5, -- creatures personnelles de cette maree, dont au moins une mutee
 }
@@ -179,9 +181,12 @@ Config.Island = {
 	waveDirections = { "N", "E", "S", "W" },
 	noRepeatDirection = true,
 	seaY = 0, -- niveau du sable au bord de l'eau
-	spawnYMin = -2, -- hauteur du sol permise pour une apparition
+	-- apparitions seulement sur la plage : materiaux de C (Sand sec, Mud recolore en sable mouille),
+	-- et sous la hauteur de la vague (sinon une creature serait hors de danger)
+	spawnMaterials = { "Sand", "Mud" },
+	spawnYMin = -2,
 	spawnYMax = 16,
-	towerRadius = 16, -- pas d'apparition si pres d'une tour (attribut Center)
+	towerRadius = 16, -- pas d'apparition si pres d'une tour (Center ; PlatformRadius + 4 si plus grand)
 }
 -- Direction dans laquelle AVANCE la vague "venue du" nord, de l'est... (N = venue de -Z, avance vers +Z)
 Config.WaveTravel = {
@@ -207,7 +212,7 @@ Config.Wave = {
 	calmTime = 35, -- secondes de calme
 	warningTime = 7, -- alerte avant la vague
 	speed = 46, -- studs par seconde ; trajet de -(size/2 + seaMargin) a +(size/2 + seaMargin) sur son axe
-	height = 22, -- hauteur : les tours sont a 26
+	height = 30, -- hauteur : plateformes des tours a height + 4 (34), construites par C d'apres cette valeur
 	thickness = 40,
 	recedeTime = 2.5,
 	caughtDelay = 0.8, -- secondes entre la prise par la vague et le retour a la base
@@ -216,9 +221,10 @@ Config.Wave = {
 -- Ameliorations (achetees avec les pieces du jeu)
 Config.UpgradeOrder = { "Speed", "Bag", "Slots" }
 Config.Upgrades = {
-	Speed = { key = "speed", label = "Speed", icon = "⚡", unit = "", base = 16, step = 2, maxLevel = 12, baseCost = 50, costMult = 2.0 },
-	Bag = { key = "bag", label = "Bag", icon = "🎒", unit = " slots", base = 2, step = 1, maxLevel = 8, baseCost = 75, costMult = 2.2 },
-	Slots = { key = "slots", label = "Base", icon = "🏝", unit = " spots", base = 5, step = 1, maxLevel = 5, baseCost = 200, costMult = 3.0 },
+	-- icon = "" : pas d'emoji (DIRECTION_V2), l'interface de B fournit ses icones d'apres `key`
+	Speed = { key = "speed", label = "Speed", icon = "", unit = "", base = 16, step = 2, maxLevel = 12, baseCost = 50, costMult = 2.0 },
+	Bag = { key = "bag", label = "Bag", icon = "", unit = " slots", base = 2, step = 1, maxLevel = 8, baseCost = 75, costMult = 2.2 },
+	Slots = { key = "slots", label = "Pools", icon = "", unit = " pools", base = 5, step = 1, maxLevel = 5, baseCost = 200, costMult = 3.0 },
 }
 Config.MaxSlots = 10
 

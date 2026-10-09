@@ -18,7 +18,6 @@ local WaveService = require(Services.WaveService)
 local LagoonService = {}
 
 local TICK = 0.1
-local EJECT_GAP = 5 -- studs devant la limite avant du lagon
 local EJECT_HEIGHT = 4
 local CHAR_GROUP = "TR_Char"
 local BARRIER_GROUP = "TR_Barrier"
@@ -254,12 +253,11 @@ local function ejectIntruders()
 		if root then
 			local index = plotAt(root.Position)
 			if index and not LagoonService.CanEnter(player, index) then
-				-- devant le lagon, cote mer
-				local outward = PlotService.OutwardOf(index)
+				-- devant l'entree du lagon, cote crique, tourne vers la crique
+				local spot = PlotService.EntranceOf(index)
 				local center = PlotService.CenterOf(index)
-				local spot = center + outward * (PlotService.RadiusOf(index) + EJECT_GAP)
 				local target = Vector3.new(spot.X, math.max(root.Position.Y, center.Y + EJECT_HEIGHT), spot.Z)
-				character:PivotTo(CFrame.lookAt(target, target + outward))
+				character:PivotTo(CFrame.lookAt(target, target + (spot - center) * Vector3.new(1, 0, 1)))
 				root.AssemblyLinearVelocity = Vector3.zero
 				local profile = DataService.Get(player)
 				if profile then

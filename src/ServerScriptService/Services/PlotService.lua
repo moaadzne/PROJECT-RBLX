@@ -12,7 +12,7 @@ local CreatureFactory = require(Services.CreatureFactory)
 
 local PlotService = {}
 
-local LOCK_ICON = "🔒"
+local LOCK_ICON = "LOCKED" -- texte, pas d'emoji (DIRECTION_V2)
 local DISPLAY_BOB = 0.25
 local DISPLAY_GAP = 0.3
 local SPAWN_HEIGHT = 3 -- pivot du personnage au-dessus de SpawnPos : pieds sur le deck
@@ -22,9 +22,10 @@ local CHARACTER_TIMEOUT = 10
 local INCOME_TICK = 1
 local MAX_INCOME_DT = 5
 
--- [index] = { model, center, radius, bounds?, owner }. Format de l'ile ouverte : attributs Center + Radius
--- (cercle horizontal). Repli : ancien rectangle MinX/MaxX/MinZ/MaxZ.
+-- [index] = { model, center, box? | radius? | bounds?, owner }. Emprise du lagon, par ordre de priorite :
+-- PlotN.Bounds (Part tournee, convention de C pour l'ile ouverte), attributs Center + Radius, ancien rectangle MinX..MaxZ.
 local plots = {}
+local ENTRANCE_GAP = 5
 local plotOf = {} -- [player] = index
 local knownStages = {} -- [player] = { [uid] = stage } : pour detecter un changement de stade
 
@@ -78,6 +79,10 @@ function PlotService.IsInPlot(index, position)
 	if not plot then
 		return false
 	end
+	if plot.box then
+		local p = plot.box.CFrame:PointToObjectSpace(position)
+		return math.abs(p.X) <= plot.box.Size.X / 2 and math.abs(p.Z) <= plot.box.Size.Z / 2
+	end
 	if plot.radius then
 		local dx, dz = position.X - plot.center.X, position.Z - plot.center.Z
 		return dx * dx + dz * dz <= plot.radius * plot.radius
@@ -107,17 +112,26 @@ function PlotService.OutwardOf(index)
 	return flat.Unit
 end
 
--- Rayon du lagon (ou demi-diagonale du rectangle de repli)
-function PlotService.RadiusOf(index)
+-- Point juste devant l'entree du lagon, cote crique (l'entree de C fait face au centre de l'ile)
+function PlotService.EntranceOf(index)
 	local plot = plots[index]
 	if not plot then
-		return 0
+		return nil
 	end
-	if plot.radius then
-		return plot.radius
+	local c = Config.Island.center
+	local inward = Vector3.new(c.X - plot.center.X, 0, c.Z - plot.center.Z)
+	inward = inward.Magnitude > 0.01 and inward.Unit or Vector3.new(0, 0, -1)
+	local extent
+	if plot.box then
+		local cf, size = plot.box.CFrame, plot.box.Size
+		extent = math.abs(inward:Dot(cf.RightVector)) * size.X / 2 + math.abs(inward:Dot(cf.LookVector)) * size.Z / 2
+	elseif plot.radius then
+		extent = plot.radius
+	else
+		local b = plot.bounds
+		extent = Vector2.new(b.maxX - b.minX, b.maxZ - b.minZ).Magnitude / 2
 	end
-	local b = plot.bounds
-	return Vector2.new(b.maxX - b.minX, b.maxZ - b.minZ).Magnitude / 2
+	return plot.center + inward * (extent + ENTRANCE_GAP)
 end
 
 function PlotService.OwnerOf(index)
@@ -419,6 +433,10 @@ local function incomeLoop()
 					warn(("[TideRush] croissance %s : %s"):format(player.Name, tostring(err)))
 				end
 				PlotService.UpdateTier(player) -- compagnons ou Codex peuvent changer le revenu
+				local newbie = Stats.IsNewbie(profile.data)
+				if player:GetAttribute("Newbie") ~= newbie then
+					player:SetAttribute("Newbie", newbie) -- etiquette au-dessus de la tete (B)
+				end
 			end
 		end
 	end
@@ -428,10 +446,13 @@ function PlotService.Start()
 	local folder = workspace:WaitForChild("Map"):WaitForChild("Plots")
 	for _, model in ipairs(folder:GetChildren()) do
 		local index = model:GetAttribute("Index")
+		local box = model:FindFirstChild("Bounds")
 		local center, radius = model:GetAttribute("Center"), model:GetAttribute("Radius")
 		local minX, maxX = model:GetAttribute("MinX"), model:GetAttribute("MaxX")
 		local minZ, maxZ = model:GetAttribute("MinZ"), model:GetAttribute("MaxZ")
-		if type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
+		if type(index) == "number" and box and box:IsA("BasePart") then
+			plots[index] = { model = model, center = box.Position, box = box, owner = nil }
+		elseif type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
 			plots[index] = { model = model, center = center, radius = radius, owner = nil }
 		elseif type(index) == "number" and minX and maxX and minZ and maxZ then
 			plots[index] = {
