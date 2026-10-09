@@ -16,6 +16,8 @@ Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ
 | Steal a Sea Creature | Pas de jeu trouvé, mais **« Steal a Fish »** existe déjà (vol + poissons) : trop proche, on serait vu comme un clone. | À éviter comme titre principal. |
 | Catch, Steal & Ride | Rien trouvé. Plus long, moins clair en 5 s. | Bon sous-titre. |
 
+**Titre de travail en attendant le choix de Moaad : « Steal a Sea Creature ».**
+
 **Recommandation** : nom affiché **« Ride the Tsunami 🌊 Steal & Ride »**. « Steal » reste dans le titre pour la recherche Roblox, mais la promesse forte est la monture sur la vague.
 Limite : ma recherche web ne remplace pas la recherche Roblox. **Moaad doit taper les 3 titres dans la recherche Roblox avant de publier.**
 
