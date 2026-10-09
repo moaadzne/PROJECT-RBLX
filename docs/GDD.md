@@ -3,7 +3,7 @@
 Auteur : E (concept & game design). v1 le 2026-10-09, **v2 le 2026-10-09** après la levée des règles halal par Moaad et la décision de D (vol, monture, Marée Royale, monétisation v2). Cohérent avec docs/AUDIT_TOP10.md §6.
 Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ** à régler par playtest, pas des mesures.
 
-**Changements v3 (Direction v2, 09/10)** : secrets et plot twist (§6 bis), contenu sans fin (§6 ter), vraies espèces (§4.2), stades Juvenile/Adult/Elder/Titan, 30 s tendues (§1 ter), ton des textes, Config (§13).
+**Changements v3 (Direction v2, 09/10)** : secrets et plot twist (§6 bis), contenu sans fin (§6 ter), île ouverte (§3 bis), vraies espèces (§4.2), stades Juvenile/Adult/Elder/Titan, 30 s tendues (§1 ter), ton des textes, Config (§13).
 
 **Changements v2** : §0 (titre et miniatures), §2 (boucle avec vol), §4.6 Monture, §4.7 Vol, §4.8 Marée Royale, §7 Social, §8 (protection des nouveaux), §9 Monétisation v2, §11 Impact, §12 Phase 1 v2, §13 Config, §14. Les autres sections de la v1 restent valables.
 
@@ -98,6 +98,83 @@ Objectif : à 30 s, le joueur a eu **une montée d'adrénaline**, possède **une
 | 1 h | Première mutation (Golden Tide), premier œuf de compagnon | Marées, compagnons |
 | Plusieurs jours | Codex à 50 %, une Légendaire en Titan | Codex, croissance longue |
 | Plusieurs semaines | Attirer le Léviathan, Tide Rank 3+ | Léviathan, rebirth |
+
+## 3 bis. Île ouverte (Phase 1, légère)
+
+Demande de Moaad : « un open world, un peu ». Décision de D : **une île ouverte et compacte**. On abandonne la plage en couloir et ses 5 zones alignées sur Z. Le monde grandit ensuite avec les nouvelles îles (§6 ter).
+
+### 1. Plan de l'île de la Phase 1
+- **Taille** : île d'environ **800 × 800 studs** (la plage actuelle fait environ 264 × 908, donc une surface du même ordre, × 2,5). Mer jouable autour jusqu'à 1 000 × 1 000. Le centre de la crique est en (0, 0).
+- **Crique centrale protégée** : les 8 lagons, en arc de cercle, dans une baie fermée par des falaises (rayon d'environ 90 studs). **La vague ne la touche jamais.**
+- **Rayons de rareté** : plus on s'éloigne de la crique, plus c'est rare et risqué (plus long à rentrer avant la vague).
+
+```
+                         N  (vague possible)
+          ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+        ~   . . . . PLAGE NORD (rare) . . . .   ~
+      ~   .  [T]     JUNGLE ######        [T]  .   ~
+     ~   .        ######## (grotte G)           .   ~
+W   ~  EPAVE    ##########         ^^^^^^         .  ~   E
+~ ~ ~  (W)  .   ######  +--------+ ^ FALAISE ^ [T] .  ~ ~ ~
+     ~   .  [T]         | CRIQUE | ^ belvédère^     .  ~
+      ~   .  plage W    | 8 lagons|  ^^^^^^   plage E  ~
+       ~   .            +---  ---+                .   ~
+        ~   .  [T]     plage SUD (commune)   [T] .   ~
+         ~    . . . . . RÉCIF (marée basse) . . .   ~
+           ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+                         S
+[T] = tour SAFE (8 tours, plateformes à 26 studs)   ### = jungle   ^^^ = falaise
+```
+
+| Anneau (distance au centre) | Rareté | Phase 1 |
+|---|---|---|
+| 90–200 | Common | Ghost Crab |
+| 200–300 | Common/Uncommon | Cushion Star, Lionfish (plus tard) |
+| 300–400 + points d'intérêt | Uncommon et plus | Hawksbill Turtle (montable) |
+
+**Points d'intérêt** :
+- **Falaise-belvédère** (E, 40–60 studs de haut) : à l'abri de toutes les vagues, la vue sur la vague qui traverse l'île. C'est le spot vidéo.
+- **Épave** (W) : créatures meilleures, loin de la crique.
+- **Récif à marée basse** (S) : apparaît pendant le reflux et la marée extrême (§6 bis).
+- **Jungle et grotte** (N) : la grotte est en Phase 2 ; en Phase 1, la jungle est un raccourci boisé (le terrain haut est à l'abri).
+
+### 2. La vague dans un monde ouvert
+- **Direction par cycle** : N, E, S ou O, tirée au hasard, jamais 2 fois de suite la même. Annonce au début de l'alerte : **« WAVE FROM THE NORTH »** + flèche sur la boussole + ciel qui s'assombrit de ce côté.
+- **Physique serveur** (même formule qu'aujourd'hui, projetée) : `d` = vecteur de direction, `front` avance de -R à +R. Un joueur est pris si `front - thickness ≤ p·d ≤ front`, `p.Y < height` et qu'il n'est pas à l'abri.
+- **À l'abri** : la crique (rayon 90), les tours, tout terrain plus haut que la vague (falaise, collines de la jungle). Une Titan montée surfe (§4.6).
+- **Le côté opposé à la vague est plus sûr** : les joueurs lisent l'annonce et choisissent leur plage. C'est une vraie décision.
+- **Vol** : les lagons s'ouvrent à l'alerte comme avant. Le voleur doit traverser la crique puis rentrer **à son propre lagon** ; s'il s'enfuit vers une plage, la vague peut le prendre et la créature retourne chez son propriétaire.
+
+### 3. Ce qui pousse à explorer
+- Créatures propres à un biome : Hawksbill Turtle sur la plage E et à l'épave, Ghost Crab partout. Plus tard : Lionfish au récif, Blue-Ringed Octopus de nuit dans la grotte.
+- Secrets du §6 bis placés dans le monde : l'épave pendant la marée extrême, le récif, puis la grotte et les gravures.
+- **La monture** : traverser l'île en 10 s au lieu de 25 ouvre les plages lointaines.
+- **Le belvédère** : le plus bel endroit du jeu pour regarder la vague, et l'endroit où on filme.
+
+### 4. Impact et calendrier
+| Qui | Travail | Estimation |
+|---|---|---|
+| A | Vague à direction (projection sur `d`), zones en anneaux et biomes à la place de Z, zones à l'abri (crique, tours, hauteur), spawn sur Terrain dans des anneaux | ~1,5 jour |
+| B | Boussole + flèche de direction de la vague, annonce « WAVE FROM … », petite carte (image fixe + points des joueurs) | ~1 jour |
+| C | Terrain de l'île (généré par script dans Studio puis retouché), crique et 8 lagons, falaise, épave, 8 tours, vague qui balaie dans 4 directions | **3 à 4 jours** : le gros risque |
+
+**Risque sur le 29/10** : moyen. C est le goulot (île + créatures + vague). **Version minimale qui garde la sensation d'open world** si on prend du retard :
+- île de **600 × 600** ;
+- **2 directions de vague** (N et S) au lieu de 4 ;
+- 3 points d'intérêt : falaise-belvédère, épave, récif (jungle et grotte en semaine 2) ;
+- 6 tours ;
+- carte remplacée par la boussole seule.
+Gain estimé : environ 1,5 jour pour C et 0,5 jour pour B.
+
+**Config proposée (pour A)** :
+```lua
+Config.Island = { size = 800, coveRadius = 90, waveDirections = { "N", "E", "S", "W" }, noRepeatDirection = true }
+Config.Rings = {
+	{ rMin = 90, rMax = 200, rarity = "Common", items = { { "GhostCrab", 100 } } },
+	{ rMin = 200, rMax = 300, rarity = "Common", items = { { "GhostCrab", 40 }, { "CushionStar", 60 } } },
+	{ rMin = 300, rMax = 400, rarity = "Uncommon", items = { { "CushionStar", 60 }, { "HawksbillTurtle", 40 } } },
+}
+```
 
 ## 4. Contenu
 
