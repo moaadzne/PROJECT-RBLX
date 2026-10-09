@@ -48,6 +48,7 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-06 | A | MountService (les Giant surfent la vague) | à faire |
 | P1-07 | A | RoyalService (score, top 3, créature unique) | à faire |
 | P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | à faire |
+| P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
 | P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | en cours |
 | P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | à faire |
 | P1-12 | B | HUD de la Marée Royale, bouton Monter, billboard de bassin, animation de la barrière | à faire |
@@ -57,7 +58,7 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-22 | C | FX Golden + ambiance Golden Tide, 3 couronnes + FX royal, sons | à faire |
 | P1-30 | F | Contrôle qualité des pushes de A et B (luau-analyze, contrat v2) | en cours |
 | P1-31 | F | docs/IMPORT_LUNDI.md (MCP ou Rojo, étapes pour Moaad) | en cours |
-| P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | à faire |
+| P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | fait (docs/LANCEMENT.md) |
 
 ## Fait
 - [A 09/10] Net.lua : plus de seau de limite recréé pour un joueur parti. **À réimporter lundi.**
