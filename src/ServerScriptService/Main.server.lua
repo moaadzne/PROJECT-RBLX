@@ -7,19 +7,24 @@ local DataService = require(Services.DataService)
 local PlotService = require(Services.PlotService)
 local CreatureService = require(Services.CreatureService)
 local IntroService = require(Services.IntroService)
+local LagoonService = require(Services.LagoonService)
 local WaveService = require(Services.WaveService)
 local UpgradeService = require(Services.UpgradeService)
 local PetService = require(Services.PetService)
 local DebugService = require(Services.DebugService)
 
 -- WaveService en dernier : ses crochets (OnCalm, OnFront) sont branches avant le premier cycle
-for _, service in ipairs({ DataService, PlotService, CreatureService, IntroService, UpgradeService, PetService, WaveService, DebugService }) do
+for _, service in ipairs({
+	DataService, PlotService, CreatureService, IntroService, LagoonService,
+	UpgradeService, PetService, WaveService, DebugService,
+}) do
 	service.Start()
 end
 
 local function onPlayerAdded(player)
 	DataService.Track(player) -- profil cree tout de suite, donnees chargees en fond
 	PlotService.Assign(player)
+	LagoonService.Track(player)
 	Net.SendWave(player)
 end
 
