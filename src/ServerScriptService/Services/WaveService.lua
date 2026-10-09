@@ -1,5 +1,6 @@
--- WaveService : cycle de la vague (calm, warning, wave, recede), simulee en maths.
+-- WaveService : cycle de la vague (calm, warning, wave, recede), simulee en maths, et type de maree du cycle.
 -- Le serveur ne bouge aucune piece : les clients dessinent la vague a partir de WaveState.
+-- Crochets : OnCalm(cycle, tide) au debut du calme, OnFront(prevFront, front) a chaque tick de la vague.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -20,8 +21,12 @@ local R6_FEET = 3
 local cycle = 0
 local wave = nil
 local skipCalm = false
+local forcedTide = nil -- debug : maree du prochain cycle
+local cycleTide = "Normal"
 local caught = {} -- [player] = true pendant la vague en cours
 local exposed = {} -- [player] = true si sur la plage pendant la vague
+local calmHooks = {}
+local frontHooks = {}
 
 local function now()
 	return workspace:GetServerTimeNow()
@@ -35,8 +40,19 @@ local function publish(phase, phaseStart, phaseEnd, startTime)
 		phaseEnd = phaseEnd,
 		startTime = startTime,
 		cycle = cycle,
+		tide = cycleTide,
+		nextSpecial = Config.NextSpecial(cycle),
 	}
 	Net.SetWave(wave)
+end
+
+local function runHooks(hooks, ...)
+	for _, hook in ipairs(hooks) do
+		local ok, err = pcall(hook, ...)
+		if not ok then
+			warn("[TideRush] crochet de vague : " .. tostring(err))
+		end
+	end
 end
 
 local function waitUntil(t, canSkip)
@@ -83,7 +99,8 @@ end
 -- Attrape les joueurs dans le corps de la vague balaye depuis le dernier tick
 local function checkPlayers(prevFront, front)
 	for player, profile in DataService.All() do
-		if profile.loaded and not profile.leaving and not caught[player] then
+		-- pendant son intro, le joueur vit sa propre vague : la vague globale ne le prend pas
+		if profile.loaded and not profile.leaving and not profile.introActive and not caught[player] then
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart")
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -114,9 +131,12 @@ end
 local function runCycle()
 	cycle += 1
 	skipCalm = false
+	cycleTide = forcedTide or Config.TideFor(cycle)
+	forcedTide = nil
 	local calmStart = now()
 	local departure = calmStart + W.calmTime + W.warningTime
 	publish("calm", calmStart, calmStart + W.calmTime, departure)
+	runHooks(calmHooks, cycle, wave.tide)
 	waitUntil(calmStart + W.calmTime, true)
 	if skipCalm then
 		departure = now() + W.warningTime
@@ -134,6 +154,7 @@ local function runCycle()
 		local t = now()
 		local front = WaveService.FrontZ(t)
 		checkPlayers(prevFront, front)
+		runHooks(frontHooks, prevFront, front)
 		prevFront = front
 		if t >= arrival then
 			break
@@ -154,8 +175,25 @@ function WaveService.Force()
 	return wave and wave.phase
 end
 
+-- Debug : maree du prochain cycle (Normal, Golden...)
+function WaveService.ForceTide(tide)
+	if not Config.Tides[tide] then
+		return false
+	end
+	forcedTide = tide
+	return true
+end
+
 function WaveService.Get()
 	return wave
+end
+
+function WaveService.OnCalm(callback)
+	table.insert(calmHooks, callback)
+end
+
+function WaveService.OnFront(callback)
+	table.insert(frontHooks, callback)
 end
 
 function WaveService.Forget(player)

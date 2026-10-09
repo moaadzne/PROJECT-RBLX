@@ -5,13 +5,15 @@ local Services = script.Parent:WaitForChild("Services")
 local Net = require(Services.Net)
 local DataService = require(Services.DataService)
 local PlotService = require(Services.PlotService)
-local TreasureService = require(Services.TreasureService)
+local CreatureService = require(Services.CreatureService)
+local IntroService = require(Services.IntroService)
 local WaveService = require(Services.WaveService)
 local UpgradeService = require(Services.UpgradeService)
 local PetService = require(Services.PetService)
 local DebugService = require(Services.DebugService)
 
-for _, service in ipairs({ DataService, PlotService, TreasureService, WaveService, UpgradeService, PetService, DebugService }) do
+-- WaveService en dernier : ses crochets (OnCalm, OnFront) sont branches avant le premier cycle
+for _, service in ipairs({ DataService, PlotService, CreatureService, IntroService, UpgradeService, PetService, WaveService, DebugService }) do
 	service.Start()
 end
 
@@ -23,7 +25,8 @@ end
 
 local function onPlayerRemoving(player)
 	PlotService.Release(player)
-	TreasureService.Forget(player)
+	CreatureService.Forget(player)
+	IntroService.Forget(player)
 	WaveService.Forget(player)
 	Net.Forget(player)
 	DataService.Release(player) -- derniere sauvegarde : attend le DataStore, donc en dernier

@@ -1,6 +1,6 @@
--- PlotService : bases des joueurs (attribution, tresors poses, verrous des socles),
--- proprietaire en attributs Owner / OwnerName (l'affichage du panneau appartient a C),
--- teleport a la base, bouton Home, revenus des socles (1 fois/s).
+-- PlotService : lagons des joueurs (attribution, creatures dans les bassins, verrous des bassins),
+-- attributs Owner / OwnerName / LagoonTier (l'affichage appartient a C), teleport a la base, bouton Home,
+-- revenus des bassins (1 fois/s) et passage des stades de croissance (Notify grown).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -8,7 +8,7 @@ local Services = script.Parent
 local Net = require(Services.Net)
 local Stats = require(Services.Stats)
 local DataService = require(Services.DataService)
-local ItemFactory = require(Services.ItemFactory)
+local CreatureFactory = require(Services.CreatureFactory)
 
 local PlotService = {}
 
@@ -24,6 +24,7 @@ local MAX_INCOME_DT = 5
 
 local plots = {} -- [index] = { model, bounds = {minX, maxX, minZ, maxZ}, owner }
 local plotOf = {} -- [player] = index
+local knownStages = {} -- [player] = { [uid] = stage } : pour detecter un changement de stade
 
 local function pedestalOf(model, slot)
 	local folder = model:FindFirstChild("Pedestals")
@@ -48,6 +49,7 @@ local function resetPlot(index)
 	plot.owner = nil
 	plot.model:SetAttribute("Owner", nil)
 	plot.model:SetAttribute("OwnerName", nil)
+	plot.model:SetAttribute("LagoonTier", nil)
 	local display = plot.model:FindFirstChild("Display")
 	if display then
 		display:ClearAllChildren()
@@ -75,7 +77,21 @@ function PlotService.IsInOwnPlot(player, position)
 		and position.Z >= bounds.minZ and position.Z <= bounds.maxZ
 end
 
--- Pose les tresors du joueur sur ses socles et met a jour les cadenas
+-- Palier visuel du lagon, a partir du revenu (C l'utilise pour le decor)
+function PlotService.UpdateTier(player)
+	local index = plotOf[player]
+	local profile = DataService.Get(player)
+	if not index or not profile or not profile.loaded then
+		return
+	end
+	local tier = Stats.LagoonTier(Stats.Income(profile.data, os.time()))
+	local model = plots[index].model
+	if model:GetAttribute("LagoonTier") ~= tier then
+		model:SetAttribute("LagoonTier", tier)
+	end
+end
+
+-- Pose les creatures du joueur dans ses bassins et met a jour les cadenas
 function PlotService.RenderDisplay(player)
 	local index = plotOf[player]
 	local profile = DataService.Get(player)
@@ -89,6 +105,7 @@ function PlotService.RenderDisplay(player)
 	end
 	local d = profile.data
 	local slots = Stats.Slots(d)
+	local now = os.time()
 
 	local current = {}
 	for _, child in ipairs(display:GetChildren()) do
@@ -100,21 +117,37 @@ function PlotService.RenderDisplay(player)
 		end
 	end
 
+	local stages = {}
 	for slot = 1, Config.MaxSlots do
-		local want = (slot <= slots and d.display[slot]) or ""
+		local creature = slot <= slots and d.pools[slot] or nil
+		local stage = creature and Stats.Stage(creature, now, Stats.GrowthSpeed(d))
+		if creature then
+			stages[creature.uid] = stage
+			-- la monture et la creature portee par un voleur ne sont pas dans leur bassin
+			if profile.mountUid == creature.uid or profile.carriedOut[creature.uid] then
+				creature = nil
+			end
+		end
 		local have = current[slot]
-		if have and have:GetAttribute("ItemId") ~= want then
+		if have and (not creature or have:GetAttribute("Uid") ~= creature.uid) then
 			have:Destroy()
 			have = nil
 		end
 		local pedestal = pedestalOf(model, slot)
-		if want ~= "" and not have and pedestal then
+		if have then
+			have:SetAttribute("Stage", stage)
+		elseif creature and pedestal then
 			local top = pedestal.Position.Y + pedestal.Size.X / 2 -- cylindre couche : hauteur = Size.X
-			local y = top + ItemFactory.RestOffset(want) + DISPLAY_BOB + DISPLAY_GAP
-			local item = ItemFactory.Create(want, Vector3.new(pedestal.Position.X, y, pedestal.Position.Z), {
+			local y = top + CreatureFactory.RestOffset(creature.id) + DISPLAY_BOB + DISPLAY_GAP
+			local item = CreatureFactory.Create(creature.id, Vector3.new(pedestal.Position.X, y, pedestal.Position.Z), {
+				mutation = creature.mut,
+				stage = stage,
 				zone = 0,
 				bob = DISPLAY_BOB,
 				slot = slot,
+				uid = creature.uid,
+				born = creature.born,
+				royal = creature.royal,
 				beacon = false,
 			})
 			if item then
@@ -127,6 +160,37 @@ function PlotService.RenderDisplay(player)
 			lockText = LOCK_ICON .. " " .. Config.Format(Config.GetUpgradeCost("Slots", d.levels.Slots))
 		end
 		setLock(model, slot, slot > slots, lockText)
+	end
+	knownStages[player] = stages
+	PlotService.UpdateTier(player)
+end
+
+-- Un stade a change depuis le dernier affichage : Notify grown, affichage et palier mis a jour
+local function checkGrowth(player, profile, now)
+	local known = knownStages[player]
+	if not known then
+		return
+	end
+	local grown = false
+	for slot, creature in ipairs(profile.data.pools) do
+		if creature then
+			local stage = Stats.Stage(creature, now, Stats.GrowthSpeed(profile.data))
+			local before = known[creature.uid]
+			if before and stage > before then
+				grown = true
+				Net.Notify(player, "grown", {
+					uid = creature.uid,
+					slot = slot,
+					species = creature.id,
+					stage = stage,
+					text = ("Your %s is now %s!"):format(Config.Creatures[creature.id].name, Config.Stages[stage].id),
+				})
+			end
+		end
+	end
+	if grown then
+		PlotService.RenderDisplay(player)
+		DataService.MarkDirty(player)
 	end
 end
 
@@ -244,6 +308,7 @@ end
 function PlotService.Release(player)
 	local index = plotOf[player]
 	plotOf[player] = nil
+	knownStages[player] = nil
 	if index and plots[index] and plots[index].owner == player then
 		resetPlot(index)
 	end
@@ -257,7 +322,7 @@ local function goHome(player)
 	if not plotOf[player] then
 		return false, "NoPlot"
 	end
-	local wave = Net.GetWave()
+	local wave = Net.GetWaveFor(player)
 	if wave and wave.phase ~= "calm" then
 		return false, "WaveActive"
 	end
@@ -283,12 +348,18 @@ local function incomeLoop()
 		local now = os.clock()
 		local dt = math.min(now - last, MAX_INCOME_DT)
 		last = now
+		local unixNow = os.time()
 		for player, profile in DataService.All() do
 			if profile.loaded and not profile.leaving then
-				local income = Stats.Income(profile.data)
+				local income = Stats.Income(profile.data, unixNow)
 				if income > 0 then
 					DataService.AddCoins(player, income * dt)
 				end
+				local ok, err = pcall(checkGrowth, player, profile, unixNow)
+				if not ok then
+					warn(("[TideRush] croissance %s : %s"):format(player.Name, tostring(err)))
+				end
+				PlotService.UpdateTier(player) -- compagnons ou Codex peuvent changer le revenu
 			end
 		end
 	end

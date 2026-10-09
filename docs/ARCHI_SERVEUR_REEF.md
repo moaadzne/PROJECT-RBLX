@@ -1,6 +1,6 @@
 # Architecture serveur : Reef Keepers (A, 2026-10-09)
 
-Plan seulement. Rien n'est implémenté avant le « go » de D, une fois le GDD validé.
+Plan initial du 09/10 matin. **Ce qui fait foi depuis le « go » de D : `review/review_context.md` (contrat v2) et `docs/TABLEAU.md`** (Phase 1 sans réserve, sans `MoveCreature` ni `ClaimCodex`, clé `Slots` gardée).
 Les valeurs à reprendre du GDD de E sont notées **`[GDD: …]`**.
 
 ## 1. Ce qui se garde : la plomberie seulement
