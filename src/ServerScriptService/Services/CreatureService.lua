@@ -307,7 +307,8 @@ local function tickPlayer(player, profile)
 	end
 
 	local bagMax = Stats.BagMax(profile.data)
-	local radius2 = Config.PickupRadius * Config.PickupRadius
+	local radius = Config.PickupRadius * (profile.pickupMult or 1) -- BigNet : x1,5
+	local radius2 = radius * radius
 	for model, info in pairs(active) do
 		local dx, dz = info.pos.X - pos.X, info.pos.Z - pos.Z
 		if dx * dx + dz * dz <= radius2 and math.abs(info.pos.Y - pos.Y) <= VERTICAL_REACH

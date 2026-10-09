@@ -333,6 +333,14 @@ local function checkAttacks(check)
 		{ "EquipPet", table.pack(nil, nil), "BadRequest" },
 		{ "EquipPet", table.pack("best", false), "BadRequest" },
 		{ "EquipPet", table.pack("999999", true), "UnknownPet" },
+		{ "StartSteal", table.pack("1", 1), "BadRequest" },
+		{ "StartSteal", table.pack(1.5, 1), "BadRequest" },
+		{ "StartSteal", table.pack(0 / 0, 0 / 0), "BadRequest" },
+		{ "StartSteal", table.pack(99, 1), "BadRequest" },
+		{ "Mount", table.pack(123), "BadRequest" },
+		{ "Mount", table.pack("nope"), "NotMountable" },
+		{ "ChoosePick", table.pack("Ghost"), "BadRequest" },
+		{ "ChoosePick", table.pack({}), "BadRequest" },
 	}
 	for _, case in ipairs(cases) do
 		local ok, code = Net.Invoke(case[1], player, table.unpack(case[2], 1, case[2].n))
