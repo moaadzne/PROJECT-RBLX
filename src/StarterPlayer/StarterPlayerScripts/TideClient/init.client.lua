@@ -9,7 +9,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 
 -- Ordre de chargement : les briques d'abord, les ecrans ensuite (un module absent est saute)
 local FOUNDATION = { "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components" }
-local SCREENS = { "Notifications" }
+local SCREENS = { "Notifications", "Hud", "PoolBillboards", "World", "Ambience", "Onboarding" } -- Onboarding apres Hud (Hud.Hold)
 
 -- Echelle de l'interface : 1 = ecran de design 900 x 480 (telephone paysage 844 x 390 -> 0,85)
 local DESIGN_SIZE = Vector2.new(900, 480)
