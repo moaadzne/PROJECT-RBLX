@@ -84,18 +84,20 @@ Config.Offline = { incomeRate = 0.5, maxHours = 8, minSeconds = 60 }
 -- Palier visuel du lagon (attribut LagoonTier 1..5) : revenu/s minimal de chaque palier (E, GDD v3)
 Config.LagoonTiers = { 0, 30, 200, 5000, 100000 }
 
--- Intro d'un nouveau joueur (GDD 1 ter). Positions relatives au centre X de sa base et a BaseLineZ.
+-- Intro d'un nouveau joueur (GDD 1 ter). Positions sur la plage devant SON lagon :
+-- out = studs au-dela du bord de la crique, side = decalage lateral (vers la droite en regardant la mer).
+-- La vague d'intro vient de la mer en face de son lagon et s'arrete au bord de la crique.
 Config.Intro = {
 	waveDelay = 18, -- s entre le chargement et l'alerte de la vague d'intro
 	warningTime = 2,
-	startZ = -414, -- 9 s de trajet a Config.Wave.speed
+	travel = 9, -- s de trajet de la vague d'intro
 	recedeTime = 2.5,
 	creatures = {
-		{ species = "GhostCrab", mutation = "", dx = 0, dz = -10 },
-		{ species = "CushionStar", mutation = "", dx = -12, dz = -24 },
-		{ species = "GhostCrab", mutation = "", dx = 12, dz = -30 },
-		{ species = "GhostCrab", mutation = "", dx = -4, dz = -38 },
-		{ species = "CushionStar", mutation = "Golden", dx = 8, dz = -52 },
+		{ species = "GhostCrab", mutation = "", side = 0, out = 8 },
+		{ species = "CushionStar", mutation = "", side = -12, out = 20 },
+		{ species = "GhostCrab", mutation = "", side = 12, out = 26 },
+		{ species = "GhostCrab", mutation = "", side = -4, out = 34 },
+		{ species = "CushionStar", mutation = "Golden", side = 8, out = 48 },
 	},
 	goldenTide = "Golden", -- deuxieme maree du joueur
 	goldenCount = 5, -- creatures personnelles de cette maree, dont au moins une mutee
@@ -166,28 +168,45 @@ Config.Items = {
 -- Creature relachee (lagon plein) : revenu bebe (mutation comprise) x ce multiplicateur
 Config.SellMultiplier = 20
 
--- Zones de la plage (Z diminue en s'eloignant de la base)
--- open = false : zone fermee (Phase 1 = Shallows seule). La plage se remplit au debut du calme,
--- puis se recharge toutes les spawnEvery secondes pendant le calme ; la vague emporte tout.
-Config.Zones = {
-	{ name = "Shallows", rarity = "Common", open = true, zMin = -150, zMax = -25, maxItems = 14, spawnEvery = 2.5, creatures = { { "GhostCrab", 60 }, { "CushionStar", 30 }, { "HawksbillTurtle", 10 } } },
-	{ name = "Coral Coast", rarity = "Uncommon", open = false, zMin = -280, zMax = -150, maxItems = 12, spawnEvery = 3.5, creatures = { { "Lionfish", 65 }, { "HawksbillTurtle", 35 } } },
-	{ name = "Sunken Reef", rarity = "Rare", open = false, zMin = -420, zMax = -280, maxItems = 10, spawnEvery = 5, creatures = { { "BlueRingedOctopus", 65 }, { "LeopardRay", 35 } } },
-	{ name = "Wreck Cove", rarity = "Epic", open = false, zMin = -570, zMax = -420, maxItems = 8, spawnEvery = 8, creatures = { { "GiantPacificOctopus", 65 }, { "LionsManeJelly", 35 } } },
-	{ name = "Abyss Shore", rarity = "Legendary", open = false, zMin = -740, zMax = -570, maxItems = 6, spawnEvery = 12, creatures = { { "MantaRay", 70 }, { "WhaleShark", 30 } } },
+-- Ile ouverte (GDD 3 bis, version de lancement). Centre de l'ile et de la crique = Config.Island.center.
+-- Dans la crique (coveRadius) : les 8 lagons, a l'abri de la vague, pas de capture.
+-- La vague traverse l'ile dans une direction par cycle (N/E/S/W), jamais deux fois de suite la meme.
+Config.Island = {
+	center = Vector3.new(0, 0, 0),
+	size = 600,
+	seaMargin = 30, -- la vague part et finit a size/2 + seaMargin du centre
+	coveRadius = 70,
+	waveDirections = { "N", "E", "S", "W" },
+	noRepeatDirection = true,
+	seaY = 0, -- niveau du sable au bord de l'eau
+	spawnYMin = -2, -- hauteur du sol permise pour une apparition
+	spawnYMax = 16,
+	towerRadius = 16, -- pas d'apparition si pres d'une tour (attribut Center)
+}
+-- Direction dans laquelle AVANCE la vague "venue du" nord, de l'est... (N = venue de -Z, avance vers +Z)
+Config.WaveTravel = {
+	N = Vector3.new(0, 0, 1),
+	S = Vector3.new(0, 0, -1),
+	E = Vector3.new(-1, 0, 0),
+	W = Vector3.new(1, 0, 0),
 }
 
-Config.Beach = { xMin = -116, xMax = 116, groundY = 0 }
-Config.BaseLineZ = 0 -- tout ce qui est au-dela (Z > 0) est la zone des bases, a l'abri
+-- Anneaux de rarete autour de la crique (distance horizontale au centre). La plage se remplit au debut
+-- du calme, puis se recharge toutes les spawnEvery secondes pendant le calme ; la vague emporte tout.
+-- maxItems et spawnEvery : premiers reglages selon la surface de chaque anneau [a caler par E].
+Config.Rings = {
+	{ name = "Cove Beach", rarity = "Common", rMin = 70, rMax = 150, maxItems = 18, spawnEvery = 2, creatures = { { "GhostCrab", 100 } } },
+	{ name = "Dunes", rarity = "Common", rMin = 150, rMax = 225, maxItems = 16, spawnEvery = 2.5, creatures = { { "GhostCrab", 40 }, { "CushionStar", 60 } } },
+	{ name = "Outer Shore", rarity = "Uncommon", rMin = 225, rMax = 300, maxItems = 12, spawnEvery = 3.5, creatures = { { "CushionStar", 60 }, { "HawksbillTurtle", 40 } } },
+}
+
 Config.HubSpawn = Vector3.new(0, 1, 96)
 
 -- La vague
 Config.Wave = {
 	calmTime = 35, -- secondes de calme
 	warningTime = 7, -- alerte avant la vague
-	startZ = -800, -- depart (au large)
-	endZ = 0, -- s'arrete a la limite des bases
-	speed = 46, -- studs par seconde
+	speed = 46, -- studs par seconde ; trajet de -(size/2 + seaMargin) a +(size/2 + seaMargin) sur son axe
 	height = 22, -- hauteur : les tours sont a 26
 	thickness = 40,
 	recedeTime = 2.5,
@@ -287,17 +306,38 @@ function Config.NextSpecial(cycle: number)
 	return { tide = Config.TideFor(nextCycle), cycle = nextCycle }
 end
 
--- Index de zone (1..5) pour une position Z, 0 = base / hors zone
-function Config.ZoneAt(z: number): number
-	for i, zone in ipairs(Config.Zones) do
-		if z <= zone.zMax and z > zone.zMin then
+-- Distance horizontale au centre de l'ile
+function Config.IslandDistance(position: Vector3): number
+	local c = Config.Island.center
+	return Vector2.new(position.X - c.X, position.Z - c.Z).Magnitude
+end
+
+function Config.InCove(position: Vector3): boolean
+	return Config.IslandDistance(position) <= Config.Island.coveRadius
+end
+
+-- Index d'anneau (1..n) pour une position, 0 = crique ou hors anneaux
+function Config.RingAt(position: Vector3): number
+	local r = Config.IslandDistance(position)
+	for i, ring in ipairs(Config.Rings) do
+		if r >= ring.rMin and r < ring.rMax then
 			return i
 		end
 	end
-	if z <= Config.Zones[#Config.Zones].zMin then
-		return #Config.Zones
-	end
 	return 0
+end
+
+-- Position du front de la vague sur son axe : d = (p - centre) . dir. startD/endD/speed du wave si presents.
+function Config.WaveFrontD(wave, t: number): number
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	local startD = wave.startD or -reach
+	local endD = wave.endD or reach
+	return math.min(endD, startD + (wave.speed or Config.Wave.speed) * (t - wave.startTime))
+end
+
+function Config.WaveAxis(wave, position: Vector3): number
+	local c = Config.Island.center
+	return (position.X - c.X) * wave.dir.X + (position.Z - c.Z) * wave.dir.Z
 end
 
 local function trimZeros(s: string): string

@@ -26,6 +26,7 @@ local HELP = table.concat({
 	"level kind n [joueur]      -> fixe le niveau Speed|Bag|Slots",
 	"forceWave                  -> pendant le calme, l'alerte demarre tout de suite",
 	"tide Normal|Golden         -> maree du prochain cycle",
+	"direction N|E|S|W          -> direction de la vague du prochain cycle",
 	"grow minutes [joueur]      -> vieillit les creatures des bassins",
 	"intro [joueur]             -> rejoue l'intro",
 	"playtime minutes [joueur]  -> temps de jeu cumule (protection debutant)",
@@ -87,6 +88,10 @@ end
 function commands.give(species, count, mutation, name)
 	local player = findPlayer(name)
 	return player and CreatureService.GiveToBag(player, species, count, mutation) and "ok" or "echec"
+end
+
+function commands.direction(direction)
+	return WaveService.ForceDirection(direction) and "ok : prochain cycle" or "usage : direction N|E|S|W"
 end
 
 function commands.tide(tide)

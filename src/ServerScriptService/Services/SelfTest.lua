@@ -40,14 +40,20 @@ local function checkConfig(check)
 	for itemId, species in pairs(Config.LegacyItemToCreature) do
 		check(Config.Creatures[species] ~= nil and Config.Creatures[itemId] == nil, "ancien id " .. itemId)
 	end
-	local opened = 0
-	for i, zone in ipairs(Config.Zones) do
-		opened += zone.open and 1 or 0
-		for _, entry in ipairs(zone.creatures) do
-			check(Config.Creatures[entry[1]] ~= nil, ("zone %d : %s"):format(i, tostring(entry[1])))
+	check(#Config.Rings >= 1, "au moins un anneau")
+	local previousMax = Config.Island.coveRadius
+	for i, ring in ipairs(Config.Rings) do
+		check(ring.rMin >= previousMax and ring.rMax > ring.rMin and ring.rMax <= Config.Island.size / 2,
+			("anneau %d : %s-%s"):format(i, tostring(ring.rMin), tostring(ring.rMax)))
+		previousMax = ring.rMax
+		for _, entry in ipairs(ring.creatures) do
+			check(Config.Creatures[entry[1]] ~= nil, ("anneau %d : %s"):format(i, tostring(entry[1])))
 		end
 	end
-	check(opened >= 1, "au moins une zone ouverte")
+	for _, direction in ipairs(Config.Island.waveDirections) do
+		local dir = Config.WaveTravel[direction]
+		check(dir ~= nil and math.abs(dir.Magnitude - 1) < 1e-6 and dir.Y == 0, "direction " .. direction)
+	end
 	for tide, def in pairs(Config.Tides) do
 		local total = 0
 		for _, entry in ipairs(def.odds) do
@@ -118,6 +124,27 @@ local function checkTides(check)
 	end
 	check(golden > 450 and golden < 750, ("Golden Tide : %d/2000 dorees (30 %% attendu)"):format(golden))
 	check(Stats.RollMutation("Inconnue", rng) ~= nil, "maree inconnue -> Normal")
+end
+
+local function checkIsland(check)
+	local c = Config.Island.center
+	check(Config.InCove(c) and not Config.InCove(c + Vector3.new(Config.Island.coveRadius + 1, 0, 0)), "crique")
+	for i, ring in ipairs(Config.Rings) do
+		local mid = (ring.rMin + ring.rMax) / 2
+		check(Config.RingAt(c + Vector3.new(0, 0, mid)) == i and Config.RingAt(c + Vector3.new(-mid, 0, 0)) == i,
+			"anneau " .. i .. " par distance")
+	end
+	check(Config.RingAt(c) == 0, "centre hors anneaux")
+	-- vague venue du nord : avance vers +Z, le front part de -reach
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	local wave = { startTime = 100, dir = Config.WaveTravel.N }
+	check(Config.WaveFrontD(wave, 100) == -reach and Config.WaveFrontD(wave, 10 ^ 6) == reach, "front de -reach a +reach")
+	check(Config.WaveAxis(wave, c + Vector3.new(0, 0, -200)) == -200 and Config.WaveAxis(wave, c + Vector3.new(50, 0, 0)) == 0,
+		"projection sur l'axe")
+	local east = { startTime = 0, dir = Config.WaveTravel.E }
+	check(Config.WaveAxis(east, c + Vector3.new(200, 0, 0)) == -200, "vague de l'est : +X est touche en premier")
+	local intro = { startTime = 0, startD = -484, endD = -70, dir = Config.WaveTravel.S }
+	check(Config.WaveFrontD(intro, 1000) == -70, "vague d'intro : s'arrete au bord de la crique")
 end
 
 local function checkDeposit(check)
@@ -225,8 +252,12 @@ local function checkWave(check)
 	check(phaseKnown(wave.phase) and wave.phaseEnd > wave.phaseStart, "phase " .. tostring(wave.phase))
 	check(Config.Tides[wave.tide] ~= nil and type(wave.nextSpecial) == "table"
 		and wave.nextSpecial.cycle > wave.cycle, "maree " .. tostring(wave.tide))
-	check(WaveService.FrontZ(wave.startTime) == Config.Wave.startZ, "front au depart = startZ")
-	check(WaveService.FrontZ(wave.startTime + 1000) == Config.Wave.endZ, "front borne a endZ")
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	check(WaveService.FrontD(wave.startTime) == -reach, "front au depart = -reach")
+	check(WaveService.FrontD(wave.startTime + 1000) == reach, "front borne a +reach")
+	check(Config.WaveTravel[wave.direction] ~= nil and wave.dir == Config.WaveTravel[wave.direction]
+		and Config.WaveTravel[wave.nextDirection] ~= nil, "direction " .. tostring(wave.direction))
+	check(not Config.Island.noRepeatDirection or wave.nextDirection ~= wave.direction, "jamais deux fois la meme direction")
 end
 
 local function checkCreatures(check)
@@ -237,12 +268,10 @@ local function checkCreatures(check)
 	end
 	local wave = WaveService.Get()
 	local counts, total = CreatureService.Counts(), 0
-	for i, zone in ipairs(Config.Zones) do
+	for i, ring in ipairs(Config.Rings) do
 		total += counts[i]
-		if zone.open and wave and wave.phase == "calm" then
-			check(counts[i] > 0 and counts[i] <= zone.maxItems, ("zone %d : %d/%d"):format(i, counts[i], zone.maxItems))
-		elseif not zone.open then
-			check(counts[i] == 0, ("zone fermee %d vide"):format(i))
+		if wave and wave.phase == "calm" then
+			check(counts[i] > 0 and counts[i] <= ring.maxItems, ("anneau %d : %d/%d"):format(i, counts[i], ring.maxItems))
 		end
 	end
 	local models = folder:GetChildren()
@@ -261,7 +290,7 @@ local function checkCreatures(check)
 			and type(model:GetAttribute("Bob")) == "number" and model:GetAttribute("Rarity") == (def and def.rarity),
 			"attributs " .. model.Name)
 		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil and not model:GetAttribute("Royal") then
-			check(model:GetAttribute("Zone") == Config.ZoneAt(pos.Z) and pos.Z < Config.BaseLineZ, "zone " .. model.Name)
+			check(model:GetAttribute("Zone") == Config.RingAt(pos) and not Config.InCove(pos), "anneau " .. model.Name)
 			for other = index + 1, #models do
 				local otherPos = models[other]:GetAttribute("BasePos")
 				if typeof(otherPos) == "Vector3" and models[other]:GetAttribute("Owner") == nil
@@ -382,6 +411,7 @@ local SECTIONS = {
 	{ "config", checkConfig },
 	{ "croissance", checkGrowth },
 	{ "marees", checkTides },
+	{ "ile", checkIsland },
 	{ "depot", checkDeposit },
 	{ "donnees", checkSanitize },
 	{ "remotes", checkRemotes },

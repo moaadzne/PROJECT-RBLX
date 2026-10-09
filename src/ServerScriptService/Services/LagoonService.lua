@@ -239,12 +239,11 @@ end
 
 local function plotAt(position)
 	for index = 1, Config.MaxPlayersPerServer do
-		local model = PlotService.GetModel(index)
-		if model and PlotService.IsInPlot(index, position) then
-			return index, model
+		if PlotService.GetModel(index) and PlotService.IsInPlot(index, position) then
+			return index
 		end
 	end
-	return nil, nil
+	return nil
 end
 
 -- Ramene devant la barriere tout joueur present sans droit dans un lagon ferme
@@ -253,11 +252,14 @@ local function ejectIntruders()
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		if root then
-			local index, model = plotAt(root.Position)
+			local index = plotAt(root.Position)
 			if index and not LagoonService.CanEnter(player, index) then
-				local minZ = model:GetAttribute("MinZ")
-				local target = Vector3.new(root.Position.X, Config.Beach.groundY + EJECT_HEIGHT, minZ - EJECT_GAP)
-				character:PivotTo(CFrame.lookAt(target, target - Vector3.zAxis))
+				-- devant le lagon, cote mer
+				local outward = PlotService.OutwardOf(index)
+				local center = PlotService.CenterOf(index)
+				local spot = center + outward * (PlotService.RadiusOf(index) + EJECT_GAP)
+				local target = Vector3.new(spot.X, math.max(root.Position.Y, center.Y + EJECT_HEIGHT), spot.Z)
+				character:PivotTo(CFrame.lookAt(target, target + outward))
 				root.AssemblyLinearVelocity = Vector3.zero
 				local profile = DataService.Get(player)
 				if profile then

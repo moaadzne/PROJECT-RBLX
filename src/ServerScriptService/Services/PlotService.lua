@@ -22,7 +22,9 @@ local CHARACTER_TIMEOUT = 10
 local INCOME_TICK = 1
 local MAX_INCOME_DT = 5
 
-local plots = {} -- [index] = { model, bounds = {minX, maxX, minZ, maxZ}, owner }
+-- [index] = { model, center, radius, bounds?, owner }. Format de l'ile ouverte : attributs Center + Radius
+-- (cercle horizontal). Repli : ancien rectangle MinX/MaxX/MinZ/MaxZ.
+local plots = {}
 local plotOf = {} -- [player] = index
 local knownStages = {} -- [player] = { [uid] = stage } : pour detecter un changement de stade
 
@@ -72,10 +74,15 @@ function PlotService.GetModel(index)
 end
 
 function PlotService.IsInPlot(index, position)
-	local bounds = plots[index] and plots[index].bounds
-	if not bounds then
+	local plot = plots[index]
+	if not plot then
 		return false
 	end
+	if plot.radius then
+		local dx, dz = position.X - plot.center.X, position.Z - plot.center.Z
+		return dx * dx + dz * dz <= plot.radius * plot.radius
+	end
+	local bounds = plot.bounds
 	return position.X >= bounds.minX and position.X <= bounds.maxX
 		and position.Z >= bounds.minZ and position.Z <= bounds.maxZ
 end
@@ -83,6 +90,34 @@ end
 function PlotService.IsInOwnPlot(player, position)
 	local index = plotOf[player]
 	return index ~= nil and PlotService.IsInPlot(index, position)
+end
+
+-- Centre du lagon et direction horizontale de la crique vers lui (vers la mer)
+function PlotService.CenterOf(index)
+	return plots[index] and plots[index].center
+end
+
+function PlotService.OutwardOf(index)
+	local center = plots[index] and plots[index].center
+	local c = Config.Island.center
+	local flat = center and Vector3.new(center.X - c.X, 0, center.Z - c.Z)
+	if not flat or flat.Magnitude < 0.01 then
+		return Vector3.new(0, 0, -1)
+	end
+	return flat.Unit
+end
+
+-- Rayon du lagon (ou demi-diagonale du rectangle de repli)
+function PlotService.RadiusOf(index)
+	local plot = plots[index]
+	if not plot then
+		return 0
+	end
+	if plot.radius then
+		return plot.radius
+	end
+	local b = plot.bounds
+	return Vector2.new(b.maxX - b.minX, b.maxZ - b.minZ).Magnitude / 2
 end
 
 function PlotService.OwnerOf(index)
@@ -393,11 +428,15 @@ function PlotService.Start()
 	local folder = workspace:WaitForChild("Map"):WaitForChild("Plots")
 	for _, model in ipairs(folder:GetChildren()) do
 		local index = model:GetAttribute("Index")
+		local center, radius = model:GetAttribute("Center"), model:GetAttribute("Radius")
 		local minX, maxX = model:GetAttribute("MinX"), model:GetAttribute("MaxX")
 		local minZ, maxZ = model:GetAttribute("MinZ"), model:GetAttribute("MaxZ")
-		if type(index) == "number" and minX and maxX and minZ and maxZ then
+		if type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
+			plots[index] = { model = model, center = center, radius = radius, owner = nil }
+		elseif type(index) == "number" and minX and maxX and minZ and maxZ then
 			plots[index] = {
 				model = model,
+				center = Vector3.new((minX + maxX) / 2, Config.Island.seaY, (minZ + maxZ) / 2),
 				bounds = { minX = minX, maxX = maxX, minZ = minZ, maxZ = maxZ },
 				owner = nil,
 			}

@@ -1,4 +1,4 @@
--- CreatureService : creatures de la plage (apparition, mutation tiree a l'apparition selon la maree),
+-- CreatureService : creatures de l'ile, par anneaux autour de la crique (apparition, mutation tiree a l'apparition selon la maree),
 -- la vague qui les emporte, la capture (10 fois/s), le Reef Codex et le depot dans les bassins.
 -- Les creatures "personnelles" (attribut Owner) servent a l'intro : seul leur proprietaire peut les attraper.
 local Players = game:GetService("Players")
@@ -20,23 +20,19 @@ local SPAWN_TICK = 0.5
 local VERTICAL_REACH = 8 -- un joueur sur une tour n'attrape pas ce qui est en bas
 local BAG_FULL_COOLDOWN = 3
 local SPAWN_TRIES = 12
-local EDGE_MARGIN = 6
-local ZONE_MARGIN = 4
-local TOWER_HALF_WIDTH = 12
-local TOWER_BACK = 12
-local TOWER_RAMP = 52 -- la rampe descend vers +Z jusqu'a Center.Z + 48
-local RAY_HEIGHT = 80
-local RAY_LENGTH = 160
-local GROUND_TOLERANCE = 4
+local RING_MARGIN = 4
+local ROYAL_BAND = 30 -- la creature royale apparait dans les 30 derniers studs de l'anneau exterieur
+local RAY_HEIGHT = 120
+local RAY_LENGTH = 200
 local GROUND_BOB = 0.4
 local GROUND_GAP = 0.6
 local LEGENDARY_ORDER = 5
 
 local rng = Random.new()
 local folder = nil
-local active = {} -- [model] = { species, mutation, zone, pos, owner (UserId) ?, royal ? }
+local active = {} -- [model] = { species, mutation, zone (anneau), pos, owner (UserId) ?, royal ? }
 local captureHooks = {}
-local zoneCounts = {} -- creatures partagees seulement
+local zoneCounts = {} -- [anneau] = creatures partagees seulement
 local towerCenters = {}
 local lastBagFull = {}
 local rayParams = RaycastParams.new()
@@ -44,8 +40,10 @@ rayParams.FilterType = Enum.RaycastFilterType.Exclude
 rayParams.IgnoreWater = false
 
 local function nearTower(x, z)
+	local r2 = Config.Island.towerRadius * Config.Island.towerRadius
 	for _, center in ipairs(towerCenters) do
-		if math.abs(x - center.X) < TOWER_HALF_WIDTH and z > center.Z - TOWER_BACK and z < center.Z + TOWER_RAMP then
+		local dx, dz = x - center.X, z - center.Z
+		if dx * dx + dz * dz < r2 then
 			return true
 		end
 	end
@@ -63,22 +61,29 @@ local function nearCreature(x, z)
 	return false
 end
 
--- Sol de sable sous (x, z) : position du sol, ou nil (eau, decor, trop haut ou trop bas)
+-- Sol de Terrain sous (x, z) : position du sol, ou nil (eau, decor, hors de la plage de hauteurs)
 function CreatureService.GroundAt(x, z)
 	local hit = workspace:Raycast(Vector3.new(x, RAY_HEIGHT, z), Vector3.new(0, -RAY_LENGTH, 0), rayParams)
 	if hit and hit.Instance == workspace.Terrain and hit.Material ~= Enum.Material.Water
-		and math.abs(hit.Position.Y - Config.Beach.groundY) <= GROUND_TOLERANCE then
+		and hit.Position.Y >= Config.Island.spawnYMin and hit.Position.Y <= Config.Island.spawnYMax then
 		return hit.Position
 	end
 	return nil
 end
 
--- Un point de sable libre dans la zone (pas d'eau, pas de decor, pas de tour)
-function CreatureService.FindSpot(zoneIndex)
-	local zone = Config.Zones[zoneIndex]
+-- Point au hasard dans un anneau [rMin, rMax] autour du centre de l'ile (surface uniforme)
+local function pointInRing(rMin, rMax)
+	local angle = rng:NextNumber(0, 2 * math.pi)
+	local r = math.sqrt(rng:NextNumber(rMin * rMin, rMax * rMax))
+	local c = Config.Island.center
+	return c.X + r * math.cos(angle), c.Z + r * math.sin(angle)
+end
+
+-- Un point de sable libre dans l'anneau (pas d'eau, pas de decor, pas de tour)
+function CreatureService.FindSpot(ringIndex)
+	local ring = Config.Rings[ringIndex]
 	for _ = 1, SPAWN_TRIES do
-		local x = rng:NextNumber(Config.Beach.xMin + EDGE_MARGIN, Config.Beach.xMax - EDGE_MARGIN)
-		local z = rng:NextNumber(zone.zMin + ZONE_MARGIN, zone.zMax - ZONE_MARGIN)
+		local x, z = pointInRing(ring.rMin + RING_MARGIN, ring.rMax - RING_MARGIN)
 		if not nearTower(x, z) and not nearCreature(x, z) then
 			local ground = CreatureService.GroundAt(x, z)
 			if ground then
@@ -109,7 +114,7 @@ local function place(species, mutation, ground, zoneIndex, owner, royal)
 end
 
 local function spawnOne(zoneIndex, tide)
-	local zone = Config.Zones[zoneIndex]
+	local zone = Config.Rings[zoneIndex]
 	local spot = CreatureService.FindSpot(zoneIndex)
 	if not spot then
 		return false
@@ -135,16 +140,14 @@ local function currentTide()
 	return wave and wave.tide or "Normal"
 end
 
--- Remplit chaque zone ouverte jusqu'a son maximum, avec la maree en cours
+-- Remplit chaque anneau jusqu'a son maximum, avec la maree en cours
 function CreatureService.FillAll(tide)
 	tide = tide or currentTide()
-	for i, zone in ipairs(Config.Zones) do
-		if zone.open then
-			local tries = zone.maxItems * 2
-			while zoneCounts[i] < zone.maxItems and tries > 0 do
-				spawnOne(i, tide)
-				tries -= 1
-			end
+	for i, ring in ipairs(Config.Rings) do
+		local tries = ring.maxItems * 2
+		while zoneCounts[i] < ring.maxItems and tries > 0 do
+			spawnOne(i, tide)
+			tries -= 1
 		end
 	end
 end
@@ -153,17 +156,18 @@ end
 function CreatureService.SpawnPersonal(player, list)
 	local count = 0
 	for _, entry in ipairs(list) do
-		if Config.Creatures[entry.species] and place(entry.species, entry.mutation or "", entry.ground, Config.ZoneAt(entry.ground.Z), player.UserId) then
+		if Config.Creatures[entry.species] and place(entry.species, entry.mutation or "", entry.ground, Config.RingAt(entry.ground), player.UserId) then
 			count += 1
 		end
 	end
 	return count
 end
 
--- Emporte ce que la vague a recouvert (Z <= front). owner = nil : vague globale ; sinon vague propre a ce joueur.
-function CreatureService.WashAway(front, owner)
+-- Emporte ce que la vague `wave` a recouvert (axe <= front, hors crique, sous sa hauteur).
+-- owner = nil : vague globale ; sinon vague propre a ce joueur (intro).
+function CreatureService.WashAway(wave, front, owner)
 	for model, info in pairs(active) do
-		if info.pos.Z <= front then
+		if Config.WaveAxis(wave, info.pos) <= front and info.pos.Y < Config.Wave.height and not Config.InCove(info.pos) then
 			if owner then
 				if info.owner == owner then
 					remove(model, info)
@@ -302,7 +306,7 @@ local function tickPlayer(player, profile)
 		deposit(player, profile)
 		return
 	end
-	if pos.Z >= Config.BaseLineZ or os.clock() < profile.sweptUntil then
+	if Config.InCove(pos) or os.clock() < profile.sweptUntil then
 		return
 	end
 
@@ -343,16 +347,16 @@ end
 -- Pendant le calme seulement : la plage se recharge
 local function spawnLoop()
 	local timers = {}
-	for i in ipairs(Config.Zones) do
+	for i in ipairs(Config.Rings) do
 		timers[i] = 0
 	end
 	while true do
 		local dt = task.wait(SPAWN_TICK)
 		local wave = WaveService.Get()
 		if wave and wave.phase == "calm" then
-			for i, zone in ipairs(Config.Zones) do
+			for i, zone in ipairs(Config.Rings) do
 				timers[i] += dt
-				if zone.open and timers[i] >= zone.spawnEvery then
+				if timers[i] >= zone.spawnEvery then
 					timers[i] = 0
 					if zoneCounts[i] < zone.maxItems then
 						local ok, err = pcall(spawnOne, i, wave.tide)
@@ -371,32 +375,29 @@ function CreatureService.OnCapture(callback)
 	table.insert(captureHooks, callback)
 end
 
--- Creature royale : unique sur la plage, au bout de la derniere zone ouverte, toujours mutee
+-- Creature royale : unique sur l'ile, au bord de l'anneau exterieur, toujours mutee
 function CreatureService.SpawnRoyal(mutation)
 	for _, info in pairs(active) do
 		if info.royal then
 			return false
 		end
 	end
-	local zoneIndex, best, bestIncome = nil, nil, -1
-	for i, zone in ipairs(Config.Zones) do
-		if zone.open then
-			zoneIndex = i
-			for _, entry in ipairs(zone.creatures) do
-				local income = Config.Creatures[entry[1]].income
-				if income > bestIncome then
-					best, bestIncome = entry[1], income
-				end
+	local best, bestIncome = nil, -1
+	for _, ring in ipairs(Config.Rings) do
+		for _, entry in ipairs(ring.creatures) do
+			local income = Config.Creatures[entry[1]].income
+			if income > bestIncome then
+				best, bestIncome = entry[1], income
 			end
 		end
 	end
-	if not zoneIndex then
+	local zoneIndex = #Config.Rings
+	local zone = Config.Rings[zoneIndex]
+	if not zone or not best then
 		return false
 	end
-	local zone = Config.Zones[zoneIndex]
 	for _ = 1, SPAWN_TRIES do
-		local x = rng:NextNumber(Config.Beach.xMin + EDGE_MARGIN, Config.Beach.xMax - EDGE_MARGIN)
-		local z = rng:NextNumber(zone.zMin + ZONE_MARGIN, zone.zMin + ZONE_MARGIN * 4)
+		local x, z = pointInRing(math.max(zone.rMin, zone.rMax - ROYAL_BAND), zone.rMax - RING_MARGIN)
 		local ground = not nearTower(x, z) and CreatureService.GroundAt(x, z)
 		if ground and place(best, mutation, ground, zoneIndex, nil, true) then
 			return true
@@ -457,7 +458,7 @@ function CreatureService.Start()
 		oldTreasures:Destroy()
 	end
 	rayParams.FilterDescendantsInstances = { folder }
-	for i in ipairs(Config.Zones) do
+	for i in ipairs(Config.Rings) do
 		zoneCounts[i] = 0
 	end
 	local towers = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Towers")
@@ -474,7 +475,7 @@ function CreatureService.Start()
 		CreatureService.FillAll(tide)
 	end)
 	WaveService.OnFront(function(_, front)
-		CreatureService.WashAway(front, nil)
+		CreatureService.WashAway(WaveService.Get(), front, nil)
 	end)
 	task.spawn(function()
 		while true do

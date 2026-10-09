@@ -162,6 +162,7 @@ function Net.SetWave(wave)
 	remote:SetAttribute("StartTime", wave.startTime)
 	remote:SetAttribute("Cycle", wave.cycle)
 	remote:SetAttribute("Tide", wave.tide)
+	remote:SetAttribute("Direction", wave.direction)
 	for _, player in ipairs(Players:GetPlayers()) do
 		local own = personal[player]
 		if not (own and own.wave) then
