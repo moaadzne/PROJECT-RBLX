@@ -1,66 +1,146 @@
-# Tide Rush — review context (server, Roblox Luau)
+# Tide Rush : Reef Keepers — contexte serveur et contrat des remotes v2
 
-Code under review: /Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/
-- Main.server.lua (Script, ServerScriptService.Main)
-- Services/*.lua (ModuleScripts under ServerScriptService.Services): Net, Stats, ItemFactory, DataService, PlotService, TreasureService, WaveService, UpgradeService, PetService, DebugService, SelfTest
+Mis à jour par A le 2026-10-09. Le contrat v1 (trésors) est remplacé : le client v1 n'est pas compatible, B code contre la v2.
+Référence design : docs/GDD.md (§1 ter, §4, §5, §8, §12, §13) et docs/TABLEAU.md (décisions de D).
 
-Shared config (ReplicatedStorage.Shared.Config, read-only for review): /Users/admin/Documents/claude code/tide-rush/review/Config.lua
+## Code serveur
+- `src/ServerScriptService/Main.server.lua` (Script) ; `Services/*.lua` (ModuleScripts) : Net, Stats, DataService, PlotService, WaveService, CreatureService, CreatureFactory, IntroService, UpgradeService, PetService, DebugService, SelfTest.
+- Config partagée (lue aussi par le client, source unique des chiffres et des probabilités affichées) : `ReplicatedStorage.Shared.Config`.
+- 8 joueurs max par serveur, mobile d'abord. Serveur qui fait autorité : temps, stades, mutations et valeurs sont calculés côté serveur.
 
-The code will run in Roblox Studio and then on live servers (8 players max per server, mobile-first).
-Teammates write the CLIENT against the remote contract below (out of scope), but the server must honour the contract exactly.
+## Règles de jeu (Phase 1, GDD §12)
+- Zone ouverte : Shallows (zone 1). Les zones 2 à 5 sont dans Config mais `open = false`.
+- **Marée** : chaque cycle de vague a un type (`Normal` ou `Golden` en Phase 1). Calendrier déterministe à partir du numéro de cycle (Config.TideSchedule).
+- **Créatures sur la plage** : au début du calme, la plage se remplit ; pendant le calme, elle se recharge. La **mutation est tirée à l'apparition**, avec les chances de la marée en cours (Config.Tides). La vague emporte les créatures de la plage au passage de son front.
+- **Capture** : au contact (rayon Config.PickupRadius, vérifié 10 fois/s par le serveur), sac limité (Bag).
+- **Dépôt** automatique en entrant dans sa base : bassin libre d'abord ; lagon plein → la nouvelle remplace la plus faible si elle vaut plus (revenu/s courant, stade et mutation compris) ; sinon elle est relâchée contre des pièces. Une créature remplacée est relâchée aussi. Prix de relâche = revenu bébé (mutation comprise) × Config.SellMultiplier.
+- **Croissance** : 4 stades (Config.Stages) calculés depuis `born` (heure Unix du serveur, au dépôt). Aucune minuterie : la croissance hors ligne est automatique.
+- **Revenu** /s = Σ (base × mult. de stade × mult. de mutation) × (1 + bonus compagnons + bonus Codex), versé chaque seconde.
+- **Hors ligne** : 50 % du revenu (croissance comprise), plafonné à 8 h, versé au chargement (Notify `offline`).
+- **Reef Codex** : une case par espèce × variante (Config.CodexVariants : `Normal`, `Golden` en Phase 1). Nouvelle case à la capture : revenu de base × 50 pièces. Ligne d'espèce complète : +5 % de revenu permanent. Jamais remis à zéro.
+- **LagoonTier** (1..5) : calculé à partir du revenu/s (Config.LagoonTiers), écrit en attribut sur PlotN.
+- **Vague** (inchangée) : 35 s de calme, 7 s d'alerte, part de Z = -800 à 46 studs/s, s'arrête à Z = 0, hauteur 22, épaisseur 40. Prise si Z < 0, dans le corps de la vague et pieds sous 22. Jamais sur une tour ni dans sa base. Prise = sac perdu, retour à la base 0,8 s plus tard, au plus 1 prise par cycle.
+- **Intro par joueur** (GDD §1 ter), pour un nouveau joueur seulement :
+  - spawn dans son lagon ;
+  - 5 créatures personnelles près du lagon : un Pebble Crab à environ 10 studs, puis 3 autres, puis une Sand Star Golden plus loin ;
+  - **vague d'intro personnelle** 18 s après le chargement : elle ne peut pas attraper le joueur, mais elle emporte ses créatures personnelles restées sur le sable ;
+  - au premier calme global qui suit, **marée Golden personnelle** : sa WaveState indique `tide = "Golden"` et 5 créatures personnelles sont tirées avec les chances Golden, dont au moins une Golden ;
+  - ensuite, le calendrier normal.
+- Mort ou reset = sac perdu (Notify `bagLost`). Bouton Home refusé hors du calme (`WaveActive`) et pendant le cooldown (`Cooldown`).
+- Données : DataStore, 3 essais, verrou de session, autosave 90 s, sauvegarde au départ et dans BindToClose. Si le chargement échoue, la session ne sauvegarde jamais (Notify `saveOff`). Schéma v2 ; une donnée v1 est rangée dans `legacy.v1`, rien n'est effacé.
+- Le serveur dépend seulement des NOMS et des ATTRIBUTS de la carte : `Plots/PlotN` (Index, MinX, MaxX, MinZ, MaxZ, SpawnPos), `Pedestals/PedestalN` (Slot, LockGui, hauteur Size.X ; un bassin = un PedestalN), `Towers/TowerN` (Center).
+- Modèles : `ReplicatedStorage.Assets.Creatures.<Species>`. **Repli** tant qu'ils manquent : `Assets.Items.<ancien trésor>` via Config.LegacyItemToCreature.
 
-## Game design (spec)
-- Beach X -132..132, Z -784..124, ground Y ~= 0..2 (terrain). Ocean around. Bases (plots) at Z > 0; beach zones at Z < 0.
-- 5 zones (Config.Zones) going away from base (Z decreasing). Treasures spawn per zone up to maxItems every spawnEvery seconds, on Terrain only (never in decor or water), >= 6 studs apart.
-- Player collects treasures (bag limited, Config Bag upgrade), pickup radius Config.PickupRadius checked by the server 10x/s.
-- Every ~minute a giant wave: 35 s calm, 7 s warning, travels from Z=-800 at 46 studs/s and stops at Z=0, height 22, thickness 40, recede 2.5 s. Tower platforms at Y=26 (above the wave). Player caught if Z<0 and frontZ-40 <= Z <= frontZ and feet Y<22. NEVER caught on a tower platform nor in own base. Caught = loses only what they carry, teleported home 0.8 s later, no death screen, at most 1 catch per cycle. Disconnect during the wave must not error. No server CFrame update per frame.
-- Base: 5 pedestals at start, up to 10. Deposit automatic when entering own plot rectangle (plot attributes MinX/MaxX/MinZ/MaxZ). When pedestals are full, a stronger treasure replaces the weakest; whatever doesn't fit is sold for income x Config.SellMultiplier.
-- Income = sum of displayed items' income/s x (1 + sum of equipped pet boosts), paid once per second.
-- Upgrades bought with coins: Speed 16..40 (+2/level, cost 50*2^n), Bag 2..10 (cost 75*2.2^n), Slots 5..10 (cost 200*3^n). WalkSpeed applied, pedestal unlocked.
-- Pets: eggs bought with in-game coins ONLY (never Robux — halal rule + Roblox rules: no paid random draws). 3 equipped max, 40 inventory max. "Equip best". Full pet system is Phase 2; remotes must answer cleanly now.
-- Home button (GoHome RF): refused outside "calm" phase (WaveActive), cooldown Config.HomeCooldown (Cooldown).
-- Death (reset) loses the carried bag (otherwise reset = free teleport home with the bag) -> Notify bagLost.
-- Server authority: validate every remote (type, existence, cost, rate limit -> RateLimited). No RemoteFunction without handler. StreamingEnabled = true: player:RequestStreamAroundAsync before teleporting.
-- Data: DataStore load with 3 tries; if load fails the session NEVER saves (saveEnabled=false, Notify saveOff). Autosave every 90 s, on leave, and in BindToClose. Versioned schema v1 + reconciliation. Session locking so two servers never overwrite each other. Without Studio API access: no red error.
-- Debug: ServerStorage.TR_Debug BindableFunction, Studio only: help, addCoins, forceWave, give, state, selftest (+ level, home, treasures, save).
-- Team rule: the server depends only on NAMES and ATTRIBUTES (Plots/PlotN: Index, MinX, MaxX, MinZ, MaxZ, SpawnPos; Pedestals/PedestalN: Slot, LockGui, height Size.X; Towers: Center), never on decor geometry (decor is being rebuilt). The server does NOT write the sign text; it only sets plot attributes Owner (UserId) / OwnerName (DisplayName), removed when free.
+## Contrat des remotes v2 (publié pour B — le serveur s'y tient exactement)
 
-## Map facts (verified in Studio)
-- workspace.Map.Plots.Plot1..Plot8: attributes Index, MinX, MaxX, MinZ (=4), MaxZ (=67), SpawnPos (Vector3, Y=1 = deck top). Children: Pedestals folder with Pedestal1..10 (Parts, cylinders lying on their side, height = Size.X = 2, Position.Y = 2, attribute Slot, child BillboardGui "LockGui" with a TextLabel) and Rim1..10; Display folder (empty, runtime); SignAnchor.OwnerGui.Title (TextLabel).
-- workspace.Map.Towers.Tower1..10: attribute Center (Vector3 at ground), platform top at Y 26, ramp toward +Z until Center.Z + 48.
-- ReplicatedStorage.Assets.Items.<ItemId>: Models, PrimaryPart "Root" (invisible), attributes ItemId, Rarity; all parts Anchored.
-- ReplicatedStorage.Assets.FX.RarityBeam: Part with Attachments BeamA/BeamB and Beams "Core" and "Halo" (style for Epic/Legendary beacons).
-- SpawnLocation at hub (0, 0.6, 96), neutral. Players.CharacterAutoLoads = true.
+**Temps.** Toutes les heures du contrat sont en secondes Unix, comparables à `workspace:GetServerTimeNow()`. `state.serverNow` donne l'heure du serveur au moment du snapshot.
 
-## Remote contract v1 (published to teammates — server must match)
-Times: workspace:GetServerTimeNow().
-GetState (RemoteFunction): GetState() -> (state, wave). state.loaded=false while loading; StateChanged follows when ready. state may be nil (player not tracked yet, or rate limited); wave is always a table.
-StateChanged (RemoteEvent S->C): (state) full snapshot on each change (coins: 1/s)
-  state = { loaded, saveEnabled, coins, income (per s, boosts incl.), baseIncome, petBoost (0.3=+30%),
-    bag={itemId...}, bagMax, levels={Speed,Bag,Slots}, slots (5..10),
-    display={itemId or "", ...} dense array of length slots, plot (1..8, 0=none), walkSpeed, homeReadyAt (server time),
-    pets={{uid="1", id="CrabBuddy"}...}, equipped={uid...},
-    stats={pickups, deposited, sold, caught, wavesSurvived, eggsHatched, upgradesBought, coinsEarned},
-    collection={[itemId]=count} }
-WaveState (RemoteEvent S->C): (wave) on each phase change + to the arriving player
-  wave = {phase="calm"|"warning"|"wave"|"recede", phaseStart, phaseEnd, startTime, cycle}
-  startTime = departure of the (current or next) wave from Config.Wave.startZ.
-  frontZ = math.min(endZ, startZ + speed*(now - startTime)); body = [frontZ - thickness, frontZ].
-  Also mirrored as attributes on Remotes.WaveState: Phase, PhaseStart, PhaseEnd, StartTime, Cycle.
-Notify (RemoteEvent S->C): (kind, data), data.text always present (English)
-  welcome {text}; saveOff {text}; pickup {itemId, rarity, position (Vector3), bagCount, bagMax, isNew};
-  bagFull {bagMax} (max once per 3 s); deposit {items={itemId...}, slots={slot...}}; sold {itemId, coins} (one per sold item);
-  caught {lost=n, items={...}} (teleport home 0.8 s later); bagLost {lost=n}; upgrade {kind, level, value};
-  hatch {eggId, petId, uid, rarity}; error {code, text}; info {text}; survived {text}
-BuyUpgrade (RF): BuyUpgrade(kind "Speed"|"Bag"|"Slots") -> (true, newLevel) | (false, code)
-GoHome (RF): GoHome() -> (true) | (false, code)   refused outside "calm" and during cooldown
-HatchEgg (RF): HatchEgg(eggId) -> (true, petId, uid) | (false, code)
-EquipPet (RF): EquipPet(uid, equip bool) -> (true) | (false, code); EquipPet("best", true) = Equip best; EquipPet("best", false) -> (false, "BadRequest")
-Codes: BadRequest, RateLimited, NotLoaded, NotEnoughCoins, MaxLevel, Cooldown, WaveActive, NoPlot, InventoryFull, UnknownPet, EquipFull, ServerError
-Runtime objects: workspace.Treasures models (ModelStreamingMode Atomic, tag TR_Spin, attributes ItemId, Rarity, Zone, BasePos, BaseYaw, SpinSpeed, Bob; Epic/Legendary get clones of FX.RarityBeam Core+Halo between Root.BeamA and Root.BeamB at Y+42); Map.Plots.PlotN.Display (same + Slot, Zone=0); plot attributes Owner/OwnerName; Player attributes Plot, Loaded, Pets ("CrabBuddy,Turtle"); leaderstats Coins/Income StringValues.
+**Création.** Le serveur crée au démarrage les remotes qui manquent dans `ReplicatedStorage.Remotes`. Le client fait `WaitForChild`.
 
-## Design notes on DataService (v2, after a first review round)
-- Per-profile lock token (lock = {s=server session, p=profile token, j, t}); claim waits while another profile holds a fresh lock (< AUTOSAVE_EVERY+30 s), asks the holder to release via MessagingService topic "TR_Release" (holder saves, releases and kicks the player), and forces after 10 x 3 s.
-- Final save on leave is retried up to 4 times. Shutdown also waits for in-flight loads.
-- Unknown ids/levels read from the DataStore are kept in data.legacy instead of being erased.
-- Permanent errors (Studio without API access, unpublished place) fail fast without retries.
+### GetState (RemoteFunction)
+`GetState() -> (state, wave)`.
+- `state` peut être nil : joueur pas encore suivi, ou limite de fréquence.
+- `state.loaded = false` pendant le chargement ; un StateChanged suit quand c'est prêt.
+- `wave` est toujours une table : celle de **ce joueur**, donc l'intro ou la Golden personnelle le cas échéant.
+
+### StateChanged (RemoteEvent S→C) : `(state)`, snapshot complet à chaque changement (au plus 10 fois/s)
+```
+state = {
+  loaded, saveEnabled, serverNow,
+  coins, income,            -- income = revenu/s total, bonus compris
+  baseIncome,               -- Σ revenus des créatures, sans bonus
+  petBoost, codexBonus,     -- 0.3 = +30 %
+  bag = { {species, mutation}, ... }, bagMax,
+  levels = {Speed, Bag, Slots}, slots,   -- slots = nombre de bassins ouverts (5..10)
+  pools = { [1..slots] = creature | false },   -- tableau dense, false = bassin vide
+  plot,                     -- 1..8, 0 = aucune base
+  lagoonTier,               -- 1..5
+  walkSpeed, homeReadyAt,
+  intro,                    -- "intro" | "golden" | "done"
+  codex = { [species] = { [variant] = true } }, codexCount, codexTotal,
+  pets = {{uid, id}}, equipped = {uid...},
+  stats = {pickups, deposited, released, caught, wavesSurvived, eggsHatched, upgradesBought, coinsEarned, mutationsFound, offlineCoins},
+}
+creature = {
+  uid,                      -- chaîne, unique par joueur
+  species,                  -- clé de Config.Creatures
+  mutation,                 -- "" (aucune) ou clé de Config.Mutations
+  born,                     -- heure du dépôt
+  stage,                    -- 1..4 (index dans Config.Stages)
+  nextStageAt,              -- heure du prochain stade, 0 si Giant
+  income,                   -- revenu/s de cette créature (stade et mutation), sans bonus
+}
+```
+Le client peut afficher la progression entre deux snapshots grâce à `born`, `nextStageAt` et `serverNow`. Le serveur reste la référence : au changement de stade, il envoie un `grown` et un nouveau snapshot.
+
+### WaveState (RemoteEvent S→C) : `(wave)`, à chaque changement de phase, et à l'arrivée du joueur
+```
+wave = {
+  phase = "calm" | "warning" | "wave" | "recede",
+  phaseStart, phaseEnd, startTime, cycle,
+  tide,                     -- "Normal" | "Golden" (Phase 2 : "Night", "Storm", "Rainbow")
+  nextSpecial = { tide, cycle },   -- prochaine marée spéciale du calendrier global
+  intro,                    -- true seulement pour la vague d'intro personnelle
+  startZ, speed,            -- présents seulement si différents de Config.Wave (vague d'intro)
+}
+```
+- `startTime` = départ de la vague, en cours ou à venir.
+- `frontZ = math.min(Config.Wave.endZ, (wave.startZ or Config.Wave.startZ) + (wave.speed or Config.Wave.speed) * (now - startTime))`. Corps de la vague = `[frontZ - thickness, frontZ]`.
+- Copie de la vague **globale** en attributs sur `Remotes.WaveState` : Phase, PhaseStart, PhaseEnd, StartTime, Cycle, Tide. Pendant une intro ou une Golden personnelle, ce qui fait foi pour le joueur, c'est l'événement WaveState, pas ces attributs.
+
+### Notify (RemoteEvent S→C) : `(kind, data)`, `data.text` toujours présent (anglais)
+| kind | data |
+|---|---|
+| welcome | `{text, isNew}` |
+| saveOff | `{text}` |
+| capture | `{species, mutation, rarity, position (Vector3), bagCount, bagMax, isNew}` (isNew = nouvelle case du Codex) |
+| bagFull | `{bagMax}` (au plus une fois toutes les 3 s) |
+| deposit | `{placed = {{slot, species, mutation}}}` |
+| released | `{species, mutation, coins, slot}` (slot présent si c'était une créature remplacée dans un bassin) |
+| grown | `{uid, slot, species, stage}` |
+| codex | `{species, variant, coins, count, total, rowComplete}` |
+| offline | `{seconds, coins}` (seconds = durée comptée, plafonnée) |
+| caught | `{lost, items = {{species, mutation}}}` (retour à la base 0,8 s plus tard) |
+| bagLost | `{lost}` |
+| survived | `{text}` |
+| upgrade | `{kind, level, value}` |
+| hatch | `{eggId, petId, uid, rarity}` |
+| error | `{code, text}` |
+| info | `{text}` |
+
+### RemoteFunctions
+- `BuyUpgrade(kind "Speed"|"Bag"|"Slots") -> (true, newLevel) | (false, code)` ; « Slots » s'affiche « Pools ».
+- `GoHome() -> (true) | (false, code)` : refusé hors du calme de la vague du joueur, et pendant le cooldown.
+- `HatchEgg(eggId) -> (true, petId, uid) | (false, code)` : œufs en pièces (Phase 2 pour l'interface, le serveur répond déjà).
+- `EquipPet(uid, equip bool) -> (true) | (false, code)` ; `EquipPet("best", true)` équipe les meilleurs.
+- Codes : BadRequest, RateLimited, NotLoaded, NotEnoughCoins, MaxLevel, Cooldown, WaveActive, NoPlot, InventoryFull, UnknownPet, EquipFull, ServerError.
+
+### Emplacements réservés (Phase 2, NON implémentés, forme provisoire jusqu'au GDD v2)
+Ces noms sont réservés : personne ne les utilise pour autre chose. Le serveur ne les crée pas encore.
+- **Vol entre lagons** :
+  - RF `StealAttempt(plot, slot) -> (true, stealId) | (false, code)` ;
+  - RE S→C `StealResult(result)`, avec `result = {stealId, thief, victim, species, mutation, success}` ;
+  - attribut `LockedUntil` (heure) sur PlotN = verrou de lagon ;
+  - Notify `stolen` ;
+  - codes prévus : `Locked`, `TooFar`, `NotStealable`.
+- **Monture** :
+  - RF `Mount(mountId) -> (true) | (false, code)` et `Dismount() -> (true)` ;
+  - attribut joueur `Mount` ;
+  - `state.mounts`, `state.mount`.
+- **Marée Royale** (compétition de marée) :
+  - `wave.royal = {active, endsAt}` ;
+  - RE S→C `RoyalBoard(board)`, avec `board = {{userId, name, score}}` ;
+  - Notify `royalResult {rank, reward}`.
+
+### Objets et attributs à l'exécution
+- `workspace.Creatures` : créatures de la plage.
+  - Modèles en ModelStreamingMode Atomic, tag `TR_Spin`.
+  - Attributs : CreatureId, Rarity, Mutation ("" si aucune), Stage (= 1), Zone, BasePos, BaseYaw, SpinSpeed, Bob.
+  - `Owner` (UserId) seulement sur une créature personnelle de l'intro : le client la cache aux autres joueurs, et seul ce joueur peut l'attraper.
+- `Map.Plots.PlotN.Display` : une créature par bassin, avec les mêmes attributs + Slot, Uid, Born, Stage (1..4), Zone = 0. Le client applique l'échelle du stade (Config.Stages[stage].scale) et le look de mutation (CreatureLook, côté C/B).
+- PlotN : attributs `Owner` (UserId), `OwnerName` (DisplayName), `LagoonTier` (1..5). Owner et OwnerName sont retirés quand la base est libre.
+- Joueur : attributs `Plot`, `Loaded`, `Pets` ("CrabBuddy,Turtle"), `Bag` ("PebbleCrab:Golden,SandStar:" pour afficher la pile sur la tête).
+- leaderstats : `Coins` et `Income` (StringValue).
+
+## Debug (Studio seulement) : ServerStorage.TR_Debug (BindableFunction)
+Commandes : help, state, addCoins, give, level, forceWave, tide, grow, intro, home, creatures, save, selftest.
