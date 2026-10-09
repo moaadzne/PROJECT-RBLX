@@ -1,186 +1,159 @@
-# DA du monde : Reef Keepers (C, 09/10/2026)
+# DA du monde : Ride the Tsunami (C, v2 du 09/10/2026)
 
-Référence visuelle : docs/BIBLE_QUALITE.md §4. Concept : docs/DIRECTIONS.md §A. Le GDD de E (docs/GDD.md) prime dès qu'il est poussé : les points marqués **[GDD]** l'attendent.
+**docs/DIRECTION_V2.md prime** sur ce document et sur la bible pour le style. Concept et chiffres : docs/GDD.md (v2). Créatures : docs/CREATURES_ART.md. IDs et sons : docs/SOURCING_C.md. Scripts : tools/world/.
 
-Style : **stylisé console** (formes rondes et biseautées, couleurs saturées mais chaudes, matières lisibles, pas de photoréalisme). Un objet = une silhouette lisible à 60 studs sur un écran de téléphone.
+**Style : réaliste stylisé.** Le monde est crédible : la lumière, l'eau, les matériaux et les animaux se comportent comme en vrai. Les formes sont simplifiées. Jamais de cartoon, rien de mignon. Une silhouette doit se lire à 60 studs sur un écran de téléphone.
 
 ## 0. Contraintes héritées (ne pas casser)
-Le serveur dépend de ces noms et attributs (review/review_context.md, « Map facts ») :
-- `Map.Plots.PlotN` (1..8) : `Index`, `MinX`, `MaxX`, `MinZ`=4, `MaxZ`=67, `SpawnPos` (Y=1, dessus du deck). Enfants `Pedestals/PedestalN` (`Slot`, `LockGui`), `Display`, `SignAnchor.OwnerGui.Title`.
-- `Map.Towers.TowerN` : `Center`, plateforme à Y=26, rampe vers +Z jusqu'à Center.Z+48.
-- Base : centre X = -112 + (i-1)×32, donc **32 studs de large × 63 de profond** par base.
+Le serveur dépend de ces noms et attributs (review/review_context.md) :
+- `Map.Plots.PlotN` (1..8) : `Index`, `MinX`, `MaxX`, `MinZ`=4, `MaxZ`=67, `SpawnPos` (Y=1), `Owner`, `OwnerName`, `LagoonTier`. Enfants : `Pedestals/PedestalN` (`Slot`, `LockGui`), `Display`, `SignAnchor.OwnerGui.Title`, `Barrier` (`Open`).
+- `Map.Towers.TowerN` : `Center`, plateforme à Y=26.
+- Vague de gameplay : hauteur 22 et épaisseur 40 (Config.Wave). Un joueur est pris si Y < 22.
+- Base : centre X = -112 + (i-1)×32, soit 32 × 63 studs.
 
-Règle C : je **remplace le visuel**, je **garde les objets porteurs**. Les PedestalN restent (mêmes noms, Slot, LockGui) ; ils deviennent les « points d'ancrage » des bassins. Si le passage socles → bassins demande de déplacer/renommer quoi que ce soit, c'est une demande à D puis à A, pas une modif C.
+Règle C : je remplace le visuel et je garde les objets porteurs. Tout déplacement d'un objet porteur passe par D, puis A.
 
-## 0 bis. Ce qui faisait moche (et comment c'est évité)
-Verdict de Moaad au dernier test : « rien ne va, tout est à revoir ». Il a vu l'ancienne carte en blocs, avec l'avatar par défaut. Causes concrètes :
-
-| Cause | Pourquoi ça fait « Roblox 2010 » | Parade |
-|---|---|---|
-| **Formes en blocs** (Parts rectangulaires : decks, arches, tours, cabanes) | angles droits partout, aucune silhouette organique | uniquement des MeshParts biseautés (_DecorLib, pack nature) ; plus aucun Part visible de plus de 4 studs, sauf s'il est caché sous le terrain |
-| **SmoothPlastic / couleurs plates** | surfaces sans matière, rendu « jouet en plastique » | SurfaceAppearance sur tout objet principal ; MaterialVariant sable mouillé, bois patiné, pierre de corail ; SmoothPlastic interdit sur toute surface de plus de 2×2 studs |
-| **Échelle incohérente** (objets trop gros ou trop petits par rapport à l'avatar, grandes surfaces vides) | le monde paraît faux et vide | gabarit d'échelle : avatar ≈ 5 studs, porte de cabane ≈ 7, palmier 18–28, phare ≈ 60 ; un détail de premier plan tous les 8–10 studs le long des chemins |
-| **Grands aplats vides** (plage uniforme de 264 studs de large) | rien pour l'œil, profondeur nulle | variation du terrain (dunes, sable mouillé, flaques, rochers), touffes d'herbe, coquillages, laisse de mer au rivage |
-| **Lumière plate** (Technology pas en Future, pas d'ombres douces) | aucun volume, couleurs ternes | Future, soleil bas rasant, Atmosphere, Bloom discret, ColorCorrection (§3) ; ombres du soleil sur tous les gros objets |
-| **Palette sans direction** (couleurs de blocs au hasard, arches criardes) | patchwork, aucune identité | palette verrouillée §3 ; aucune couleur hors palette sans validation |
-| **UI et textes 3D génériques** (étiquettes « BASE i », « ▲ SAFE » en police par défaut) | look de prototype | panneaux en bois sculpté ou en MeshPart, police unique de l'UI (avec B) |
-| **Avatar par défaut** dans le test Studio | le personnage gris tue l'ambiance de la capture | pour les captures : avatar de Moaad ou un avatar habillé (test Studio ou téléphone) ; en jeu, les joueurs ont leur propre avatar |
-| **Horizon vide** (océan qui s'arrête, ciel sans relief) | le monde a l'air d'une maquette | îles lointaines en silhouette, bateaux à l'horizon, nuages, Atmosphere qui fond le lointain |
-
-Règle de passage : **rien n'est montré à Moaad tant que la checklist §5 n'est pas entièrement verte.**
-
-## 1. Le lagon du joueur (remplace les socles)
-
-### Plan d'une base (vue de dessus, Z croissant = vers l'arrière)
-```
-Z 4   ┌──────────── plage (vers la mer, -Z) ────────────┐
-      │  ponton d'entrée + arche « nom du joueur »       │  Z 4–12
-Z 12  │  ╭──────────╮        ╭──────────╮               │
-      │  │ Bassin 1 │  ...   │ Bassin 5 │  rangée avant │  Z 14–34
-      │  ╰──────────╯        ╰──────────╯               │
-      │  ╭──────────╮        ╭──────────╮               │
-      │  │ Bassin 6 │  ...   │ Bassin 10│  rangée arrière (verrouillés au départ)
-      │  ╰──────────╯        ╰──────────╯               │  Z 36–56
-Z 58  │  cabane + phare de lagon (niveau de richesse)   │  Z 58–67
-Z 67  └──────────────────────────────────────────────────┘
-```
-- **Bassin = un PedestalN** : chaque bassin est centré sur son PedestalN (Slot 1..10). Le cylindre couché devient invisible (Transparency 1, CanCollide garde son réglage actuel) et le LockGui reste attaché : rien ne change pour le serveur.
-- Bassin : anneau de roche corail (MeshPart du pack nature, ou palourde géante de _DecorLib pour l'avant), Ø ~6 studs, eau peu profonde = Part `Glass`/`ForceField` turquoise #16A0A8 à 0,4 de transparence, fond de sable clair #F8DA9E. **Pas de Terrain water dans les bassins** (8 bases × 10 bassins = trop coûteux et on ne contrôle pas la couleur par bassin).
-- Bassin verrouillé : eau vide et grise, couvercle de planches (ponton de _DecorLib), LockGui visible. Déverrouillage = planches qui s'envolent (client) + éclaboussure.
-- La créature nage **dans** son bassin (voir CREATURES_ART.md §5) : le `Display` reste le dossier runtime où le serveur pose le modèle.
-
-### Lisibilité de la richesse (5 paliers, visibles de loin)
-Le palier se lit en un coup d'œil depuis la plage, sans UI. Il est piloté par l'attribut `LagoonTier` (1..5) que A écrit sur PlotN (validé par D le 09/10) ; le client affiche `Lagoon.Tier1..N`.
-
-| Palier | Repère principal (lisible de loin) | Détails |
-|---|---|---|
-| 1 Débutant | cabane simple, 1 palmier | bassins en roche nue |
-| 2 | + guirlande de lanternes chaudes | coquillages au bord des bassins |
-| 3 | + petite cascade derrière la cabane | coraux roses #FF7A8A dans les bassins |
-| 4 | + phare de lagon allumé (faisceau lent) | bassins à rebord doré, poissons d'ambiance |
-| 5 Légende | + arche de corail géante + halo doré sur l'eau | particules dorées légères, eau bioluminescente la nuit |
-
-Règle : chaque palier **ajoute** un élément haut (silhouette) + un détail bas. Les achats déco du concept (coraux, lumières, cascades) se posent dans des **emplacements fixes** prévus par palier, jamais en placement libre (perf et anti-laideur).
-
-### Barrière de corail (GDD v2 §4.7)
-Elle se lit de loin et sans texte : **fermée = mur de corail, ouverte = corail rétracté**.
-- **Structure** (`tools/world/build_lagoon.luau`) : `PlotN.Barrier` (Model) avec l'attribut `Open` (false par défaut) et l'attribut `RetractDepth` (5,5).
-  - `Coral` : environ 40 coraux de _DecorLib sur le contour de la base, avec un retrait de 1 stud, 6,5 studs de haut. Ils sont purement décoratifs, sans collision.
-  - `Blockers` : 4 murs invisibles (Front, Back, Left, Right), de 12 studs de haut, donc plus haut qu'un saut.
-- **Qui fait quoi** : A écrit `Open` et règle la collision des Blockers. A choisit aussi comment le propriétaire traverse sa barrière fermée (groupe de collision, par exemple). B anime le corail côté client : il descend de `RetractDepth` en 0,6 s à l'ouverture et remonte avec un léger rebond à la fermeture. Sons `barrierOpen` et `barrierClose`.
-- **Lecture** : fermée, une haie continue de corail rose #FF7A8A au-dessus de la tête des avatars. Ouverte, seules des pointes de 1 stud dépassent du sable : le passage est visiblement libre et rien ne gêne la poursuite.
-- **Perf** : environ 44 parts par base (40 coraux + 4 Blockers). Une ombre sur deux est coupée.
-
-### Marée Royale (GDD v2 §4.8)
-- **Couronnes** : `Assets.FX.Crowns.Gold/Silver/Bronze`, des Accessory faits à partir d'un seul modèle recoloré (Foil #FFC93C, #D9DEE6, #C98A4B). Elles flottent 1,2 stud au-dessus de la tête, avec des étincelles légères et sans lumière. Script : `tools/world/build_royal_fx.luau`.
-- **Créature royale** (unique sur le serveur) : `Assets.FX.Royal`, avec un faisceau doré plus large que celui des Legendary, une PointLight (la seule autorisée sur une créature en Phase 1), des étincelles et une mini-couronne au-dessus du modèle. On la repère depuis n'importe quel point de la plage.
-
-## 2. La plage et ses 5 zones
-Plage X -132..132, Z -784..124, sol Y 0, océan Y -2. Zones et Z : PASSATION §4. Chaque zone a une **couleur dominante**, un **sol**, un **monument** (silhouette repère, visible depuis la base) et une **ambiance son**.
-
-| Zone (Z) | Nom | Dominante | Sol | Monument (placement) | Ambiance |
-|---|---|---|---|---|---|
-| 1 (-25/-150) | Shallows | sable doré, turquoise | Sand + MaterialVariant sable mouillé au rivage | **Phare** sur l'îlot rocheux, X +105, Z -110 (hors zone de jeu, visible de la base) | vagues douces, mouettes |
-| 2 (-150/-280) | Coral Coast | corail #FF7A8A | Sand rosé | **Arche de corail** enjambant la plage, Z -215 (≥ 30 studs au-dessus du sol, la vague passe dessous) | bulles, vent |
-| 3 (-280/-420) | Sunken Reef | turquoise profond, vert d'eau | Limestone | **Temple englouti** à moitié dans l'eau, X -110, Z -350 | bulles du récif, gouttes |
-| 4 (-420/-570) | Pirate Cove | bois brun, orange couchant | Ground | **Bateau pirate** échoué, X +100, Z -495 | craquements de bois |
-| 5 (-570/-740) | Abyss Shore | bleu nuit #1E2A44, violet | Basalt | **Cristaux des abysses** géants, Z -700, émissifs doux | bourdonnement grave |
-
-- Les monuments sont **hors de la bande de course** (|X| > 90) sauf l'arche (zone 2), pour ne pas gêner le gameplay et les tours (X ±75).
-- Transition entre zones : 15 studs de fondu de matériau terrain + changement de props, jamais de mur.
-- Les Gates actuelles (arches en blocs) sont remplacées visuellement ; leurs **noms** ne sont pas dans les Map facts, mais je ne les supprime pas sans accord de D.
-- Créatures au sol : elles apparaissent là où les trésors apparaissent aujourd'hui (serveur inchangé).
-
-## 3. La vague et la palette
-
-### Palette (bible §4 + extensions Reef Keepers)
-| Usage | Couleur |
+## 1. Ce qui faisait moche, et la parade v2
+| Cause | Parade |
 |---|---|
-| Sable sec / mouillé | #F8DA9E / #C9A86E |
-| Lagon / eau peu profonde | #16A0A8 / #5FD3C9 |
-| Corail | #FF7A8A |
-| Couchant (lumière, accents) | #FFB25A |
-| Nuit / UI | #1E2A44 |
-| Écume | #F4FFFC |
-| Mutation Golden | #FFC93C + émissif |
-| Mutation Night | #3DF5FF bioluminescent sur base #1E2A44 |
-| Mutation Storm | #B48CFF + éclairs blancs |
-| Rareté | gris #A7B0BA, vert #5BD16A, bleu #4AA8FF, violet #B06BFF, or #FFC93C |
+| Formes en blocs (decks, arches, tours, cabanes) | uniquement des MeshParts organiques ; aucun Part visible de plus de 4 studs, sauf l'eau |
+| Plastique lisse, couleurs saturées partout | matériaux PBR (sable, roche volcanique, bois flotté, corail) ; palette naturelle §3, avec des accents seulement |
+| Style « jouet » ou enfantin | réaliste stylisé : proportions vraies, pas de gros yeux, pas de couleurs bonbon, pas de déco mignonne |
+| Échelle incohérente | gabarit : avatar ≈ 5 studs, porte ≈ 7, palmier 20–30, rocher de lisière 4–8, phare ≈ 60, vague 22 de corps et 50+ en houle (§4) |
+| Grands aplats vides | sable avec variations (traces, sable mouillé, laisse de mer, bois flotté), roches, végétation dense en lisière |
+| Lumière plate | Future, soleil bas rasant, ombres douces, brume atmosphérique (§5) |
+| Textes 3D génériques (« BASE i », « ▲ SAFE ») | aucun texte 3D en police par défaut ; panneaux en bois gravé, ou interface de B |
+| Avatar par défaut dans la capture | avatar habillé, bien éclairé, à la bonne échelle |
+| Horizon vide | îles volcaniques en silhouette, nuages, brume ; la houle de la vague y naît (§4) |
 
-### La vague
-Modèle existant `Assets.Wave` (Body 300×22×40, Foam, Crest, Spray), rendu client. Refonte visuelle :
-- **Body** : MeshPart courbe (profil en « rouleau »), dégradé turquoise #16A0A8 en bas → #5FD3C9 en haut, transparence 0,15. Si pas de mesh : garder le Part `Glass` mais ajouter une 2ᵉ couche intérieure plus sombre pour la profondeur.
-- **Crest** : bande d'écume blanche #F4FFFC avec Texture qui défile (OffsetStudsU, client).
-- **Spray** : 1 ParticleEmitter sur la crête, Rate ≤ 40, Lifetime 0,6–1 s.
-- **Couleur selon la marée [GDD]** : Golden Tide = crête dorée + paillettes ; Night Tide = vague bleu nuit à crête bioluminescente cyan ; Storm Tide = vague gris-violet + éclairs sur l'horizon. Une seule variable `TideType` (lue côté client) pilote couleurs de la vague, de Lighting et de l'Atmosphere.
-- Arrivée : bible §6 (horizon assombri à -7 s, embruns, sable mouillé qui sèche en 3 s).
+## 2. Le lagon du joueur : un vrai lagon
+Un lagon, ce sont des **cuvettes de roche volcanique remplies d'eau claire, avec du corail vivant** : rien qui ressemble à un socle ou à un bac.
 
-### Lumière par marée (Lighting, client-side tween 2 s)
-Les valeurs livrées à B sont dans `ReplicatedStorage.Assets.FX.TidePresets.<Marée>`, construits par `tools/world/build_mutation_fx.luau` : Normal = copie de la lumière réglée pour la hero shot, Golden = Normal + écarts. Night et Storm arrivent en Phase 2.
-| Marée | ClockTime | Ambiance | Atmosphere |
-|---|---|---|---|
-| Normale | 17 | chaude, ombres douces | Density 0,3, teinte orangée |
-| Golden | 17,5 | + Bloom un cran, ColorCorrection Tint chaud | dorée |
-| Night | 20,5 (ou 0) | lune froide, bioluminescence | bleutée, Density 0,35 |
-| Storm | 16 | désaturée, contraste + | grise, Density 0,45 |
+### Plan d'une base (vue de dessus, -Z = la mer)
+```
+Z 4   ═══════ barrière de corail et de roche (Front) ═══════   ponton de bois flotté devant
+      │  cuvettes 1 à 5 (rangée avant)                      │
+      │  cuvettes 6 à 10 (rangée arrière, verrouillées)      │
+      │  abri en bois flotté + palmiers (palier)             │
+Z 67  ═══════ barrière (Back) ═══════════════════════════════
+```
+- **Cuvette = un PedestalN** (`tools/world/build_lagoon.luau`). Le cylindre est invisible ; nom, Slot, LockGui et collision sont gardés.
+  - Fond de sable clair, eau `Glass` #2FB8B3 à 0,5 de transparence, pour qu'on voie la créature au fond.
+  - Rebord : 4 gros blocs de roche volcanique qui se chevauchent, plus un corail vivant dans l'eau.
+- **Deux variantes**, choisies par l'option `SUNK_POOLS` :
+  - **surélevée** (par défaut, aucun objet porteur déplacé) : une dalle de roche volcanique d'environ 3 studs de haut, avec l'eau dedans, comme les cuvettes d'un platier rocheux ;
+  - **creusée** (recommandée, **à valider par D et A**) : les PedestalN descendent de 3,5 studs et le terrain est creusé. L'eau affleure au niveau du sol : c'est un vrai lagon. Le serveur pose déjà la créature en haut du socle, donc il n'y a aucun code à changer, mais les positions des socles bougent.
+- Cuvette verrouillée : eau trouble et sombre, LockGui visible. Au déverrouillage, l'eau s'éclaircit en 0,5 s.
 
-## 4. Budgets perf mobile (60 FPS, téléphone moyen)
-Cible : contrôle final sur téléphone de Moaad (le Mac est trop faible pour juger).
+### Richesse lisible de loin (`LagoonTier` 1..5, écrit par A)
+| Palier | Élément haut (silhouette) | Détail bas |
+|---|---|---|
+| 1 | abri en bois flotté, 1 palmier | cuvettes nues |
+| 2 | + torches en bambou (flamme réelle, sans lumière dynamique) | coquillages et algues au bord |
+| 3 | + petite cascade sur la roche derrière l'abri | coraux vivants plus nombreux |
+| 4 | + phare de lagon en pierre (faisceau lent) | rebords incrustés de nacre |
+| 5 | + arche de roche volcanique couverte de corail | eau scintillante, reflets dorés |
+Chaque palier ajoute un élément haut et un détail bas. Les achats de déco se posent dans des emplacements fixes.
 
+### Barrière : massive et crédible
+`PlotN.Barrier` (Model, toutes les parts ancrées) : environ 40 masses de corail et de roche volcanique sur le contour, de 6,5 à 8 studs de haut, plus 4 `Blockers` invisibles de 12 studs. A pilote `Open` et la collision. B enfonce tout le modèle dans le sable à l'ouverture (`Ambience.lua`), avec les sons `barrierOpen` et `barrierClose`.
+- **Fermée** : un récif continu, plus haut qu'un avatar, roche sombre et corail aux teintes naturelles.
+- **Ouverte** : le récif s'enfonce, le passage est visiblement libre.
+
+## 3. Palette naturelle, avec des accents
+| Usage | Couleur | Rôle |
+|---|---|---|
+| Sable sec / sable mouillé / traces | #E6D2A8 / #A58C66 / #D3BC8C | base |
+| Roche volcanique (clair / sombre) | #5A524C / #3B3633 | structure, contraste |
+| Bois flotté (clair / sombre) | #A8998A / #7D6E60 | constructions |
+| Végétation | #3F6B3A, #6C8F4A | lisières |
+| Lagon peu profond / profond | **#2FB8B3** / #13707A | **accent turquoise** |
+| Océan au large | #0D3B4C | profondeur |
+| Écume | #EEF5F2 | vague, rivage |
+| Corail vivant (désaturé) | #D9776A, #B8607A | détails |
+| Couchant | #F2A35E | lumière, ciel |
+| Or (rareté, Golden, couronne) | **#D9A93F** | **accent rare** |
+| Rareté (Roblox, lisibilité) | gris #A7B0BA, vert #5BD16A, bleu #4AA8FF, violet #B06BFF, or #FFC93C | toujours avec icône et nom |
+Règle : 80 % de tons naturels. Le turquoise et l'or sont des accents qu'on remarque. Aucune couleur saturée sur une grande surface.
+
+## 4. La vague, star du jeu
+On doit avoir peur la première fois. La hauteur de gameplay ne change pas (corps de 22, tours à 26). **Le spectacle vient de la houle au large, de la crête, des embruns, de l'ombre et du son.** Modèle : `tools/world/build_wave.luau`.
+
+| Phase (WaveState) | Ce qu'on voit | Ce qu'on entend |
+|---|---|---|
+| **Alerte** (7 s) | À l'horizon (Z ≈ -1 000), une **houle** monte de 0 à **55 studs**, plus haute que les tours, sur toute la largeur. La mer se retire et découvre le sable mouillé. Le ciel fonce (ColorCorrection -0,1). | grondement grave qui monte (`rumble`), corne (`horn`), musique tendue (`musicTension`) |
+| **Départ** (Z -800) | La houle **déferle** en 1,5 s : la crête s'enroule vers l'avant et s'effondre. Le corps redescend à 22, les embruns jaillissent jusqu'à 40. | `waveBoom` (impact lourd) |
+| **Course** | Corps de 22 × 300 × 40, turquoise profond en bas, plus clair en haut. Crête d'écume en rouleau. Embruns jusqu'à environ 32 : ils balaient les plateformes des tours sans danger, et les joueurs dessus sont éclaboussés à l'écran. **Ombre** : une bande sombre glisse sur le sable 20 studs devant le front. | rugissement continu, `waveImpact` au contact du rivage |
+| **Reflux** | L'eau se retire en laissant du sable mouillé brillant, qui sèche en 3 s. | ressac |
+
+Notes pour B : la houle d'alerte est `Assets.WaveSwell`, rendue côté client. Si Moaad veut une vague plus haute **pendant la course**, il faut monter les tours et `Config.Wave.height`, ce qui est une décision de D et de A.
+
+### Lumière par marée (presets livrés à B)
+Les valeurs sont dans `Assets.FX.TidePresets.<Marée>` (`build_mutation_fx.luau`). Normal reprend la lumière de la hero shot ; les autres sont des écarts par rapport à Normal.
+| Marée | Lumière | Atmosphere |
+|---|---|---|
+| Normal | couchant, ClockTime 17, ombres douces | brume chaude légère |
+| Golden | soleil plus bas (17,45), Bloom +0,2, teinte dorée | brume dorée, Glare +0,3 |
+| Night (Phase 2) | ClockTime 20,5, lune froide, bioluminescence | bleutée |
+| Storm (Phase 2) | désaturée (-0,25), plus sombre | grise et dense (+0,15) |
+
+## 5. Budgets de perf mobile (60 FPS sur un téléphone moyen)
 | Poste | Budget |
 |---|---|
-| Parts/MeshParts visibles à l'écran | ≤ 3 000 (carte entière ≤ 8 000, StreamingEnabled ON) |
-| Par base (décor lagon palier 5 inclus) | ≤ 150 parts, ≤ 12 SurfaceAppearance distinctes |
-| Triangles par créature | ≤ 2 000 (géant inclus : on scale, pas plus de polys) |
-| Lumières dynamiques (Point/Spot/Surface) | ≤ 8 actives près du joueur ; **0 lumière par bassin**, l'éclat = matériau Neon/émissif |
-| Lumières avec Shadows | 0 (seul le soleil projette des ombres) |
-| ParticleEmitters actifs | ≤ 15 à l'écran, Rate total ≤ 300 particules/s |
-| Beams | ≤ 10 (faisceaux de rareté compris) |
-| Textures | ≤ 1024 px ; atlas partagés du pack nature |
-| Sons simultanés | ≤ 12 (ambiances en boucle : 2 max) |
-| Terrain water | seulement l'océan ; aucune dans les bassins |
+| Parts visibles à l'écran | ≤ 3 000 (carte ≤ 8 000, StreamingEnabled) |
+| Par base (palier 5, barrière comprise) | ≤ 150 parts : 10 cuvettes × 7 + barrière 44 + décor du palier |
+| Triangles par créature | ≤ 1 500 (au-delà, prototype seulement) |
+| Lumières dynamiques | ≤ 8 près du joueur ; 0 par cuvette ; 1 seule par créature royale ou Night |
+| Ombres de lumières locales | 0 (seul le soleil fait de l'ombre) |
+| Particules | ≤ 15 émetteurs à l'écran, ≤ 300 particules/s ; la vague a droit à 3 émetteurs (crête, embruns, pied) |
+| Sons simultanés | ≤ 12 ; 1 musique et 2 ambiances au maximum |
+| Terrain water | seulement l'océan |
+Mouvements d'ambiance côté client, avec dt. `CastShadow = false` sur les petits props, `CanCollide/CanQuery/CanTouch = false` sur le décor non marchable.
 
-Règles : tout mouvement d'ambiance (palmes, nage, défilement d'écume) côté client avec dt ; `RenderFidelity Automatic` sur les MeshParts de décor ; `CastShadow = false` sur les petits props (coquillages, herbes, coraux) ; `CanCollide/CanQuery/CanTouch = false` sur le décor non marchable.
-
-## 5. Plan de la hero shot (lundi 12/10)
-Objectif : **une capture qui pourrait servir de miniature** (pilier 1). Vue depuis Plot1 vers la zone 1, au coucher du soleil. C'est le **niveau final dès la première capture**, pas un brouillon : si la checklist de validation n'est pas entièrement verte, on ne la montre pas à Moaad, on corrige d'abord.
+## 6. Hero shot (lundi 12/10)
+Objectif : passer le **test « wow mais Roblox »** (§7) dès la première capture. Sinon, on ne la montre pas.
 
 ### Cadre
-- **Caméra** : position (-112, 14, 80), regarde vers (-80, 3, -120). FOV 60. Légère plongée (~6°). Format 16:9, puis recadrage 1:1 pour vérifier que la miniature tient.
-- **Composition (règle des tiers)** : tiers gauche = lagon de Plot1 (premier plan) ; centre = plage et rivage mouillé ; tiers droit, en fond = phare sur son îlot avec le soleil bas derrière.
+- **Caméra** : depuis l'arrière de Plot1, (-112, 14, 80), elle regarde vers (-80, 3, -120). FOV 60, légère plongée.
+- **Composition** :
+  - premier plan, tiers gauche : le lagon de Plot1 (cuvettes de roche, eau claire, une créature visible) et l'avatar habillé de dos, debout sur le ponton ;
+  - milieu : la plage, avec ses traces, le sable mouillé et le bois flotté ;
+  - fond : **la houle de la vague qui se lève à l'horizon**, plus haute que les tours, en contre-jour du couchant, et le phare sur son îlot de roche volcanique.
+- **Moment** : l'alerte, ciel légèrement assombri. C'est la scène qui fait peur et qui vend le jeu.
 
-### Placements (assets de `ReplicatedStorage.Assets._DecorLib`)
-| # | Asset | Position approx. | Rôle |
-|---|---|---|---|
-| 1 | Cabane stylisée | (-120, 0, 62), tournée vers -Z | fond de base, palier 1 |
-| 2 | Palmiers ×3 | (-126, 0, 20), (-98, 0, 50), (-60, 0, -40) | cadre vertical gauche + profondeur |
-| 3 | Ponton | entrée de Plot1, Z 4–12 | ligne directrice vers la plage |
-| 4 | Rochers du pack nature (anneaux) ; palourde en option | autour de chaque PedestalN | rebords des bassins (palourde testée après l'inventaire) |
-| 5 | Coraux + coquillages | rivage gauche, X -118..-128, Z -20..-102 | détails bas, couleur corail |
-| 6 | Pack nature (rochers, buissons) | lisière X -132, bord de l'îlot | casser les lignes droites |
-| 7 | Radeau | dans l'eau près du rivage gauche, (-152, eau, -85) | point d'intérêt au milieu du cadre |
-| 8 | Phare | sur l'îlot rocheux existant (position relevée par `inspect_world.luau`), placé du côté du soleil | monument de la zone 1, au fond |
+### Placements
+Les positions exactes sont dans les scripts et s'affinent capture après capture.
+| Élément | Source | Où |
+|---|---|---|
+| Lagon de Plot1 (et des bases voisines) | `build_lagoon.luau`, `PLOTS = 1..8` | les bases |
+| Palmiers, rochers, végétation, bois flotté, coraux au rivage | _DecorLib (pack nature, palmiers, corail, coquillages) | `build_hero_shot.luau` (`Map.HeroDecor`) |
+| Radeau échoué | _DecorLib | rivage gauche |
+| Phare | _DecorLib | îlot volcanique (position donnée par `inspect_world.luau`) |
+| Houle de la vague | `Assets.WaveSwell` (`build_wave.luau`) | Z ≈ -450, posée à l'arrêt pour la capture |
+| Créature | candidat validé (SOURCING_C.md) | une cuvette avant |
+Masqués pour la capture : Gates, Towers et tout bloc de l'ancienne carte (`capture_mode.luau`).
 
-Les positions exactes et la caméra sont dans `tools/world/build_hero_shot.luau` (et `build_lagoon.luau` pour la base). Elles sont à affiner lundi, capture après capture.
-- Créatures : **pas de placeholder dans le cadre**. Des sphères colorées feraient « prototype ». Si on n'a pas encore de vraies créatures lundi, le cadre montre les bassins avec de l'eau, des coraux et des coquillages, sans créature.
-- Personnage : un avatar habillé se tient sur le ponton, de dos, et regarde la plage (il donne l'échelle). Jamais l'avatar gris par défaut.
-- À masquer pour la capture : Gates, Towers, decks et arches en blocs, panneaux « BASE i » (Transparency locale, pas de suppression).
+### Lumière
+Future (à régler à la main), ClockTime 17,05, latitude 15, Bloom 0,4 (seuil 1,5), ColorCorrection : saturation +0,05 (pas plus), contraste +0,08, teinte à peine chaude. Atmosphere : densité 0,32, Haze 1,2, couleur #F2A35E, Decay #13707A.
 
-### Lumière de la capture
-Technology **Future** (à passer à la main). ClockTime 17,05, GeographicLatitude 15 (existant). Bloom Intensity ~0,4, Threshold 1,5. ColorCorrection « TideColor » : Saturation +0,1, Contrast +0,05, Tint très légèrement chaud. SunRays Intensity ~0,05. Atmosphere Density 0,3, Haze 1, Color #FFB25A, Decay #16A0A8.
+## 7. Le test « wow mais Roblox » (avant de montrer quoi que ce soit)
+1. La capture pourrait passer pour un jeu console stylisé.
+2. Un joueur de 20 ans ne la trouve pas enfantine.
+3. Un joueur de 10 ans comprend quoi faire en 5 secondes, sans lire.
+4. 60 FPS sur un téléphone moyen (≥ 55 sur ce cadre), rien de saccadé.
+5. Les avatars Roblox s'intègrent sans faire tache.
+6. Aucun bloc, aucun plastique lisse, aucun emoji, aucune police ronde.
 
-### Validation
-1. Capture plein écran sur le Mac (résolution), puis **test sur téléphone** (Studio Device Emulator ne suffit pas pour le rendu).
-2. Checklist (tout doit être vrai) :
-   - la silhouette du phare se lit, et le lagon de Plot1 se lit comme « à moi » ;
-   - aucun Part rectangulaire visible, aucune surface SmoothPlastic, aucun bloc de l'ancienne carte dans le cadre ;
-   - l'échelle est cohérente avec l'avatar (gabarit §0 bis) ;
-   - le premier plan, le milieu et le fond ont chacun un point d'intérêt, et l'horizon n'est pas vide ;
-   - toutes les couleurs sont dans la palette §3 ;
-   - recadrée en 1:1, la capture tient comme miniature.
-3. FPS sur téléphone ≥ 55 en regardant ce cadre.
-4. Si un point est rouge, on ne montre pas la capture : on corrige, ou on signale à D ce qui manque (souvent un asset).
+Plus, pour la hero shot :
+- la vague (ou sa houle) se voit et impressionne ;
+- le lagon se lit comme « à moi » ;
+- 80 % de couleurs naturelles, et des accents qui ressortent ;
+- recadrée en 1:1, la capture tient comme miniature.
 
-## 6. Ce qu'il me faut
-- A : le passage du propriétaire à travers sa barrière fermée (groupe de collision ou autre).
-- Moaad : passer Lighting.Technology en Future ; dire si les 9 assets suffisent après la hero shot ; importer dans _DecorLib la couronne et les créatures candidates (docs/SOURCING_C.md).
+**Si un seul point échoue, on ne montre pas.** On corrige, ou on dit à D ce qui manque (souvent un asset).
+
+## 8. Ce qu'il me faut
+- D et A : valider `SUNK_POOLS`, c'est-à-dire descendre les PedestalN de 3,5 studs (noms et attributs inchangés).
+- A : le passage du propriétaire à travers sa barrière fermée.
+- E : le roster définitif (Phase 1 probable : crabe fantôme, étoile de mer, tortue imbriquée montable).
+- Moaad : Lighting.Technology en Future ; importer dans _DecorLib les candidats de SOURCING_C.md.

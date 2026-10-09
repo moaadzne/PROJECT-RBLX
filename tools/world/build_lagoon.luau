@@ -1,5 +1,5 @@
 -- tools/world/build_lagoon.luau
--- C : lagon d'une base, palier 1, et sa barriere de corail (docs/DA_MONDE.md §1).
+-- C : lagon d'une base, palier 1, et sa barriere de corail et de roche (docs/DA_MONDE.md §2, direction v2).
 -- Plot1 par defaut ; mettre { 1, 2, ..., 8 } pour la hero shot.
 -- Lancement manuel uniquement (execute_luau, mode edition), jamais automatique.
 -- 1er passage avec DRY_RUN = true (affiche le plan, ne modifie rien), puis DRY_RUN = false.
@@ -10,15 +10,16 @@
 local DRY_RUN = true
 local PLOTS = { 1 }
 
--- Bassins avec la palourde au lieu de l'anneau de rochers : a activer apres avoir vu la palourde.
-local CLAM_SLOTS = {}
+-- false : cuvettes surelevees dans une dalle de roche (aucun objet porteur deplace).
+-- true : vrai lagon creuse ; descend les PedestalN de POOL.sink (noms et attributs gardes). A VALIDER PAR D ET A avant usage.
+-- Remettre false et relancer restaure la hauteur d'origine (attribut C_OrigY).
+local SUNK_POOLS = false
 
 -- Noms cherches dans _DecorLib (insensible a la casse, premier trouve). A corriger apres inspect_world.luau.
 local FIND = {
 	cabin = { "hut", "cabane", "cabin", "shack" },
 	palm = { "palm" },
 	dock = { "dock", "pier", "ponton", "jetty" },
-	clam = { "clam", "palourde" },
 	rock = { "rock", "stone", "boulder" },
 	shell = { "shell", "coquillage" },
 	coral = { "coral", "corail" },
@@ -32,10 +33,11 @@ local POOL = {
 	rimExtra = 0.4, -- rebord au-dessus de l'eau
 	minDiameter = 5,
 	maxDiameter = 7,
-	rocks = 5, -- rochers par anneau (budget : 150 parts par base)
-	waterColor = Color3.fromHex("16A0A8"),
-	waterTransparency = 0.35,
-	floorColor = Color3.fromHex("C9A86E"),
+	rocks = 4, -- gros blocs de roche volcanique qui se chevauchent (budget : 150 parts par base)
+	sink = 3.5, -- SUNK_POOLS : descente des socles
+	waterColor = Color3.fromHex("2FB8B3"),
+	waterTransparency = 0.5, -- eau claire : on voit la creature au fond
+	floorColor = Color3.fromHex("E6D2A8"),
 }
 
 -- Decor du palier 1, relatif a la base : x depuis le centre, z depuis MaxZ (arriere) ou MinZ (entree)
@@ -49,7 +51,9 @@ local DECOR = {
 -- Fermee : mur de corail. Ouverte : le corail descend de RetractDepth dans le sable.
 local BARRIER = {
 	spacing = 4.5, -- un corail tous les 4,5 studs sur le contour
-	coralHeight = 6.5,
+	minHeight = 6.5, -- masses de corail et de roche volcanique, 6,5 a 8 studs
+	maxHeight = 8,
+	rockEvery = 3, -- un bloc de roche tous les 3 elements, le reste en corail
 	retractDepth = 5.5,
 	blockerHeight = 12, -- plus haut qu'un saut
 	blockerThickness = 1,
@@ -152,13 +156,17 @@ local function place(key, pos, opts)
 	local _, size = boxOf(c)
 	if opts.height and size.Y > 0 then
 		scaleBy(c, opts.height / size.Y)
+	elseif opts.width then
+		scaleBy(c, opts.width / math.max(size.X, size.Z))
 	elseif opts.scale then
 		scaleBy(c, opts.scale)
 	end
 	c:PivotTo(CFrame.new(pos) * CFrame.Angles(0, math.rad(opts.yaw or 0), 0))
 	local cf
 	cf, size = boxOf(c)
-	local offset = Vector3.new(pos.X - cf.Position.X, pos.Y - (cf.Position.Y - size.Y / 2) + (opts.sink or 0), pos.Z - cf.Position.Z)
+	-- bas pose sur pos.Y (+ sink), ou sommet aligne sur topY
+	local bottom = if opts.topY then opts.topY - size.Y else pos.Y + (opts.sink or 0)
+	local offset = Vector3.new(pos.X - cf.Position.X, bottom - (cf.Position.Y - size.Y / 2), pos.Z - cf.Position.Z)
 	c:PivotTo(c:GetPivot() + offset)
 	c.Name = opts.name or c.Name
 	c.Parent = opts.parent
@@ -209,7 +217,7 @@ local function buildBarrier(plot, index, minX, maxX, minZ, maxZ, groundY)
 	for _, side in sides do
 		count += math.max(1, math.floor((side.b - side.a).Magnitude / BARRIER.spacing))
 	end
-	log(string.format("  barriere : %d coraux sur le contour, 4 Blockers, Open = false", count))
+	log(string.format("  barriere : %d masses de corail et de roche sur le contour, 4 Blockers, Open = false", count))
 	if DRY_RUN then
 		return
 	end
@@ -233,8 +241,9 @@ local function buildBarrier(plot, index, minX, maxX, minZ, maxZ, groundY)
 		local n = math.max(1, math.floor(delta.Magnitude / BARRIER.spacing))
 		for k = 0, n - 1 do
 			local p = side.a + delta * ((k + 0.5) / n)
-			place("coral", Vector3.new(p.X, groundY, p.Z), {
-				height = BARRIER.coralHeight * rng:NextNumber(0.8, 1.15),
+			local isRock = k % BARRIER.rockEvery == 0
+			place(isRock and "rock" or "coral", Vector3.new(p.X, groundY, p.Z), {
+				height = rng:NextNumber(BARRIER.minHeight, BARRIER.maxHeight),
 				yaw = rng:NextNumber(0, 360),
 				sink = -0.3,
 				decorOnly = true,
@@ -346,12 +355,26 @@ local function buildPlot(index)
 			end
 		end
 		local diameter = math.clamp(nearest - 1.5, POOL.minDiameter, POOL.maxDiameter)
-		local pos = e.part.Position
-		local floorTop = pos.Y + e.part.Size.X / 2 -- cylindre couche : hauteur = Size.X (comme PlotService)
-		local waterTop = floorTop + POOL.waterDepth
-		local rimTop = waterTop + POOL.rimExtra
-		log(string.format("  bassin %d : centre (%.1f, %.1f), diametre %.1f, fond Y %.1f, eau Y %.1f", e.slot, pos.X, pos.Z, diameter, floorTop, waterTop))
+		local part = e.part
+		-- hauteur du socle : d'origine, ou descendue pour un lagon creuse
+		local origY = part:GetAttribute("C_OrigY") or part.Position.Y
+		local pedY = origY - (SUNK_POOLS and POOL.sink or 0)
+		if not DRY_RUN and math.abs(part.Position.Y - pedY) > 1e-3 then
+			if part:GetAttribute("C_OrigY") == nil then
+				part:SetAttribute("C_OrigY", origY)
+			end
+			part.Position = Vector3.new(part.Position.X, pedY, part.Position.Z)
+		end
+		local pos = Vector3.new(part.Position.X, pedY, part.Position.Z)
+		local floorTop = pedY + part.Size.X / 2 -- cylindre couche : hauteur = Size.X (comme PlotService)
+		local waterTop = if SUNK_POOLS then deckTop - 0.2 else floorTop + POOL.waterDepth
+		local rimTop = if SUNK_POOLS then deckTop + 0.6 else waterTop + POOL.rimExtra
+		local bottom = math.min(deckTop, floorTop - 1)
+		log(string.format("  cuvette %d : centre (%.1f, %.1f), diametre %.1f, fond Y %.1f, eau Y %.1f%s", e.slot, pos.X, pos.Z, diameter, floorTop, waterTop, SUNK_POOLS and ", creusee" or ""))
 		if not DRY_RUN then
+			if SUNK_POOLS then
+				workspace.Terrain:FillCylinder(CFrame.new(pos.X, (bottom + deckTop + 1) / 2, pos.Z), deckTop + 1 - bottom, diameter / 2 + 0.5, Enum.Material.Air)
+			end
 			local pool = Instance.new("Model")
 			pool.Name = "Pool" .. e.slot
 			pool:SetAttribute("PoolSlot", e.slot)
@@ -359,12 +382,12 @@ local function buildPlot(index)
 			pool:SetAttribute("WaterY", waterTop)
 			pool.Parent = pools
 			local inner = diameter - 0.6
-			disc("Floor", Vector3.new(pos.X, (deckTop + floorTop) / 2, pos.Z), inner, floorTop - deckTop, {
+			disc("Floor", Vector3.new(pos.X, (bottom + floorTop) / 2, pos.Z), inner, floorTop - bottom, {
 				Material = Enum.Material.Sand,
 				Color = POOL.floorColor,
 				CastShadow = false,
 			}, pool)
-			disc("Water", Vector3.new(pos.X, floorTop + POOL.waterDepth / 2, pos.Z), inner, POOL.waterDepth, {
+			disc("Water", Vector3.new(pos.X, (floorTop + waterTop) / 2, pos.Z), inner, waterTop - floorTop, {
 				Material = Enum.Material.Glass,
 				Color = POOL.waterColor,
 				Transparency = POOL.waterTransparency,
@@ -373,24 +396,29 @@ local function buildPlot(index)
 				CanQuery = false,
 				CastShadow = false,
 			}, pool)
-			local rimHeight = rimTop - deckTop
-			if CLAM_SLOTS[e.slot] and templates.clam then
-				place("clam", Vector3.new(pos.X, deckTop, pos.Z), { scale = nil, height = rimHeight, name = "Rim", parent = pool })
-			else
-				local rng = Random.new(index * 100 + e.slot)
-				for k = 1, POOL.rocks do
-					local a = (k / POOL.rocks) * math.pi * 2 + rng:NextNumber(-0.15, 0.15)
-					local r = diameter / 2
-					place("rock", Vector3.new(pos.X + math.cos(a) * r, deckTop, pos.Z + math.sin(a) * r), {
-						height = rimHeight * rng:NextNumber(0.85, 1.1),
-						yaw = rng:NextNumber(0, 360),
-						sink = -0.3,
-						noShadow = true,
-						name = "Rock" .. k,
-						parent = pool,
-					})
-				end
+			-- rebord : gros blocs de roche volcanique qui se chevauchent, sommet vers rimTop
+			local rng = Random.new(index * 100 + e.slot)
+			for k = 1, POOL.rocks do
+				local a = (k / POOL.rocks) * math.pi * 2 + rng:NextNumber(-0.2, 0.2)
+				local r = diameter / 2 + 0.3
+				place("rock", Vector3.new(pos.X + math.cos(a) * r, bottom, pos.Z + math.sin(a) * r), {
+					width = diameter * 0.7,
+					topY = rimTop + rng:NextNumber(-0.2, 0.4),
+					yaw = rng:NextNumber(0, 360),
+					name = "Rock" .. k,
+					parent = pool,
+				})
 			end
+			-- corail vivant dans l'eau, decale du centre (la creature est au centre)
+			local ca = rng:NextNumber(0, math.pi * 2)
+			place("coral", Vector3.new(pos.X + math.cos(ca) * diameter * 0.28, floorTop, pos.Z + math.sin(ca) * diameter * 0.28), {
+				height = (waterTop - floorTop) + 0.3,
+				yaw = rng:NextNumber(0, 360),
+				decorOnly = true,
+				noShadow = true,
+				name = "Coral",
+				parent = pool,
+			})
 		end
 	end
 
