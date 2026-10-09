@@ -112,18 +112,63 @@ cd "$HOME/Documents/claude code/project-rblx"
 4. Sinon → **Accept**.
 5. **Cmd + S**.
 
-### Étape 7 : le monde de C (hors Rojo, session locale avec le MCP)
-Ce qui n'est pas un script (lagon, décor, FX, sons) passe toujours par le MCP Studio : on exécute les scripts de C (`tools/world/…`) avec `execute_luau`, en suivant leur README, une opération lourde à la fois.
-Ensuite **Cmd + S**.
-
-### Étape 8 : vérification (session locale, puis Moaad)
+### Étape 7 : vérifier la synchronisation (session locale, juste après l'étape 6, AVANT de toucher au monde)
 - [ ] **Existant intact** : on relance le même `search_game_tree` et le même `execute_luau` qu'à l'étape 1 bis. Remotes, Map, Assets, StarterGui, ReplicatedFirst et Lighting ont **les mêmes comptes qu'avant**. Remotes et StarterGui peuvent seulement avoir **plus** d'éléments, si le repo en ajoute. S'il manque quoi que ce soit : on ferme sans sauvegarder, on rouvre la sauvegarde et on prévient D.
 - [ ] Les scripts de Studio correspondent à `rojo sourcemap default.project.json` : mêmes noms, mêmes classes. TideClient est bien un **LocalScript** qui contient ses modules.
 - [ ] **Orphelins** : on liste les Script, LocalScript et ModuleScript du premier niveau (ServerScriptService, StarterPlayerScripts, Shared, Remotes) qui ne figurent pas dans le sourcemap, et on envoie la liste à D. Aucune suppression sans son accord.
 - [ ] Mode Edit : aucune erreur rouge dans l'Output.
-- [ ] Playtest court (Moaad a fait Cmd + S avant) : console **sans erreur ni warning** du jeu.
-- [ ] `selftest` du TR_Debug, côté serveur, pendant le Play (`execute_luau` en contexte Server) : tout est PASS (la liste des tests dépend de la version de A).
-- [ ] L'interface s'affiche, le joueur reçoit sa base, la vague passe.
+- [ ] **Cmd + S** (Moaad).
+
+### Étape 8 : construire le monde de C, AVANT tout test (session locale avec le MCP)
+Pourquoi c'est dans cet ordre : le serveur de A (île ouverte, 1ba0aa3) a besoin de l'île de C. Il lui faut les lagons au format `Center` + `Radius` et les anneaux de sable. Sans eux, les créatures n'ont aucun sol valide : le serveur tourne, mais la plage reste vide.
+
+Règles :
+- Les scripts sont dans `tools/world/` (hors Rojo). On les lance avec `execute_luau` en mode Edit.
+- **La liste et l'ordre exacts sont ceux de `tools/world/README.md` le jour J**, car C y ajoute l'île (P1-36).
+- Pour chaque script, dans l'ordre :
+  1. `DRY_RUN = true` : on lit la sortie, et rien n'est modifié ;
+  2. `DRY_RUN = false` : construction réelle. Chaque script forme un seul enregistrement, annulable par Cmd + Z ;
+  3. contrôle rapide (`search_game_tree` ou capture) ;
+  4. **Cmd + S** (Moaad) avant le script suivant.
+- **Une seule opération lourde à la fois** : jamais deux scripts en parallèle, jamais pendant un Play.
+
+Ordre attendu (à confirmer dans le README de C) :
+1. `inspect_world` (inventaire, ne modifie rien), puis correction des tables `FIND` et positions indiquées par C ;
+2. **l'île** (terrain 600×600, crique centrale, anneaux de sable, 3 points d'intérêt) ;
+3. les **lagons** des 8 bases au format `Center` + `Radius`, avec leur **barrière** (`PlotN.Barrier`) ;
+4. les **8 tours** (`Towers/TowerN` avec l'attribut `Center`) ;
+5. la **vague** (`build_wave`) ;
+6. les **FX** (`build_mutation_fx`, puis `build_royal_fx` une fois la couronne importée) ;
+7. les **sons** (`build_sounds`).
+
+Contrôle du contrat de la carte (après le point 4), `execute_luau` en mode Edit :
+```lua
+local map = workspace:FindFirstChild("Map")
+local plots = map and map:FindFirstChild("Plots")
+for i = 1, 8 do
+	local p = plots and plots:FindFirstChild("Plot" .. i)
+	print("Plot" .. i, p and p:GetAttribute("Center"), p and p:GetAttribute("Radius"), p and p:GetAttribute("SpawnPos"))
+end
+local towers = map and map:FindFirstChild("Towers")
+print("Tours :", towers and #towers:GetChildren() or 0)
+```
+Les 8 bases doivent avoir `Center`, `Radius` et `SpawnPos`, et il doit y avoir 8 tours. Sinon, on s'arrête et on prévient C et D.
+
+### Étape 9 : tests de A, dans cet ordre (session locale ; Moaad fait Cmd + S avant chaque Play)
+Les commandes passent par `ServerStorage.TR_Debug` (Studio seulement), en contexte **Server** pendant le Play. `Invoke("help")` donne la syntaxe exacte.
+1. **selftest** : tout est PASS.
+2. **intro** : la vague d'intro personnelle et la Golden de bienvenue se déroulent.
+3. **playtime** : on sort de la protection débutant.
+4. **tide Golden** : la marée dorée, les mutations et la lumière.
+5. **give HawksbillTurtle**, puis **grow** jusqu'à Elder : la monture est disponible (bouton Monter).
+6. **Vol à 2 joueurs** : Test → Clients and Servers, 2 joueurs. Attention, le Mac est faible : on ferme tout le reste avant. Si Studio rame trop, ce test se fait sur téléphone après la publication.
+
+Pendant tout le test :
+- [ ] Console **sans erreur ni warning** du jeu.
+- [ ] L'interface s'affiche ; le joueur reçoit sa base ; la vague vient de la direction annoncée.
+- [ ] La plage n'est pas vide : des créatures apparaissent dans les anneaux.
+
+### Étape 10 : fin
 - [ ] Arrêt du Play, puis **Cmd + S**, puis **File → Save to Roblox** si la place est publiée.
 - [ ] Compte-rendu à D en 3 lignes : fait, vérifié, besoin.
 
