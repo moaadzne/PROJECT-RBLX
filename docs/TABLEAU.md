@@ -13,11 +13,12 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 | E | Tide Rush · E Concept | `claude/laughing-lovelace-8xixq7` |
 
 ## Décisions
+- **D, 09/10** : nom affiché sur Roblox = **« Ride the Tsunami: Steal & Ride »**, sans emoji, par cohérence avec DIRECTION_V2. Roster v3 de E validé (vraies espèces ; Phase 1 : GhostCrab, CushionStar, HawksbillTurtle). Stades : Juvenile / Adult / Elder / Titan (monture dès Elder, surf en Titan).
 - **D, 09/10** : **docs/DIRECTION_V2.md est la référence de la direction.** docs/VISION_TON.md (F) en est l'annexe détaillée : prompt de session, juste milieu, règles vérifiables, 10 premières secondes, checklist de contrôle, remplacement des éléments Roblox par défaut (§8 bis). En cas de conflit, DIRECTION_V2 l'emporte.
 - **D, 09/10** : on **garde les avatars des joueurs** (pas de personnage unique imposé), avec des proportions R15 réalistes et identiques pour tous, nos animations et une tenue « Reef Keeper » en cosmétique. Moaad peut revenir sur ce choix.
 - **D, 09/10** : **coordination technique directe autorisée entre A, B et C** (noms, attributs, contrat des remotes, assets). A reste propriétaire du contrat. Le périmètre, les priorités et le design passent toujours par D.
 - **Moaad, 09/10 (fin d'après-midi)** : **pas enfantin, le public le plus large possible, effet « wow, c'est sur Roblox ça ? » sans renier Roblox.** Traduit et rendu applicable dans **docs/DIRECTION_V2.md**, qui prime sur la bible pour le ton, le public, le style et la police. Les créatures deviennent de vrais animaux marins crédibles, l'interface passe en style console (sans Fredoka ni emojis), la vague devient spectaculaire.
-- **Moaad, 09/10** : titre du jeu = **« Ride the Tsunami »** (nom affiché proposé : « Ride the Tsunami 🌊 Steal & Ride »). À vérifier dans la recherche Roblox avant publication.
+- **Moaad, 09/10** : titre du jeu = **« Ride the Tsunami »** (nom affiché : voir la décision « sans emoji » plus haut). À vérifier dans la recherche Roblox avant publication.
 - **Moaad, 09/10** : concept **Reef Keepers** (docs/DIRECTIONS.md §A, détaillé dans docs/GDD.md).
 - **Moaad, 09/10** : objectif **top 10 Roblox**. Tout est permis pour y arriver, y compris un changement total de concept. E audite Reef Keepers face au top 10 (docs/AUDIT_TOP10.md) avant toute implémentation.
 - **Moaad, 09/10** : « pour le jeu, oublie le halal / haram » (rappel fait une fois). Les règles halal sont levées pour Tide Rush : vol entre joueurs et tirages payants en Robux autorisés. Restent obligatoires : probabilités affichées, PolicyService (ArePaidRandomItemsRestricted), règles communautaires et de monétisation de Roblox, aucune propriété intellectuelle copiée.
