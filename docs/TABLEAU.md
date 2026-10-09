@@ -55,9 +55,9 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | à faire |
 | P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
 | P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | fait (Onboarding) |
-| P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | à faire |
-| P1-12 | B | HUD de la Marée Royale, bouton Monter, billboard de bassin, animation de la barrière | à faire |
-| P1-13 | B | Boutique (probabilités avant achat, bascule PolicyService) | à faire |
+| P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | fait (a24dbc7) |
+| P1-12 | B | HUD de la Marée Royale, bouton Monter, billboard de bassin, animation de la barrière | fait (a24dbc7) |
+| P1-13 | B | Boutique (probabilités avant achat, bascule PolicyService) | fait côté client ; attend Config.Shop et les RF de A |
 | P1-20 | C | 3 créatures (Pebble Crab, Sand Star, Reef Hatchling montable) : IDs + prompts | en cours |
 | P1-21 | C | Barrière de corail `PlotN.Barrier` + lagon de Plot1 + hero shot (tools/world) | en cours |
 | P1-22 | C | FX Golden + ambiance Golden Tide, 3 couronnes + FX royal, sons | à faire |
