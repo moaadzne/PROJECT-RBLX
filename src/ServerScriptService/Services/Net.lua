@@ -14,6 +14,9 @@ local handlers = {} -- [remoteName] = fonction branchee (pour le selftest)
 local currentWave = nil
 
 local function allow(player, name)
+	if not player.Parent then
+		return false -- deja parti : ne pas recreer de seau apres Net.Forget (fuite du Player)
+	end
 	local now = os.clock()
 	local perPlayer = buckets[player]
 	if not perPlayer then
