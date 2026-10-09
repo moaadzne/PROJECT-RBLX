@@ -32,11 +32,15 @@ Règle qui en découle, pour toute l'équipe : **on ne modifie plus dans Studio 
 
 **Jamais touchés** : Workspace (Map, Terrain), Lighting, `ReplicatedStorage.Assets`, MaterialService, SoundService, ServerStorage (DevNotes, Backup_Template), StarterCharacterScripts.
 
-Attention : dans un dossier mappé, Rojo **supprime** ce qui n'existe pas dans le repo. C'est voulu pour les scripts. Mais si A met un dossier `src/ReplicatedStorage/Remotes`, il faut **un fichier pour chaque remote**, v1 comprises.
+**Protection de l'existant** (vérifiée le 09/10 avec l'API de `rojo serve` 7.5.1) :
+- Les 6 nœuds mappés ont `"$ignoreUnknownInstances": true`. Rojo n'y supprime donc **rien** de ce qui existe seulement dans Studio : remotes v1, interface construite dans Studio, etc.
+- Sans ce réglage, Rojo **vidait** StarterGui et ReplicatedFirst, même quand leur dossier est absent du repo. C'est corrigé.
+- Ce réglage ne vaut que pour le nœud lui-même. **À l'intérieur** de `Services` et du LocalScript `TideClient`, le repo fait foi : un module supprimé du repo est supprimé dans Studio. C'est voulu, et ces deux endroits sont aujourd'hui identiques au repo (vérifié sur le .rbxl).
+- Conséquence : un script supprimé ou renommé **au premier niveau** (par exemple `ServerScriptService.Main`) reste dans Studio comme orphelin. L'étape 8 les liste, et rien n'est supprimé sans l'accord de D.
 
 Prérequis côté repo, déjà signalés aux auteurs le 09/10 :
 - **B** : renommer `TideClient/TideClient.client.lua` en `TideClient/init.client.lua`. Sinon Rojo crée un Folder TideClient, les modules ne sont plus enfants du LocalScript et le client ne charge rien, sans aucune erreur.
-- **A** : décider comment naissent les remotes v2 (`Net.lua` fait `WaitForChild` sans délai) : soit créées par Net au démarrage, soit en fichiers `*.model.json`.
+- **A** : décider comment naissent les remotes v2 (`Net.lua` fait `WaitForChild` sans délai) : soit créées par Net au démarrage, soit en fichiers `src/ReplicatedStorage/Remotes/<Nom>.model.json`. Les remotes v1 de Studio sont conservées dans les deux cas.
 
 ## 3. Procédure de lundi
 
@@ -44,12 +48,26 @@ Prérequis côté repo, déjà signalés aux auteurs le 09/10 :
 1. Ferme le Roblox Player. Ouvre seulement Roblox Studio avec la place Tide Rush habituelle.
 2. Dans la conversation locale du Mac, dis : « on fait l'import de lundi, suis docs/IMPORT_LUNDI.md ».
 
-### Étape 1 : sauvegarde du .rbxl (Moaad, obligatoire)
-1. Dans Studio : menu **File** → **Save to File As…**
-2. Dossier : `Documents/claude code/`. Nom : `TideRush_avant_import_2026-10-12.rbxl` → **Save**.
-3. Si la place est publiée : **File** → **Save to Roblox** aussi. La version en ligne sert de second filet.
+### Étape 1 : sauvegarde, puis copie de travail (Moaad, obligatoire, dans cet ordre)
+1. Si la place est publiée : **File** → **Save to Roblox**. C'est le premier filet, en ligne.
+2. **File** → **Save to File As…** → dossier `Documents/claude code/`, nom `TideRush_SAUVEGARDE_2026-10-12.rbxl` → **Save**. Cette copie n'est plus jamais modifiée.
+3. Tout de suite après : **File** → **Save to File As…** → même dossier, nom `TideRush_import_2026-10-12.rbxl` → **Save**.
+4. Regarde le titre de l'onglet en haut de Studio : il doit afficher `TideRush_import_2026-10-12`. On travaille dans cette copie, et la sauvegarde reste intacte.
 
-Retour arrière à tout moment : fermer Studio **sans sauvegarder**, puis rouvrir ce fichier.
+Retour arrière à tout moment : fermer Studio **sans sauvegarder**, puis rouvrir `TideRush_SAUVEGARDE_2026-10-12.rbxl`.
+
+### Étape 1 bis : photo de l'existant (session locale, avant toute synchronisation)
+Avec le MCP Studio, en mode Edit :
+- `search_game_tree` sur `ReplicatedStorage.Remotes`, `Workspace.Map`, `ReplicatedStorage.Assets`, `StarterGui` et `ReplicatedFirst`. Garder la liste.
+- `execute_luau` (Edit), pour noter les comptes :
+```lua
+local RS = game:GetService("ReplicatedStorage")
+for _, inst in { RS:FindFirstChild("Remotes"), workspace:FindFirstChild("Map"), RS:FindFirstChild("Assets"), game:GetService("StarterGui"), game:GetService("ReplicatedFirst"), game:GetService("Lighting") } do
+	if inst then
+		print(inst:GetFullName(), #inst:GetDescendants())
+	end
+end
+```
 
 ### Étape 2 : récupérer le repo sur le Mac (session locale)
 ```bash
@@ -98,7 +116,9 @@ Ce qui n'est pas un script (lagon, décor, FX, sons) passe toujours par le MCP S
 Ensuite **Cmd + S**.
 
 ### Étape 8 : vérification (session locale, puis Moaad)
+- [ ] **Existant intact** : on relance le même `search_game_tree` et le même `execute_luau` qu'à l'étape 1 bis. Remotes, Map, Assets, StarterGui, ReplicatedFirst et Lighting ont **les mêmes comptes qu'avant**. Remotes et StarterGui peuvent seulement avoir **plus** d'éléments, si le repo en ajoute. S'il manque quoi que ce soit : on ferme sans sauvegarder, on rouvre la sauvegarde et on prévient D.
 - [ ] Les scripts de Studio correspondent à `rojo sourcemap default.project.json` : mêmes noms, mêmes classes. TideClient est bien un **LocalScript** qui contient ses modules.
+- [ ] **Orphelins** : on liste les Script, LocalScript et ModuleScript du premier niveau (ServerScriptService, StarterPlayerScripts, Shared, Remotes) qui ne figurent pas dans le sourcemap, et on envoie la liste à D. Aucune suppression sans son accord.
 - [ ] Mode Edit : aucune erreur rouge dans l'Output.
 - [ ] Playtest court (Moaad a fait Cmd + S avant) : console **sans erreur ni warning** du jeu.
 - [ ] `selftest` du TR_Debug, côté serveur, pendant le Play (`execute_luau` en contexte Server) : tout est PASS (la liste des tests dépend de la version de A).
