@@ -13,6 +13,8 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 
 ## Décisions
 - **Moaad, 09/10** : concept **Reef Keepers** (docs/DIRECTIONS.md §A, détaillé dans docs/GDD.md).
+- **Moaad, 09/10** : objectif **top 10 Roblox**. Tout est permis pour y arriver, y compris un changement total de concept. E audite Reef Keepers face au top 10 (docs/AUDIT_TOP10.md) avant toute implémentation.
+- **Moaad, 09/10** : « pour le jeu, oublie le halal / haram » (rappel fait une fois). Les règles halal sont levées pour Tide Rush : vol entre joueurs et tirages payants en Robux autorisés. Restent obligatoires : probabilités affichées, PolicyService (ArePaidRandomItemsRestricted), règles communautaires et de monétisation de Roblox, aucune propriété intellectuelle copiée.
 - **Moaad, 09/10** : le test du jour est rejeté (« rien ne va, tout est à revoir »). Tout ce qui se voit est refait à partir de zéro. On ne garde que la plomberie invisible qui marche : sauvegarde, verrou de session, Net, attribution des bases, vague.
 - **D, 09/10** :
   - Périmètre de la Phase 1 = GDD §12, ni plus ni moins.
@@ -24,7 +26,7 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
   - **Exception validée** : en jeu seulement, le client (B) peut animer localement Lighting et Atmosphere pour les marées, avec les valeurs fournies par C. Jamais en mode édition.
   - Tant que les modèles de C manquent, les créatures utilisent les modèles des anciens trésors (via Config.LegacyItemToCreature).
 
-## Phase 1 — en cours
+## Phase 1 — EN ATTENTE de l'audit top 10 (le périmètre peut changer)
 | # | Qui | Tâche | État |
 |---|---|---|---|
 | P1-01 | A | Contrat des remotes v2 (additif) dans review/review_context.md | à faire, prioritaire |
