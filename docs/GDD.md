@@ -13,6 +13,42 @@ La légende dit que lorsqu'un lagon est assez beau, le **Léviathan**, l'ancien 
 
 Ton : cozy, lumineux, aventure. Aucun méchant, aucune violence : la vague est un obstacle naturel, pas un ennemi.
 
+## 1 bis. Les piliers du fun (ce qui décide de tout le reste)
+
+Le dernier test a montré que « rien ne va ». Le GDD part donc du **ressenti**, et la réutilisation du code n'est qu'un bonus. Si une partie de l'ancien jeu ne sert pas ces piliers, on la jette.
+
+1. **Attraper, c'est un plaisir physique.** Chaque prise a un son, un saut de la créature dans les bras, un petit ralenti de 0,15 s, un chiffre qui saute. On doit avoir envie d'en attraper une de plus sans même penser aux pièces.
+2. **Ce que j'attrape est vivant et à moi.** Les créatures ont des yeux, nagent, réagissent quand on s'approche du bassin. Ce ne sont pas des objets posés sur des socles.
+3. **La vague fait battre le cœur.** On entend la mer gronder, l'eau se retire, le ciel change. C'est une course, pas une punition : on frôle la vague, on ne meurt pas.
+4. **Il y a toujours un « et si… » juste devant.** Une créature brillante un peu trop loin, une marée dorée annoncée, un bébé qui va grandir dans 40 s.
+
+**Ce qu'on ne garde pas de l'ancien jeu, par principe :** les trésors inanimés, les socles nus, le spawn au hub loin de tout, le premier contact avec un HUD chargé, l'absence de son et de réaction.
+
+## 1 ter. Les 30 premières secondes, image par image
+
+Objectif : à 30 s, le joueur a **ri ou souri une fois**, a **une créature à lui qui nage**, et **comprend la vague sans avoir lu un mot de tutoriel**.
+
+| Temps | Ce qu'il voit | Ce qu'il fait | Ce qu'il ressent |
+|---|---|---|---|
+| 0–2 s | Caméra qui descend du ciel sur **son** lagon turquoise, au bord de la plage. Son nom sur un panneau en bois. Lumière chaude de fin d'après-midi. Musique douce + vagues. | Rien, le jeu charge en douceur. | « C'est beau, c'est chez moi. » |
+| 2–4 s | Son personnage apparaît au bord du lagon. Un bébé Pebble Crab est **coincé sur le sable** à 12 studs, il agite les pinces, une petite bulle « ! » au-dessus de lui. Aucun texte, aucun menu. | Il regarde. Le joystick mobile est le seul élément d'interface visible. | Curiosité : « il est mignon, il est coincé ». |
+| 4–7 s | En approchant, le crabe saute de joie (petit bond + son « pip »). | Il marche vers lui. | Le jeu réagit à moi. |
+| 7–8 s | **La prise** : le crabe saute dans ses bras, flash blanc doux, son « plop », micro-ralenti, « +1 » qui rebondit. Le crabe reste visible **sur sa tête/dans ses bras**. | Il le touche (ramassage automatique au contact). | Satisfaction immédiate, à refaire. |
+| 8–12 s | La caméra révèle la plage : **4 autres créatures** brillent un peu plus loin (20–40 studs), dont une **Sand Star dorée** qui scintille encore plus loin. | Il court vers elles. | « Encore ! » et « celle-là brille, je la veux ». |
+| 12–18 s | Il en attrape 2 ou 3 ; elles s'empilent sur sa tête de façon comique (tour de créatures qui oscille). | Il court, il ramasse. | Ça devient drôle. |
+| 18–20 s | La musique s'arrête net. Un **grondement grave**. Au loin, la mer **se retire** et découvre le sable. Le ciel fonce légèrement. Une corne de brume. | Il se retourne. | Tension : « qu'est-ce qui arrive ? » |
+| 20–22 s | Un **mur d'eau** se lève à l'horizon. Une seule icône apparaît au sol : une flèche lumineuse vers son lagon (pas de texte). | Il comprend tout seul : il faut rentrer. | Le cœur s'accélère. |
+| 22–27 s | Course vers le lagon. La vague arrive derrière, on l'entend grossir. La Sand Star dorée, restée sur le sable, est **avalée** par la vague. | Il court. | Adrénaline, petit regret pour la dorée. |
+| 27–28 s | Il saute dans son lagon : **splash**. Les créatures plongent de sa tête dans les bassins, chacune avec un son différent. | Rien, c'est automatique. | Soulagement et fierté. |
+| 28–30 s | La vague s'écrase **juste derrière la limite du lagon** et l'éclabousse sans le toucher. Les créatures nagent, des pièces commencent à sortir en bulles (+1, +2). Premier texte du jeu, une seule ligne : « Elles grandissent. La prochaine marée sera **dorée**. » | Il regarde ses créatures. | « J'y retourne, je veux la dorée. » |
+
+**Règles de cette séquence (non négociables pour B et C) :**
+- Aucun texte avant 28 s, aucune fenêtre, aucun HUD sauf le joystick. Les pièces et le reste du HUD apparaissent **après** la première vague.
+- La première vague est **scénarisée** : déclenchée 18 s après le spawn (pas le cycle global), et elle ne peut pas attraper le joueur (on garde son sac quoi qu'il arrive). Les vagues suivantes suivent le cycle normal.
+- La deuxième marée du joueur est **forcément Golden** (pour lui), pour tenir la promesse de la dernière ligne.
+- Son à chaque action. Sans le son, cette séquence ne marche pas : c'est une priorité Phase 1, pas un bonus.
+- Temps de chargement masqué par la descente de caméra. Si le chargement dépasse 2 s, la caméra attend en vue large du lagon, pas sur un écran noir.
+
 ## 2. Boucle principale
 
 **Boucle de 60 s (un cycle de vague, Config.Wave existant)** :
@@ -167,15 +203,14 @@ Formule : `cost(n) = 1e6 × 5^(n−1)`. **Remis à zéro** : pièces, améliorat
 ## 8. Onboarding
 
 ### 60 premières secondes
-- 0–5 s : spawn **dans son lagon** (pas au hub). Une Pebble Crab bébé est déjà dans un bassin et nage. Texte : « Bienvenue, Keeper ! La marée a laissé des créatures sur la plage. »
-- 5–20 s : une flèche au sol vers la plage. Les 3 premières créatures apparaissent **à 20 studs** du lagon. Le ramassage déclenche son, flash de rareté et « +1 dans ton sac ».
-- 20–35 s : retour au lagon, dépôt automatique, la créature plonge dans un bassin avec un splash. Les pièces commencent à monter (+X/s visible).
-- 35–60 s : première alerte de vague **expliquée** une seule fois (« Une vague arrive ! Rentre au lagon ou monte sur une tour »). La vague passe ; personne n'est puni à la première (attrapé = on garde le sac pendant ce tout premier cycle).
+- 0–30 s : voir §1 ter (séquence scénarisée, sans texte).
+- 30–45 s : le HUD apparaît en fondu (pièces, revenu). Une flèche au sol montre les tours : « Les tours te protègent aussi. »
+- 45–60 s : retour sur la plage, nouvelles créatures. Le joueur joue seul, sans guide.
 
 ### 10 premières minutes
 - Min 1–2 : achat guidé de Speed niv. 1 (bouton qui pulse doucement, une fois).
 - Min 2–4 : 5 bassins pleins, premier Juvenile (3 min) avec animation de croissance et « ×2 revenu ! ».
-- Min 4–6 : première marée spéciale **forcée** (Golden) pour que chacun voie une mutation tôt. Ensuite le calendrier normal reprend.
+- Min 1–3 : deuxième marée **forcée Golden** pour ce joueur (promesse du §1 ter), pour qu'il voie une mutation tôt. Ensuite le calendrier normal reprend.
 - Min 6–8 : ouverture du Codex (« 3/50 »), première récompense de case.
 - Min 8–10 : Coral Coast mis en avant (« créatures Uncommon, ×5 revenu »), premier Shell Egg proposé si les pièces suffisent.
 
@@ -255,7 +290,9 @@ Repère réaliste : sur un pass à 299 R$, le jeu reçoit 70 % = 209 R$ ≈ **0,
 - Croissance 4 stades, hors ligne inclus.
 - Marées : Normal + **Golden Tide** uniquement (1 preset de mutation).
 - Vague, tours, améliorations Speed/Bag/Slots, sauvegarde v2 avec migration.
-- HUD : pièces, revenu, bandeau de marée, billboard de bassin, onboarding 60 s.
+- Les 30 premières secondes du §1 ter, **son compris**, au niveau final. C'est le premier livrable jugé.
+- HUD : pièces, revenu, bandeau de marée, billboard de bassin.
+- Créatures vivantes : yeux, nage, réaction à l'approche, pile sur la tête quand on les porte.
 - Codex limité aux 2 espèces (Normal + Golden = 4 cases).
 
 **Dehors (Phase 2+)** : zones 2–5, autres mutations, Rainbow, compagnons rhabillés, Léviathan, Tide Rank, quêtes, visites, boutique Robux, événements.
