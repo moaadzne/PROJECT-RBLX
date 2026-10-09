@@ -192,11 +192,11 @@ function dismiss(toast)
 	popQueue()
 end
 
-local function findByKey(key: string?)
+local function findByKey(list, key: string?)
 	if not key then
 		return nil
 	end
-	for _, t in visible do
+	for _, t in list do
 		if t.key == key then
 			return t
 		end
@@ -209,7 +209,13 @@ function Notifications.Push(opts: { [string]: any })
 	if type(opts) ~= "table" or type(opts.text) ~= "string" or opts.text == "" then
 		return
 	end
-	local same = findByKey(opts.key)
+	-- deja en attente : on met a jour le texte au lieu d'empiler un doublon
+	local queued = findByKey(queue, opts.key)
+	if queued then
+		queued.text = opts.text
+		return
+	end
+	local same = findByKey(visible, opts.key)
 	if same then
 		local label = same.frame:FindFirstChild("Text") :: TextLabel?
 		if label then
@@ -310,8 +316,11 @@ local function onNotify(kind: string, data: { [string]: any })
 		-- seul un tresor jamais vu merite un toast (le reste = retours visuels)
 		local item = Config.Items[data.itemId]
 		if data.isNew and item then
+			-- rarete = couleur + lettre + nom (bible §5 accessibilite)
+			local rarity = Config.Rarities[item.rarity]
+			local rarityName = if rarity then rarity.label .. " " else ""
 			Notifications.Push({
-				text = "New treasure: " .. item.name .. "!",
+				text = "New " .. rarityName .. "treasure: " .. item.name .. "!",
 				rarity = item.rarity,
 				color = Theme.RarityColor(item.rarity),
 				priority = "reward",
