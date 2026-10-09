@@ -1,0 +1,34 @@
+{
+  "name": "TideRush",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/ReplicatedStorage/Shared",
+        "$ignoreUnknownInstances": true
+      },
+      "Remotes": {
+        "$path": { "optional": "src/ReplicatedStorage/Remotes" },
+        "$ignoreUnknownInstances": true
+      }
+    },
+    "ServerScriptService": {
+      "$path": "src/ServerScriptService",
+      "$ignoreUnknownInstances": true
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "$path": "src/StarterPlayer/StarterPlayerScripts",
+        "$ignoreUnknownInstances": true
+      }
+    },
+    "StarterGui": {
+      "$path": { "optional": "src/StarterGui" },
+      "$ignoreUnknownInstances": true
+    },
+    "ReplicatedFirst": {
+      "$path": { "optional": "src/ReplicatedFirst" },
+      "$ignoreUnknownInstances": true
+    }
+  }
+}

@@ -1,0 +1,358 @@
+-- tools/world/build_lagoon.luau
+-- C : lagon d'une base, palier 1 (docs/DA_MONDE.md §1). Plot1 par defaut ; mettre { 1, 2, ..., 8 } pour la hero shot.
+-- Lancement manuel uniquement (execute_luau, mode edition), jamais automatique.
+-- 1er passage avec DRY_RUN = true (affiche le plan, ne modifie rien), puis DRY_RUN = false.
+-- Un seul enregistrement ChangeHistoryService : Ctrl+Z annule tout ; en cas d'erreur, rien n'est garde.
+-- Ne touche pas : noms, attributs, Slot, LockGui, Display, SignAnchor, collision du Deck (SpawnPos inchange).
+-- Les anciens visuels de la base sont deplaces dans ServerStorage.C_Backup (pas supprimes).
+
+local DRY_RUN = true
+local PLOTS = { 1 }
+
+-- Bassins avec la palourde au lieu de l'anneau de rochers : a activer apres avoir vu la palourde.
+local CLAM_SLOTS = {}
+
+-- Noms cherches dans _DecorLib (insensible a la casse, premier trouve). A corriger apres inspect_world.luau.
+local FIND = {
+	cabin = { "hut", "cabane", "cabin", "shack" },
+	palm = { "palm" },
+	dock = { "dock", "pier", "ponton", "jetty" },
+	clam = { "clam", "palourde" },
+	rock = { "rock", "stone", "boulder" },
+	shell = { "shell", "coquillage" },
+}
+
+-- Enfants de PlotN qu'on garde en place (le serveur en depend, ou c'est notre dossier)
+local KEEP = { Pedestals = true, Display = true, SignAnchor = true, Deck = true, Lagoon = true }
+
+local POOL = {
+	waterDepth = 0.8, -- eau au-dessus du fond ; le fond = haut du socle (le serveur y pose la creature)
+	rimExtra = 0.4, -- rebord au-dessus de l'eau
+	minDiameter = 5,
+	maxDiameter = 7,
+	rocks = 7, -- rochers par anneau
+	waterColor = Color3.fromHex("16A0A8"),
+	waterTransparency = 0.35,
+	floorColor = Color3.fromHex("C9A86E"),
+}
+
+-- Decor du palier 1, relatif a la base : x depuis le centre, z depuis MaxZ (arriere) ou MinZ (entree)
+local DECOR = {
+	{ key = "cabin", x = -7, fromBack = 7, height = 9, yaw = 180 },
+	{ key = "palm", x = 12, fromBack = 12, height = 22, yaw = 30 },
+	{ key = "dock", x = 0, fromFront = 3, scale = 1, yaw = 0, decorOnly = false },
+}
+
+local CHS = game:GetService("ChangeHistoryService")
+local RunService = game:GetService("RunService")
+local RS = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
+
+assert(not RunService:IsRunning(), "[C] a lancer en mode edition, pas en Play")
+local lib = RS:FindFirstChild("Assets") and RS.Assets:FindFirstChild("_DecorLib")
+assert(lib, "[C] ReplicatedStorage.Assets._DecorLib introuvable")
+local plotsFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Plots")
+assert(plotsFolder, "[C] workspace.Map.Plots introuvable")
+
+local function log(msg)
+	print((DRY_RUN and "[C][DRY] " or "[C] ") .. msg)
+end
+
+local function findTemplate(key)
+	for _, pattern in FIND[key] do
+		for _, d in lib:GetDescendants() do
+			if (d:IsA("Model") or d:IsA("BasePart")) and string.find(string.lower(d.Name), pattern, 1, true) then
+				return d
+			end
+		end
+	end
+	return nil
+end
+
+local templates = {}
+for key in FIND do
+	templates[key] = findTemplate(key)
+	if templates[key] then
+		log(string.format("modele %s = %s", key, templates[key]:GetFullName()))
+	else
+		warn("[C] aucun modele pour " .. key .. " : corriger FIND")
+	end
+end
+
+local function boxOf(inst)
+	if inst:IsA("Model") then
+		return inst:GetBoundingBox()
+	end
+	return inst.CFrame, inst.ExtentsSize
+end
+
+local function scaleBy(inst, factor)
+	if math.abs(factor - 1) < 1e-3 then
+		return
+	end
+	if inst:IsA("Model") then
+		inst:ScaleTo(inst:GetScale() * factor)
+	else
+		inst.Size *= factor
+	end
+end
+
+-- Nettoie un clone : 0 script, tout ancre, options de collision et d'ombre
+local function prepare(clone, opts)
+	local parts = {}
+	if clone:IsA("BasePart") then
+		table.insert(parts, clone)
+	end
+	for _, d in clone:GetDescendants() do
+		if d:IsA("LuaSourceContainer") then
+			warn("[C] script retire : " .. d:GetFullName())
+			d:Destroy()
+		elseif d:IsA("BasePart") then
+			table.insert(parts, d)
+		end
+	end
+	for _, p in parts do
+		p.Anchored = true
+		if opts.decorOnly then
+			p.CanCollide = false
+			p.CanTouch = false
+			p.CanQuery = false
+		end
+		if opts.noShadow then
+			p.CastShadow = false
+		end
+	end
+end
+
+-- Clone un modele : hauteur cible ou facteur d'echelle, centre XZ sur pos, bas pose sur pos.Y
+local function place(key, pos, opts)
+	local template = templates[key]
+	if not template then
+		return nil
+	end
+	log(string.format("  %s en (%.0f, %.1f, %.0f)", key, pos.X, pos.Y, pos.Z))
+	if DRY_RUN then
+		return nil
+	end
+	local c = template:Clone()
+	prepare(c, opts)
+	local _, size = boxOf(c)
+	if opts.height and size.Y > 0 then
+		scaleBy(c, opts.height / size.Y)
+	elseif opts.scale then
+		scaleBy(c, opts.scale)
+	end
+	c:PivotTo(CFrame.new(pos) * CFrame.Angles(0, math.rad(opts.yaw or 0), 0))
+	local cf
+	cf, size = boxOf(c)
+	local offset = Vector3.new(pos.X - cf.Position.X, pos.Y - (cf.Position.Y - size.Y / 2) + (opts.sink or 0), pos.Z - cf.Position.Z)
+	c:PivotTo(c:GetPivot() + offset)
+	c.Name = opts.name or c.Name
+	c.Parent = opts.parent
+	return c
+end
+
+local function hide(inst)
+	local parts = inst:IsA("BasePart") and { inst } or {}
+	for _, d in inst:GetDescendants() do
+		if d:IsA("BasePart") then
+			table.insert(parts, d)
+		end
+	end
+	for _, p in parts do
+		if p:GetAttribute("C_OrigTransparency") == nil then
+			p:SetAttribute("C_OrigTransparency", p.Transparency)
+		end
+		p.Transparency = 1
+	end
+end
+
+local function disc(name, center, diameter, height, props, parent)
+	local p = Instance.new("Part")
+	p.Name = name
+	p.Shape = Enum.PartType.Cylinder
+	p.Size = Vector3.new(height, diameter, diameter)
+	p.CFrame = CFrame.new(center) * CFrame.Angles(0, 0, math.rad(90))
+	p.Anchored = true
+	p.TopSurface = Enum.SurfaceType.Smooth
+	p.BottomSurface = Enum.SurfaceType.Smooth
+	for k, v in props do
+		p[k] = v
+	end
+	p.Parent = parent
+	return p
+end
+
+local function buildPlot(index)
+	local plot = plotsFolder:FindFirstChild("Plot" .. index)
+	if not plot then
+		warn("[C] Plot" .. index .. " introuvable")
+		return
+	end
+	local minX, maxX = plot:GetAttribute("MinX"), plot:GetAttribute("MaxX")
+	local minZ, maxZ = plot:GetAttribute("MinZ"), plot:GetAttribute("MaxZ")
+	local spawnPos = plot:GetAttribute("SpawnPos")
+	assert(minX and maxX and minZ and maxZ and spawnPos, "[C] attributs MinX/MaxX/MinZ/MaxZ/SpawnPos manquants sur Plot" .. index)
+	local cx = (minX + maxX) / 2
+	local deckTop = spawnPos.Y
+	log(string.format("== Plot%d : X %.0f..%.0f, Z %.0f..%.0f, sol %.1f", index, minX, maxX, minZ, maxZ, deckTop))
+
+	-- 1. Anciens visuels -> ServerStorage.C_Backup.PlotN
+	local toMove = {}
+	for _, c in plot:GetChildren() do
+		if not KEEP[c.Name] then
+			table.insert(toMove, c)
+			log("  sauvegarde puis retrait : " .. c.Name .. " [" .. c.ClassName .. "]")
+		end
+	end
+	if not DRY_RUN then
+		local backup = ServerStorage:FindFirstChild("C_Backup") or Instance.new("Folder")
+		backup.Name = "C_Backup"
+		backup.Parent = ServerStorage
+		local dest = backup:FindFirstChild(plot.Name) or Instance.new("Folder")
+		dest.Name = plot.Name
+		dest.Parent = backup
+		for _, c in toMove do
+			c.Parent = dest
+		end
+	end
+
+	-- 2. Socles et rebords masques (objets, Slot, LockGui et collisions gardes) ; Deck masque, collision gardee
+	local peds = plot:FindFirstChild("Pedestals")
+	assert(peds, "[C] Pedestals manquant sur Plot" .. index)
+	log("  masque Pedestals (socles + Rim) et Deck")
+	if not DRY_RUN then
+		for _, c in peds:GetChildren() do
+			hide(c)
+		end
+		local deck = plot:FindFirstChild("Deck")
+		if deck then
+			hide(deck)
+		end
+	end
+
+	-- 3. Sable sous la base, jusqu'au niveau du deck
+	local w, d = maxX - minX, maxZ - minZ
+	log(string.format("  sable terrain %.0f x %.0f jusqu'a Y %.1f", w, d, deckTop))
+	if not DRY_RUN then
+		workspace.Terrain:FillBlock(CFrame.new(cx, deckTop - 1, (minZ + maxZ) / 2), Vector3.new(w, 2, d), Enum.Material.Sand)
+	end
+
+	-- 4. Bassins, un par PedestalN
+	local lagoon = plot:FindFirstChild("Lagoon")
+	if not DRY_RUN then
+		if lagoon then
+			lagoon:Destroy() -- reconstruction propre (annulable par Ctrl+Z)
+		end
+		lagoon = Instance.new("Folder")
+		lagoon.Name = "Lagoon"
+		lagoon.Parent = plot
+	end
+	local pools = not DRY_RUN and Instance.new("Folder") or nil
+	if pools then
+		pools.Name = "Pools"
+		pools.Parent = lagoon
+	end
+
+	local list = {}
+	for i = 1, 10 do
+		local p = peds:FindFirstChild("Pedestal" .. i)
+		if p then
+			table.insert(list, { slot = i, part = p })
+		end
+	end
+	for _, e in list do
+		local nearest = math.huge
+		for _, o in list do
+			if o ~= e then
+				local a, b = e.part.Position, o.part.Position
+				nearest = math.min(nearest, Vector2.new(a.X - b.X, a.Z - b.Z).Magnitude)
+			end
+		end
+		local diameter = math.clamp(nearest - 1.5, POOL.minDiameter, POOL.maxDiameter)
+		local pos = e.part.Position
+		local floorTop = pos.Y + e.part.Size.X / 2 -- cylindre couche : hauteur = Size.X (comme PlotService)
+		local waterTop = floorTop + POOL.waterDepth
+		local rimTop = waterTop + POOL.rimExtra
+		log(string.format("  bassin %d : centre (%.1f, %.1f), diametre %.1f, fond Y %.1f, eau Y %.1f", e.slot, pos.X, pos.Z, diameter, floorTop, waterTop))
+		if not DRY_RUN then
+			local pool = Instance.new("Model")
+			pool.Name = "Pool" .. e.slot
+			pool:SetAttribute("PoolSlot", e.slot)
+			pool:SetAttribute("FloorY", floorTop)
+			pool:SetAttribute("WaterY", waterTop)
+			pool.Parent = pools
+			local inner = diameter - 0.6
+			disc("Floor", Vector3.new(pos.X, (deckTop + floorTop) / 2, pos.Z), inner, floorTop - deckTop, {
+				Material = Enum.Material.Sand,
+				Color = POOL.floorColor,
+				CastShadow = false,
+			}, pool)
+			disc("Water", Vector3.new(pos.X, floorTop + POOL.waterDepth / 2, pos.Z), inner, POOL.waterDepth, {
+				Material = Enum.Material.Glass,
+				Color = POOL.waterColor,
+				Transparency = POOL.waterTransparency,
+				CanCollide = false,
+				CanTouch = false,
+				CanQuery = false,
+				CastShadow = false,
+			}, pool)
+			local rimHeight = rimTop - deckTop
+			if CLAM_SLOTS[e.slot] and templates.clam then
+				place("clam", Vector3.new(pos.X, deckTop, pos.Z), { scale = nil, height = rimHeight, name = "Rim", parent = pool })
+			else
+				local rng = Random.new(index * 100 + e.slot)
+				for k = 1, POOL.rocks do
+					local a = (k / POOL.rocks) * math.pi * 2 + rng:NextNumber(-0.15, 0.15)
+					local r = diameter / 2
+					place("rock", Vector3.new(pos.X + math.cos(a) * r, deckTop, pos.Z + math.sin(a) * r), {
+						height = rimHeight * rng:NextNumber(0.85, 1.1),
+						yaw = rng:NextNumber(0, 360),
+						sink = -0.3,
+						noShadow = true,
+						name = "Rock" .. k,
+						parent = pool,
+					})
+				end
+			end
+		end
+	end
+
+	-- 5. Decor du palier 1 (les paliers 2 a 5 iront dans Lagoon.Tier2..5, affiches selon LagoonTier cote client)
+	local tier = not DRY_RUN and Instance.new("Folder") or nil
+	if tier then
+		tier.Name = "Tier1"
+		tier.Parent = lagoon
+	end
+	for _, item in DECOR do
+		local z = item.fromBack and (maxZ - item.fromBack) or (minZ + item.fromFront)
+		place(item.key, Vector3.new(cx + item.x, deckTop, z), {
+			height = item.height,
+			scale = item.scale,
+			yaw = item.yaw,
+			decorOnly = item.decorOnly,
+			parent = tier,
+		})
+	end
+end
+
+local function build()
+	for _, index in PLOTS do
+		buildPlot(index)
+	end
+end
+
+if DRY_RUN then
+	build()
+	log("DRY_RUN : rien n'a ete modifie. Relancer avec DRY_RUN = false.")
+else
+	local rec = CHS:TryBeginRecording("C : lagon palier 1")
+	assert(rec, "[C] enregistrement impossible (Play en cours ou autre enregistrement ouvert)")
+	local ok, err = pcall(build)
+	CHS:FinishRecording(rec, ok and Enum.FinishRecordingOperation.Commit or Enum.FinishRecordingOperation.Cancel)
+	if ok then
+		log("termine. Ctrl+Z annule tout.")
+	else
+		warn("[C] erreur, tout est annule : " .. tostring(err))
+	end
+end
