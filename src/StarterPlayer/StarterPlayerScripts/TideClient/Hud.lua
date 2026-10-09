@@ -565,15 +565,26 @@ function Hud.SetAction(id: string, opts: { [string]: any })
 			Parent = actionBar,
 		})
 		action.Instance.Visible = false
-		action.Button.Activated:Connect(function()
+		local function activate()
 			if not action.Enabled then
 				Theme.Shake(action.Button)
 				return
 			end
 			if action.OnActivated then
-				action.OnActivated()
+				task.spawn(action.OnActivated)
 			end
-		end)
+		end
+		action.Button.Activated:Connect(activate)
+		-- raccourci clavier affiche par la KeyHint
+		local keyCode = opts.hotkey and (Enum.KeyCode :: any)[opts.hotkey]
+		if keyCode then
+			UserInputService.InputBegan:Connect(function(input, processed)
+				if not processed and input.KeyCode == keyCode and shown and action.Instance.Visible then
+					Theme.Pop(action.Button, 0.08)
+					activate()
+				end
+			end)
+		end
 		actions[id] = action
 	end
 	if opts.icon then
