@@ -13,6 +13,7 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 | E | Tide Rush · E Concept | `claude/laughing-lovelace-8xixq7` |
 
 ## Décisions
+- **D, 09/10** : île ouverte (GDD §3 bis), **version intermédiaire au lancement**. Île d'environ 600×600 avec la crique centrale et les 8 lagons ; **vague venant des 4 directions** (N/E/S/O, annoncée, jamais deux fois de suite la même) ; 3 points d'intérêt (belvédère, épave, récif à marée basse) ; 8 tours ; boussole et direction de la vague dans le HUD, sans carte. L'île de 800×800, la jungle, la grotte et la carte arrivent dans la première grosse mise à jour. Objectif : garder le test public vers le 29/10.
 - **D, 09/10** : nom affiché sur Roblox = **« Ride the Tsunami: Steal & Ride »**, sans emoji, par cohérence avec DIRECTION_V2. Roster v3 de E validé (vraies espèces ; Phase 1 : GhostCrab, CushionStar, HawksbillTurtle). Stades : Juvenile / Adult / Elder / Titan (monture dès Elder, surf en Titan).
 - **D, 09/10** : **docs/DIRECTION_V2.md est la référence de la direction.** docs/VISION_TON.md (F) en est l'annexe détaillée : prompt de session, juste milieu, règles vérifiables, 10 premières secondes, checklist de contrôle, remplacement des éléments Roblox par défaut (§8 bis). En cas de conflit, DIRECTION_V2 l'emporte.
 - **D, 09/10** : on **garde les avatars des joueurs** (pas de personnage unique imposé), avec des proportions R15 réalistes et identiques pour tous, nos animations et une tenue « Reef Keeper » en cosmétique. Moaad peut revenir sur ce choix.
@@ -54,7 +55,7 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-07 | A | RoyalService (score, top 3, créature unique) | fait |
 | P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | fait (ShopService, ids à 0 en attendant Moaad) |
 | P1-35 | A | Roster v3 + stades Juvenile/Adult/Elder/Titan dans Config, migration et services | à faire |
-| P1-36 | A, B, C | Île ouverte (GDD §3 bis de E) : vague à direction variable, biomes, boussole, carte | en attente de la spec de E |
+| P1-36 | A, B, C | Île ouverte, version intermédiaire : A = vague à 4 directions + biomes par anneaux ; B = boussole + direction de la vague ; C = île de 600×600 + 3 points d'intérêt + 8 tours | GO (A après P1-35) |
 | P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
 | P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | fait (Onboarding) |
 | P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | fait (a24dbc7) |
