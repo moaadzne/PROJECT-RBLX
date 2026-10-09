@@ -27,6 +27,9 @@ Theme.Colors = {
 	Success = Color3.fromRGB(76, 206, 120),
 	Danger = Color3.fromRGB(240, 70, 84),
 	Disabled = Color3.fromRGB(112, 124, 142),
+	-- style console : plaques sombres opaques et contours epais
+	Plate = Color3.fromRGB(16, 24, 46),
+	Outline = Color3.fromRGB(8, 12, 26),
 	Black = Color3.new(0, 0, 0),
 	White = Color3.new(1, 1, 1),
 }
@@ -35,19 +38,41 @@ Theme.Transparency = {
 	Panel = 0.18,
 	PanelStrong = 0.05,
 	Stroke = 0.78,
-	TextStroke = 0.5,
+	TextStroke = 0.1,
 }
 
 local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
+-- Titres et chiffres : Luckiest Guy (gras, arrondi, lisible de loin) ; texte : Builder Sans tres gras
 Theme.Fonts = {
-	Title = Font.fromEnum(Enum.Font.FredokaOne),
-	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
-	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
+	Title = Font.fromEnum(Enum.Font.LuckiestGuy),
+	Bold = Font.new(BUILDER, Enum.FontWeight.ExtraBold),
+	Medium = Font.new(BUILDER, Enum.FontWeight.Bold),
 }
 
 Theme.Radius = 14 -- coins 12-20 px (bible)
 -- Tailles en px de design : le telephone est a l'echelle 0,85, donc 17 -> 14,5 px reels (minimum 14)
 Theme.TextSize = { Small = 17, Body = 18, Large = 22, Huge = 34, Giant = 52 }
+
+-- Marees : couleur + icone + nom (jamais la couleur seule)
+Theme.Tides = {
+	Normal = { label = "Normal Tide", icon = "🌊", color = Color3.fromRGB(64, 196, 230) },
+	Golden = { label = "Golden Tide", icon = "✨", color = Color3.fromRGB(255, 204, 64) },
+	Night = { label = "Night Tide", icon = "🌙", color = Color3.fromRGB(120, 140, 255) },
+	Storm = { label = "Storm Tide", icon = "⚡", color = Color3.fromRGB(190, 110, 255) },
+	Rainbow = { label = "Rainbow Tide", icon = "🌈", color = Color3.fromRGB(255, 120, 200) },
+}
+
+-- Mutations : meme regle
+Theme.Mutations = {
+	Golden = { label = "Golden", icon = "✨", color = Color3.fromRGB(255, 204, 64) },
+	Glow = { label = "Glow", icon = "🌙", color = Color3.fromRGB(90, 240, 220) },
+	Storm = { label = "Storm", icon = "⚡", color = Color3.fromRGB(190, 110, 255) },
+	Rainbow = { label = "Rainbow", icon = "🌈", color = Color3.fromRGB(255, 120, 200) },
+}
+
+function Theme.TideStyle(tide: string?)
+	return Theme.Tides[tide or "Normal"] or Theme.Tides.Normal
+end
 
 -- Lettre de rarete (forme + lettre : lisible sans les couleurs)
 Theme.RarityLetter = { Common = "C", Uncommon = "U", Rare = "R", Epic = "E", Legendary = "L" }
@@ -126,7 +151,7 @@ function Theme.TextStroke(parent: Instance, transparency: number?, thickness: nu
 	return create("UIStroke", {
 		Color = Theme.Colors.TextShadow,
 		Transparency = transparency or Theme.Transparency.TextStroke,
-		Thickness = thickness or 1.5,
+		Thickness = thickness or 2,
 		ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual,
 		Parent = parent,
 	})
@@ -440,6 +465,42 @@ function Theme.ItemIcon(itemId: string?, size: number): Frame
 		badge.Parent = icon
 	end
 	return icon
+end
+
+-- Plaque console : fond sombre opaque, contour epais, liseré clair en haut (pas de verre Roblox)
+-- props : Name, Size, Position, AnchorPoint, Rotation, ZIndex, Parent, Accent (Color3 du liseré)
+function Theme.Plate(props: { [string]: any }): Frame
+	local z = props.ZIndex or 1
+	local plate = create("Frame", {
+		Name = props.Name or "Plate",
+		Size = props.Size or UDim2.fromOffset(200, 50),
+		Position = props.Position or UDim2.new(),
+		AnchorPoint = props.AnchorPoint or Vector2.zero,
+		Rotation = props.Rotation or 0,
+		ZIndex = z,
+		BackgroundColor3 = Theme.Colors.White,
+		BackgroundTransparency = 0.08,
+		BorderSizePixel = 0,
+	})
+	Theme.Corner(plate, props.Radius or 12)
+	Theme.Gradient(plate, Theme.Colors.PanelLight, Theme.Colors.Plate, 90).Name = "PlateFill"
+	Theme.Stroke(plate, Theme.Colors.Outline, 0, 3)
+	if props.Accent then
+		local accent = create("Frame", {
+			Name = "Accent",
+			Position = UDim2.fromOffset(8, 3),
+			Size = UDim2.new(1, -16, 0, 4),
+			BackgroundColor3 = props.Accent,
+			BorderSizePixel = 0,
+			ZIndex = z + 1,
+			Parent = plate,
+		})
+		Theme.Round(accent)
+	end
+	if props.Parent then
+		plate.Parent = props.Parent
+	end
+	return plate
 end
 
 -- Racine plein ecran mise a l'echelle sans decaler les ancrages

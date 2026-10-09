@@ -5,25 +5,41 @@ local Services = script.Parent:WaitForChild("Services")
 local Net = require(Services.Net)
 local DataService = require(Services.DataService)
 local PlotService = require(Services.PlotService)
-local TreasureService = require(Services.TreasureService)
+local CreatureService = require(Services.CreatureService)
+local IntroService = require(Services.IntroService)
+local LagoonService = require(Services.LagoonService)
+local StealService = require(Services.StealService)
+local MountService = require(Services.MountService)
+local RoyalService = require(Services.RoyalService)
+local ShopService = require(Services.ShopService)
 local WaveService = require(Services.WaveService)
 local UpgradeService = require(Services.UpgradeService)
 local PetService = require(Services.PetService)
 local DebugService = require(Services.DebugService)
 
-for _, service in ipairs({ DataService, PlotService, TreasureService, WaveService, UpgradeService, PetService, DebugService }) do
+-- WaveService en dernier : ses crochets (OnCalm, OnFront) sont branches avant le premier cycle
+for _, service in ipairs({
+	DataService, PlotService, CreatureService, IntroService, LagoonService, StealService, MountService, RoyalService,
+	ShopService, UpgradeService, PetService, WaveService, DebugService,
+}) do
 	service.Start()
 end
 
 local function onPlayerAdded(player)
 	DataService.Track(player) -- profil cree tout de suite, donnees chargees en fond
 	PlotService.Assign(player)
+	LagoonService.Track(player)
+	MountService.Track(player)
 	Net.SendWave(player)
 end
 
 local function onPlayerRemoving(player)
+	StealService.Forget(player) -- avant la sauvegarde : un vol en cours est annule
 	PlotService.Release(player)
-	TreasureService.Forget(player)
+	CreatureService.Forget(player)
+	IntroService.Forget(player)
+	MountService.Forget(player)
+	RoyalService.Forget(player)
 	WaveService.Forget(player)
 	Net.Forget(player)
 	DataService.Release(player) -- derniere sauvegarde : attend le DataStore, donc en dernier
