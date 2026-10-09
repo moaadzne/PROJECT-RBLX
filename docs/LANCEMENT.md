@@ -1,6 +1,6 @@
 # Plan de lancement : premier test public (~29/10/2026)
 
-Auteur : E, le 2026-10-09. Titre choisi par Moaad : **« Ride the Tsunami 🌊 Steal & Ride »**.
+Auteur : E, le 2026-10-09. Titre choisi par Moaad : **« Ride the Tsunami: Steal & Ride »**.
 Règle : rien d'inventé. Quand je n'ai pas de source, je l'écris.
 
 ## Verdict
@@ -9,7 +9,7 @@ Règle : rien d'inventé. Quand je n'ai pas de source, je l'écris.
 - **5 vidéos courtes prêtes le jour J**, tournées en jeu, puis une vidéo par jour pendant 2 semaines.
 
 ## 1. La page du jeu
-- **Titre** : `Ride the Tsunami 🌊 Steal & Ride` (choix de Moaad, 09/10). Nom court pour les vidéos et les codes : « Ride the Tsunami ».
+- **Titre** : `Ride the Tsunami: Steal & Ride` (choix de Moaad, 09/10). Nom court pour les vidéos et les codes : « Ride the Tsunami ».
 - **Description courte (anglais)** :
   > Catch real sea creatures before the tsunami takes them back. Raise them in your lagoon — they grow even while you're offline. When the wave hits, every lagoon opens: steal the best creature on the server, outrun the tide, and ride your Titan over the wave!
   > GOLDEN TIDES bring metallic mutations. ROYAL TIDE: one crown per server. New players are protected for 15 minutes.

@@ -1,4 +1,4 @@
-# GDD — Ride the Tsunami 🌊 Steal & Ride (concept Reef Keepers) · v3
+# GDD — Ride the Tsunami: Steal & Ride (concept Reef Keepers) · v3
 
 Auteur : E (concept & game design). v1 le 2026-10-09, **v2 le 2026-10-09** après la levée des règles halal par Moaad et la décision de D (vol, monture, Marée Royale, monétisation v2). Cohérent avec docs/AUDIT_TOP10.md §6.
 Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ** à régler par playtest, pas des mesures.
@@ -20,7 +20,7 @@ Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ
 
 **Titre choisi par Moaad (09/10) : « Ride the Tsunami ».**
 
-**Recommandation** : nom affiché **« Ride the Tsunami 🌊 Steal & Ride »**. « Steal » reste dans le titre pour la recherche Roblox, mais la promesse forte est la monture sur la vague.
+**Recommandation** : nom affiché **« Ride the Tsunami: Steal & Ride »**. « Steal » reste dans le titre pour la recherche Roblox, mais la promesse forte est la monture sur la vague.
 Limite : ma recherche web ne remplace pas la recherche Roblox. **Moaad doit taper les 3 titres dans la recherche Roblox avant de publier.**
 
 ### 3 miniatures à tester en A/B
@@ -456,6 +456,11 @@ function Config.GetRankCost(rank: number): number
 	return Config.Rank.baseCost * Config.Rank.costMult ^ (rank - 1)
 end
 
+-- Paliers visuels du lagon (revenu/s total, lu par C). Cale sur l'economie :
+-- T2 ~15 min (5 communes Elder), T3 = haut de la Phase 1 (Hawksbill Titan doree = 240/s),
+-- T4 = Epic/Rare en Elder (jours), T5 = Legendaires Titan (semaines).
+Config.LagoonTiers = { 0, 30, 200, 5000, 100000 }
+
 -- v2 : monture, vol, Maree Royale, boutique
 Config.Mount = { species = { HawksbillTurtle = true, LeopardRay = true, MantaRay = true, WhaleShark = true }, minStage = "Elder", speedMult = { Elder = 1.3, Titan = 1.6 }, giantSurfs = true }
 Config.Steal = {
@@ -473,5 +478,5 @@ Config.Shop = {
 ```
 
 ## 14. Questions ouvertes pour Moaad
-1. Titre : **« Ride the Tsunami 🌊 Steal & Ride »** (validé par Moaad le 09/10). Dernière vérification dans la recherche Roblox avant de publier.
+1. Titre : **« Ride the Tsunami: Steal & Ride »** (validé par Moaad le 09/10). Dernière vérification dans la recherche Roblox avant de publier.
 2. Prix de la boutique de lancement : valeurs de départ, à ajuster après 1 semaine de données.
