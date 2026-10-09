@@ -14,22 +14,44 @@ local GETSTATE_TIMEOUT = 4 -- premier contact : court, pour basculer vite en dem
 local GETSTATE_ATTEMPTS = 5
 local ATTRIBUTE_SETTLE = 0.15 -- delai avant de relire les attributs de vague
 local PHASES = { calm = true, warning = true, wave = true, recede = true }
-
--- Donnees factices du mode demo (Studio uniquement)
-local DEMO_STATE = {
-	loaded = true,
-	saveEnabled = true,
-	coins = 1250,
-	income = 12,
-	baseIncome = 12,
-	bag = { "Shell" },
-	bagMax = 2,
-	levels = { Speed = 1, Bag = 0, Slots = 0 },
-	slots = 5,
-	display = { "Starfish", "Shell", "Shell", "", "" },
-	plot = 1,
-	walkSpeed = 18,
+local STAGE_IDS = { "Baby", "Juvenile", "Adult", "Giant" }
+-- Croissance du GDD §4.3 (minutes cumulees vers Juvenile, Adult, Giant), tant que Config.GrowthMinutes manque
+local GROWTH_FALLBACK = {
+	Common = { 3, 15, 60 },
+	Uncommon = { 5, 30, 120 },
+	Rare = { 10, 60, 240 },
+	Epic = { 20, 120, 480 },
+	Legendary = { 30, 240, 1200 },
 }
+
+-- Especes du mode demo : celles du GDD si Config les a deja, sinon les anciens tresors
+local DEMO_SPECIES = if (Config :: any).Creatures then { "PebbleCrab", "SandStar", "BubblePuffer" } else { "Shell", "Starfish", "Pearl" }
+
+-- Donnees factices du mode demo (Studio uniquement), forme v2 du GDD : display[i] = {id, mut, born}
+local function demoState()
+	local now = workspace:GetServerTimeNow()
+	return {
+		loaded = true,
+		saveEnabled = true,
+		coins = 1250,
+		income = 12,
+		baseIncome = 12,
+		bag = { DEMO_SPECIES[1] },
+		bagMax = 2,
+		levels = { Speed = 1, Bag = 0, Slots = 0 },
+		slots = 5,
+		display = {
+			{ id = DEMO_SPECIES[2], born = now - 100 },
+			{ id = DEMO_SPECIES[1], mut = "Golden", born = now - 20 * 60 },
+			{ id = DEMO_SPECIES[3], born = now - 2 * 3600 },
+			"",
+			"",
+		},
+		plot = 1,
+		walkSpeed = 18,
+		stats = { pickups = 3 },
+	}
+end
 
 local Util
 local remotes: Instance? = nil
@@ -37,6 +59,7 @@ local state
 local wave
 local busy: { [string]: boolean } = {}
 local demoActive = false
+local clockOffset = 0 -- horloge des donnees (os.time serveur) - GetServerTimeNow
 
 ---------------------------------------------------------------- Normalisation
 local function num(v: any, default: number): number
@@ -72,6 +95,7 @@ local function defaultState()
 		levels = { Speed = 0, Bag = 0, Slots = 0 },
 		slots = Config.GetUpgradeValue("Slots", 0),
 		display = {},
+		pools = {},
 		plot = 0,
 		walkSpeed = Config.GetUpgradeValue("Speed", 0),
 		homeReadyAt = 0,
@@ -82,14 +106,65 @@ local function defaultState()
 	}
 end
 
-local function normalizeDisplay(rawDisplay: any, slots: number): { string }
-	local src = type(rawDisplay) == "table" and rawDisplay or {}
-	local display = {}
-	for i = 1, slots do
-		local id = src[i]
-		display[i] = (type(id) == "string" and Config.Items[id]) and id or ""
+local function optString(v: any): string?
+	if type(v) == "string" and v ~= "" then
+		return v
 	end
-	return display
+	return nil
+end
+
+local function optNumber(v: any): number?
+	local n = tonumber(v)
+	if n == nil or n ~= n then
+		return nil
+	end
+	return n
+end
+
+-- Une creature, quelle que soit la forme recue (contrat v2 pas encore fige) :
+--   v1 "itemId" ; GDD {id, mut, stage, nextStageAt, born} ; A {species, mutation, bornAt} (via creatures[uid])
+-- -> {species, mutation?, bornAt?, stage? (1..4), nextStageAt?, uid?} ou false (bassin vide)
+local function creatureEntry(raw: any, uid: string?): any
+	if type(raw) == "string" then
+		return if raw ~= "" then { species = raw, uid = uid } else false
+	end
+	if type(raw) ~= "table" then
+		return false
+	end
+	local species = optString(raw.species) or optString(raw.id)
+	if not species then
+		return false
+	end
+	local stage = raw.stage
+	if type(stage) == "string" then
+		stage = table.find(STAGE_IDS, stage)
+	end
+	stage = optNumber(stage)
+	return {
+		species = species,
+		mutation = optString(raw.mutation) or optString(raw.mut),
+		bornAt = optNumber(raw.bornAt) or optNumber(raw.born),
+		stage = if stage then math.clamp(math.floor(stage), 1, #STAGE_IDS) else nil,
+		nextStageAt = optNumber(raw.nextStageAt),
+		uid = uid or (if raw.uid ~= nil then tostring(raw.uid) else nil),
+	}
+end
+
+-- Bassins 1..slots : forme GDD (display = entrees) ou forme A (pools = uids + creatures[uid])
+local function normalizePools(raw: any, slots: number): { any }
+	local creatures = type(raw.creatures) == "table" and raw.creatures or nil
+	local src = if creatures and type(raw.pools) == "table" then raw.pools else raw.display
+	src = type(src) == "table" and src or {}
+	local pools = {}
+	for i = 1, slots do
+		local v = src[i]
+		if creatures and (type(v) == "string" or type(v) == "number") and creatures[v] ~= nil then
+			pools[i] = creatureEntry(creatures[v], tostring(v))
+		else
+			pools[i] = creatureEntry(v, nil)
+		end
+	end
+	return pools
 end
 
 local function normalizePets(rawPets: any, rawEquipped: any)
@@ -118,6 +193,11 @@ local function normalizeState(raw: any)
 	local levels = type(raw.levels) == "table" and raw.levels or {}
 	local slots = math.floor(num(raw.slots, base.slots))
 	local pets, equipped = normalizePets(raw.pets, raw.equipped)
+	local pools = normalizePools(raw, slots)
+	local display = {}
+	for i, entry in pools do
+		display[i] = if entry then entry.species else ""
+	end
 	return {
 		loaded = raw.loaded == true,
 		saveEnabled = raw.saveEnabled ~= false,
@@ -133,7 +213,10 @@ local function normalizeState(raw: any)
 			Slots = math.floor(num(levels.Slots, 0)),
 		},
 		slots = slots,
-		display = normalizeDisplay(raw.display, slots),
+		display = display, -- ids (compatibilite v1)
+		pools = pools, -- entrees completes (Store.CreatureStage)
+		serverNow = optNumber(raw.serverNow),
+		tutorialDone = if type(raw.tutorialDone) == "boolean" then raw.tutorialDone else nil,
 		plot = math.floor(num(raw.plot, 0)),
 		walkSpeed = num(raw.walkSpeed, base.walkSpeed),
 		homeReadyAt = num(raw.homeReadyAt, 0),
@@ -148,12 +231,23 @@ local function normalizeWave(raw: any)
 	if type(raw) ~= "table" or not PHASES[raw.phase] then
 		return nil
 	end
+	-- prochaine marée speciale (forme libre en attendant le contrat v2) : {tide, cycles?, at?}
+	local nextSpecial = nil
+	local ns = raw.nextSpecial
+	if type(ns) == "table" then
+		local tide = optString(ns.tide) or optString(ns.tideType)
+		if tide then
+			nextSpecial = { tide = tide, cycles = optNumber(ns.cycles) or optNumber(ns.inCycles), at = optNumber(ns.at) }
+		end
+	end
 	return {
 		phase = raw.phase,
 		phaseStart = num(raw.phaseStart, 0),
 		phaseEnd = num(raw.phaseEnd, 0),
 		startTime = num(raw.startTime, 0),
 		cycle = math.floor(num(raw.cycle, 0)),
+		tide = optString(raw.tide) or optString(raw.tideType) or "Normal",
+		nextSpecial = nextSpecial,
 	}
 end
 
@@ -162,6 +256,9 @@ local function setState(raw: any)
 	local nextState = normalizeState(raw)
 	if not nextState then
 		return
+	end
+	if nextState.serverNow then
+		clockOffset = nextState.serverNow - Store.Now()
 	end
 	local prev = state
 	state = nextState
@@ -175,7 +272,12 @@ local function setWave(raw: any)
 	end
 	local prev = wave
 	-- rien de neuf (l'evenement et les attributs portent la meme info)
-	if prev.phase == nextWave.phase and prev.phaseEnd == nextWave.phaseEnd and prev.startTime == nextWave.startTime then
+	if
+		prev.phase == nextWave.phase
+		and prev.phaseEnd == nextWave.phaseEnd
+		and prev.startTime == nextWave.startTime
+		and prev.tide == nextWave.tide
+	then
 		return
 	end
 	wave = nextWave
@@ -192,6 +294,7 @@ local function readWaveAttributes(ev: Instance)
 		phaseEnd = ev:GetAttribute("PhaseEnd"),
 		startTime = ev:GetAttribute("StartTime"),
 		cycle = ev:GetAttribute("Cycle"),
+		tide = ev:GetAttribute("Tide") or ev:GetAttribute("TideType"),
 	})
 end
 
@@ -212,11 +315,22 @@ local function demoWaveLoop()
 			{ "wave", warnEnd, waveEnd },
 			{ "recede", waveEnd, waveEnd + cfg.recedeTime },
 		}
+		-- une marée doree tous les 3 cycles, annoncee a l'avance
+		local tide = if cycle % 3 == 0 then "Golden" else "Normal"
+		local nextSpecial = { tide = "Golden", cycles = (3 - cycle % 3) % 3 }
 		for _, step in steps do
 			if not demoActive then
 				return
 			end
-			setWave({ phase = step[1], phaseStart = step[2], phaseEnd = step[3], startTime = warnEnd, cycle = cycle })
+			setWave({
+				phase = step[1],
+				phaseStart = step[2],
+				phaseEnd = step[3],
+				startTime = warnEnd,
+				cycle = cycle,
+				tide = tide,
+				nextSpecial = if tide == "Golden" then nil else nextSpecial,
+			})
 			task.wait(math.max(0, step[3] - Store.Now()))
 		end
 	end
@@ -228,7 +342,9 @@ local function demoIncomeLoop()
 		if not demoActive then
 			return
 		end
+		-- repasse par la forme brute : display redevient la liste des entrees
 		local nextState = table.clone(state)
+		nextState.display = state.pools
 		nextState.coins = state.coins + state.income
 		setState(nextState)
 	end
@@ -239,7 +355,7 @@ local function startDemo()
 		return
 	end
 	demoActive = true
-	setState(DEMO_STATE)
+	setState(demoState())
 	task.spawn(demoWaveLoop)
 	task.spawn(demoIncomeLoop)
 end
@@ -288,6 +404,73 @@ function Store.WaveFrontZ(now: number?): number?
 	local cfg = Config.Wave
 	local t = now or Store.Now()
 	return math.min(cfg.endZ, cfg.startZ + cfg.speed * math.max(0, t - wave.startTime))
+end
+
+-- Horloge des donnees de croissance (os.time du serveur ; recale par state.serverNow s'il est fourni)
+function Store.ServerClock(): number
+	return Store.Now() + clockOffset
+end
+
+-- Fiche d'une espece : Config.Creatures (v2) puis Config.Items (v1). nil si inconnue.
+function Store.CreatureInfo(species: string?): { name: string, rarity: string?, [string]: any }?
+	if type(species) ~= "string" then
+		return nil
+	end
+	local creatures = (Config :: any).Creatures
+	local info = (creatures and creatures[species]) or Config.Items[species]
+	if type(info) == "table" then
+		return info
+	end
+	return nil
+end
+
+-- Nom affichable, meme pour une espece absente de Config ("PebbleCrab" -> "Pebble Crab")
+function Store.CreatureName(species: string): string
+	local info = Store.CreatureInfo(species)
+	if info and type(info.name) == "string" then
+		return info.name
+	end
+	return (species:gsub("(%l)(%u)", "%1 %2"))
+end
+
+function Store.StageId(stage: number): string
+	return STAGE_IDS[stage] or STAGE_IDS[1]
+end
+
+-- Stade d'une creature (entree de state.pools) : (stade 1..4, progression 0..1 vers le suivant, secondes restantes ou nil au max)
+-- Calcule depuis bornAt (croissance hors ligne sans timer), sinon depuis stage + nextStageAt envoyes par le serveur.
+function Store.CreatureStage(entry: any, now: number?): (number, number, number?)
+	local t = now or Store.ServerClock()
+	local info = Store.CreatureInfo(entry.species)
+	local growthTable = (Config :: any).GrowthMinutes or GROWTH_FALLBACK
+	local growth = growthTable[info and info.rarity or "Common"] or growthTable.Common
+	-- seuils en secondes : Baby 0, Juvenile, Adult, Giant
+	local marks = { 0, growth[1] * 60, growth[2] * 60, growth[3] * 60 }
+	local maxStage = #marks
+	if entry.bornAt then
+		local age = math.max(0, t - entry.bornAt)
+		local stage = 1
+		for i = 2, maxStage do
+			if age >= marks[i] then
+				stage = i
+			end
+		end
+		if stage >= maxStage then
+			return maxStage, 1, nil
+		end
+		local span = marks[stage + 1] - marks[stage]
+		return stage, math.clamp((age - marks[stage]) / span, 0, 1), marks[stage + 1] - age
+	end
+	local stage = entry.stage or 1
+	if stage >= maxStage then
+		return maxStage, 1, nil
+	end
+	if entry.nextStageAt then
+		local span = marks[stage + 1] - marks[stage]
+		local left = math.max(0, entry.nextStageAt - t)
+		return stage, math.clamp(1 - left / span, 0, 1), left
+	end
+	return stage, 0, nil
 end
 
 -- Prochaine amelioration la moins chere (nil si tout est au maximum)
@@ -397,6 +580,7 @@ local function setupDebug()
 	ev.Event:Connect(function(kind, payload, extra)
 		if kind == "state" and type(payload) == "table" then
 			local merged = table.clone(state)
+			merged.display = state.pools -- garde les dates de naissance
 			for k, v in payload do
 				merged[k] = v
 			end

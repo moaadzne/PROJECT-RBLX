@@ -207,7 +207,7 @@ end
 
 ---------------------------------------------------------------- Compteur qui defile
 -- Nombre anime : Set(v) fait defiler en 0,4 s (Config.Format), rebond a la hausse.
--- props : Name, Size, Position, AnchorPoint, TextSize, Font, Color, XAlign, Prefix, Suffix, Parent, ZIndex
+-- props : Name, Size, Position, AnchorPoint, TextSize, Font, Color, XAlign, Prefix, Suffix, Parent, ZIndex, PopOnRise (defaut true)
 function Components.Counter(props: { [string]: any })
 	local label = Theme.Text({
 		Name = props.Name or "Counter",
@@ -242,7 +242,7 @@ function Components.Counter(props: { [string]: any })
 		end
 		value.Value = shown
 		Util.Tween(value, COUNTER_TIME, { Value = v }, Enum.EasingStyle.Quad)
-		if rising then
+		if rising and props.PopOnRise ~= false then
 			Theme.Pop(label, 0.1)
 		end
 	end
