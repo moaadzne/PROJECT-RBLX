@@ -46,7 +46,7 @@ function Stats.GrowthSpeed(data)
 	return data._growth or 1
 end
 
--- Stade (1..4) et heure du stade suivant (0 si Giant)
+-- Stade (1..4) et heure du stade suivant (0 au dernier stade, Titan)
 function Stats.Stage(creature, now, speed)
 	return Config.StageAt(Stats.Rarity(creature.id), creature.born, now, speed)
 end

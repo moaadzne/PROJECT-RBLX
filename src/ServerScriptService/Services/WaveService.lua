@@ -125,7 +125,7 @@ local function checkPlayers(prevFront, front)
 				local pos = root.Position
 				if pos.Z < Config.BaseLineZ then
 					exposed[player] = true
-					-- sur une Giant, il surfe la crete : jamais pris
+					-- sur une monture Titan, il surfe la crete : jamais pris
 					if not profile.surfing and pos.Z <= front and pos.Z >= prevFront - W.thickness
 						and feetY(humanoid, root) < W.height then
 						sweep(player, profile)

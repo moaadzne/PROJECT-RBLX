@@ -38,7 +38,7 @@ local function checkConfig(check)
 			"croissance " .. def.rarity)
 	end
 	for itemId, species in pairs(Config.LegacyItemToCreature) do
-		check(Config.Items[itemId] ~= nil and Config.Creatures[species] ~= nil, "repli " .. itemId)
+		check(Config.Creatures[species] ~= nil and Config.Creatures[itemId] == nil, "ancien id " .. itemId)
 	end
 	local opened = 0
 	for i, zone in ipairs(Config.Zones) do
@@ -79,13 +79,13 @@ end
 
 local function checkGrowth(check)
 	local stage, nextAt = Config.StageAt("Common", T0, T0)
-	check(stage == 1 and nextAt == T0 + 3 * 60, "bebe a la naissance")
+	check(stage == 1 and nextAt == T0 + 3 * 60, "Juvenile au depot")
 	stage = Config.StageAt("Common", T0, T0 + 3 * 60)
-	check(stage == 2, "Juvenile a 3 min")
+	check(stage == 2, "Adult a 3 min")
 	stage, nextAt = Config.StageAt("Common", T0, T0 + 10 ^ 9)
-	check(stage == #Config.Stages and nextAt == 0, "Giant pour toujours")
+	check(stage == #Config.Stages and nextAt == 0, "Titan pour toujours")
 	stage = Config.StageAt("Common", T0, T0 - 500)
-	check(stage == 1, "horloge qui recule : bebe")
+	check(stage == 1, "horloge qui recule : Juvenile")
 	local previous = 0
 	for minute = 0, 1300, 7 do
 		local s = Config.StageAt("Legendary", T0, T0 + minute * 60)
@@ -93,9 +93,9 @@ local function checkGrowth(check)
 		previous = s
 	end
 	local d = DataService._Sanitize(nil)
-	d.pools[1] = creature("PebbleCrab", "Golden", T0)
-	check(Stats.CreatureIncome(d.pools[1], T0) == 3, "Golden bebe = 1 x 3")
-	check(Stats.CreatureIncome(d.pools[1], T0 + 3600) == 24, "Golden Giant = 1 x 3 x 8")
+	d.pools[1] = creature("GhostCrab", "Golden", T0)
+	check(Stats.CreatureIncome(d.pools[1], T0) == 3, "Golden Juvenile = 1 x 3")
+	check(Stats.CreatureIncome(d.pools[1], T0 + 3600) == 24, "Golden Titan = 1 x 3 x 8")
 	-- 3 min bebe (x1) puis 2 min Juvenile (x2), revenu de base 3/s
 	check(math.abs(Stats.IncomeBetween(d, T0, T0 + 300) - (3 * 180 + 6 * 120)) < 1e-6, "revenu entre deux heures")
 	check(Stats.IncomeBetween(d, T0, T0) == 0, "duree nulle")
@@ -122,21 +122,21 @@ end
 
 local function checkDeposit(check)
 	local pools, placed, released = Stats.Deposit({ false, false, false }, 3,
-		{ creature("PebbleCrab", "", T0, "1"), creature("SandStar", "", T0, "2") }, T0)
+		{ creature("GhostCrab", "", T0, "1"), creature("CushionStar", "", T0, "2") }, T0)
 	check(#placed == 2 and #released == 0 and pools[3] == false, "bassins libres d'abord")
 	pools, placed, released = Stats.Deposit(
-		{ creature("PebbleCrab", "", T0, "1"), creature("SandStar", "", T0, "2") }, 2,
-		{ creature("SandStar", "Golden", T0, "3") }, T0)
+		{ creature("GhostCrab", "", T0, "1"), creature("CushionStar", "", T0, "2") }, 2,
+		{ creature("CushionStar", "Golden", T0, "3") }, T0)
 	check(#placed == 1 and placed[1].slot == 1 and pools[1].uid == "3" and #released == 1
 		and released[1].creature.uid == "1" and released[1].slot == 1, "remplace la plus faible et la relache")
 	pools, placed, released = Stats.Deposit(
-		{ creature("PebbleCrab", "", T0 - 3600, "1") }, 1, { creature("SandStar", "", T0, "2") }, T0)
+		{ creature("GhostCrab", "", T0 - 3600, "1") }, 1, { creature("CushionStar", "", T0, "2") }, T0)
 	check(#placed == 0 and #released == 1 and released[1].creature.uid == "2" and pools[1].uid == "1",
-		"un Giant n'est pas ecrase par un bebe")
-	pools, placed, released = Stats.Deposit({ creature("SandStar", "", T0, "1") }, 1,
-		{ creature("SandStar", "", T0, "2") }, T0)
+		"un Titan n'est pas ecrase par un Juvenile")
+	pools, placed, released = Stats.Deposit({ creature("CushionStar", "", T0, "1") }, 1,
+		{ creature("CushionStar", "", T0, "2") }, T0)
 	check(#placed == 0 and #released == 1 and pools[1].uid == "1", "egalite : la creature posee reste")
-	check(Stats.ReleaseValue("SandStar", "Golden") == 2 * 3 * Config.SellMultiplier, "relache = bebe x SellMultiplier")
+	check(Stats.ReleaseValue("CushionStar", "Golden") == 2 * 3 * Config.SellMultiplier, "relache = Juvenile x SellMultiplier")
 end
 
 local function checkSanitize(check)
@@ -170,8 +170,9 @@ local function checkSanitize(check)
 	check(#d.pools == Stats.Slots(d) and d.pools[1] and d.pools[1].born <= os.time() and d.pools[2] == false
 		and d.pools[3] == false and d.pools[4] == false and d.pools[5] == false, "bassins valides, naissance jamais future")
 	check(d.creatureSeq >= 4, "compteur d'uid >= plus grand uid")
-	check(d.codex.PebbleCrab and d.codex.PebbleCrab.Normal == true and d.codex.PebbleCrab.Golden == nil
-		and d.codex.Ghost == nil, "codex valide")
+	check(d.pools[1] and d.pools[1].id == "GhostCrab", "ancien id d'espece traduit (PebbleCrab -> GhostCrab)")
+	check(d.codex.GhostCrab and d.codex.GhostCrab.Normal == true and d.codex.GhostCrab.Golden == nil
+		and d.codex.Ghost == nil and d.codex.PebbleCrab == nil, "codex valide, ancien id traduit")
 	check(d.introStep == 2, "introStep borne")
 	check(#d.pets == 1 and #d.equipped == 1 and d.petSeq >= 8, "compagnons valides")
 	check(d.stats.pickups == 0, "NaN -> 0")

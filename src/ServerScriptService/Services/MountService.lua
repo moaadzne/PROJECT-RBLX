@@ -3,7 +3,7 @@
 -- La creature est un clone soude au HumanoidRootPart (Attachment "Saddle" de C), HipHeight releve,
 -- et la vitesse passe uniquement par Humanoid.WalkSpeed, fixe par le serveur.
 -- En plus, le serveur mesure la distance parcourue sur 1 s et ramene en arriere tout joueur trop rapide.
--- Une Giant n'est jamais prise par la vague : elle la surfe (attribut Surfing, animation cote client).
+-- Une monture Titan n'est jamais prise par la vague : elle la surfe (attribut Surfing, animation cote client).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -209,7 +209,7 @@ local function mount(player, uid)
 	return true
 end
 
--- Chaque seconde : la monture grandit (Adult -> Giant), ou elle a disparu (creature ou visuel)
+-- Chaque seconde : la monture grandit (Elder -> Titan), ou elle a disparu (creature ou visuel)
 local function checkMounts()
 	for player, profile in DataService.All() do
 		if profile.loaded and not profile.leaving and profile.mountUid ~= "" then
