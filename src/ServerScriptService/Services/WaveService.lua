@@ -26,6 +26,8 @@ local skipCalm = false
 local forcedTide = nil -- debug : maree du prochain cycle
 local cycleTide = "Normal"
 local forcedDirection = nil -- debug : direction du prochain cycle
+local forcedExtreme = false -- debug : maree extreme au prochain cycle
+local cycleExtreme = false
 local cycleDirection = nil
 local nextDirection = nil
 local rng = Random.new()
@@ -68,6 +70,17 @@ local function publish(phase, phaseStart, phaseEnd, startTime)
 	}
 	if Config.Royal.onSpecialTides and cycleTide ~= "Normal" then
 		wave.royal = { active = true, endsAt = startTime + TRAVEL_TIME + W.recedeTime }
+	end
+	if cycleExtreme and phase == "calm" then
+		local e = Config.ExtremeTide
+		local center, radius = WaveService.Reef()
+		wave.extreme = {
+			active = true,
+			revealAt = phaseStart + e.revealDelay,
+			endsAt = math.min(phaseEnd, phaseStart + e.revealDelay + e.revealTime),
+			center = center,
+			radius = radius,
+		}
 	end
 	Net.SetWave(wave)
 	for _, hook in ipairs(phaseHooks) do
@@ -176,6 +189,8 @@ local function runCycle()
 	skipCalm = false
 	cycleTide = forcedTide or Config.TideFor(cycle)
 	forcedTide = nil
+	cycleExtreme = forcedExtreme or Config.IsExtremeCycle(cycle)
+	forcedExtreme = false
 	cycleDirection = forcedDirection or nextDirection or rollDirection(cycleDirection)
 	forcedDirection = nil
 	nextDirection = rollDirection(cycleDirection)
@@ -227,6 +242,24 @@ function WaveService.ForceTide(tide)
 		return false
 	end
 	forcedTide = tide
+	return true
+end
+
+-- Recif de la maree extreme : Map.Reef (Center + Radius) construit par C, sinon le repli de Config
+function WaveService.Reef()
+	local map = workspace:FindFirstChild("Map")
+	local reef = map and map:FindFirstChild("Reef")
+	local center = reef and reef:GetAttribute("Center")
+	local radius = reef and reef:GetAttribute("Radius")
+	if typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
+		return center, radius
+	end
+	return Config.ExtremeTide.reef.center, Config.ExtremeTide.reef.radius
+end
+
+-- Debug : maree extreme au prochain cycle
+function WaveService.ForceExtreme()
+	forcedExtreme = true
 	return true
 end
 

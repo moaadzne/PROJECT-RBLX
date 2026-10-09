@@ -196,6 +196,21 @@ Config.WaveTravel = {
 	W = Vector3.new(1, 0, 0),
 }
 
+-- Maree extreme (GDD 6 bis, P1-37) : environ 1 fois par heure, pendant le calme d'un cycle, la mer se retire
+-- plus loin et revele le recif (Map.Reef, attributs Center + Radius, construit par C ; sinon `reef` ci-dessous).
+-- Des creatures rares y apparaissent pendant revealTime secondes, puis la mer revient et les reprend.
+-- Annoncee seulement par un signe (cote client, d'apres wave.extreme). Chiffres de depart [a caler par E].
+Config.ExtremeTide = {
+	everyCycles = 58, -- un cycle dure environ 1 min : 58 cycles, environ 1 h
+	offset = 29, -- cycle % everyCycles == offset (jamais en meme temps qu'une maree speciale tous les 8)
+	revealDelay = 5, -- s apres le debut du calme : la mer se retire
+	revealTime = 25, -- s pendant lesquelles le recif est decouvert (fini avant l'alerte)
+	count = 6,
+	creatures = { { "HawksbillTurtle", 70 }, { "Lionfish", 30 } },
+	mutationTide = "Golden", -- chances de mutation des creatures du recif
+	reef = { center = Vector3.new(0, 0, 335), radius = 30 }, -- repli : recif au sud (+Z)
+}
+
 -- Anneaux de rarete autour de la crique (distance horizontale au centre). La plage se remplit au debut
 -- du calme, puis se recharge toutes les spawnEvery secondes pendant le calme ; la vague emporte tout.
 -- maxItems et spawnEvery : premiers reglages selon la surface de chaque anneau [a caler par E].
@@ -303,6 +318,11 @@ function Config.TideFor(cycle: number): string
 		return schedule.rotation[(n - 1) % #schedule.rotation + 1]
 	end
 	return "Normal"
+end
+
+function Config.IsExtremeCycle(cycle: number): boolean
+	local e = Config.ExtremeTide
+	return cycle > 0 and cycle % e.everyCycles == e.offset
 end
 
 -- Prochaine maree speciale apres le cycle donne : { tide, cycle }

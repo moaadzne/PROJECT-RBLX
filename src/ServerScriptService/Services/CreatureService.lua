@@ -30,7 +30,7 @@ local LEGENDARY_ORDER = 5
 
 local rng = Random.new()
 local folder = nil
-local active = {} -- [model] = { species, mutation, zone (anneau), pos, owner (UserId) ?, royal ? }
+local active = {} -- [model] = { species, mutation, zone (anneau), pos, owner (UserId) ?, royal ?, reef ? }
 local captureHooks = {}
 local zoneCounts = {} -- [anneau] = creatures partagees seulement
 local towerCenters = {}
@@ -38,6 +38,10 @@ local lastBagFull = {}
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 rayParams.IgnoreWater = false
+-- recif de la maree extreme : il est sous l'eau cote serveur (le retrait de la mer est joue par le client)
+local reefRayParams = RaycastParams.new()
+reefRayParams.FilterType = Enum.RaycastFilterType.Exclude
+reefRayParams.IgnoreWater = true
 
 local spawnMaterials = {}
 for _, name in ipairs(Config.Island.spawnMaterials) do
@@ -98,7 +102,7 @@ function CreatureService.FindSpot(ringIndex)
 	return nil
 end
 
-local function place(species, mutation, ground, zoneIndex, owner, royal)
+local function place(species, mutation, ground, zoneIndex, owner, royal, reef)
 	local basePos = ground + Vector3.new(0, CreatureFactory.RestOffset(species) + GROUND_BOB + GROUND_GAP, 0)
 	local model = CreatureFactory.Create(species, basePos, {
 		mutation = mutation,
@@ -113,7 +117,10 @@ local function place(species, mutation, ground, zoneIndex, owner, royal)
 		return nil
 	end
 	model.Parent = folder
-	active[model] = { species = species, mutation = mutation, zone = zoneIndex, pos = basePos, owner = owner, royal = royal }
+	active[model] = { species = species, mutation = mutation, zone = zoneIndex, pos = basePos, owner = owner, royal = royal, reef = reef }
+	if reef then
+		model:SetAttribute("Reef", true)
+	end
 	return model
 end
 
@@ -133,7 +140,7 @@ end
 
 local function remove(model, info)
 	active[model] = nil
-	if not info.owner and not info.royal then
+	if not info.owner and not info.royal and not info.reef then
 		zoneCounts[info.zone] -= 1
 	end
 	model:Destroy()
@@ -374,6 +381,39 @@ local function spawnLoop()
 	end
 end
 
+-- Maree extreme : creatures rares sur le recif decouvert (n'importe quel sol sous l'eau, dans le disque du recif)
+function CreatureService.SpawnReef(center, radius, tide)
+	local e = Config.ExtremeTide
+	local count = 0
+	for _ = 1, e.count * SPAWN_TRIES do
+		if count >= e.count then
+			break
+		end
+		local angle = rng:NextNumber(0, 2 * math.pi)
+		local r = math.sqrt(rng:NextNumber(0, radius * radius))
+		local x, z = center.X + r * math.cos(angle), center.Z + r * math.sin(angle)
+		if not nearCreature(x, z) then
+			local hit = workspace:Raycast(Vector3.new(x, RAY_HEIGHT, z), Vector3.new(0, -RAY_LENGTH, 0), reefRayParams)
+			if hit then
+				local species = Stats.PickWeighted(e.creatures, rng)
+				if place(species, Stats.RollMutation(tide or e.mutationTide, rng), hit.Position, Config.RingAt(hit.Position), nil, nil, true) then
+					count += 1
+				end
+			end
+		end
+	end
+	return count
+end
+
+-- La mer revient : les creatures du recif encore la repartent
+function CreatureService.ClearReef()
+	for model, info in pairs(active) do
+		if info.reef then
+			remove(model, info)
+		end
+	end
+end
+
 -- callback(player, species, mutation, value) a chaque capture (Maree Royale)
 function CreatureService.OnCapture(callback)
 	table.insert(captureHooks, callback)
@@ -411,17 +451,20 @@ function CreatureService.SpawnRoyal(mutation)
 end
 
 function CreatureService.Counts()
-	local personal, royal = 0, 0
+	local personal, royal, reef = 0, 0, 0
 	for _, info in pairs(active) do
 		if info.owner then
 			personal += 1
 		elseif info.royal then
 			royal += 1
+		elseif info.reef then
+			reef += 1
 		end
 	end
 	local counts = table.clone(zoneCounts)
 	counts.personal = personal
 	counts.royal = royal
+	counts.reef = reef
 	return counts
 end
 
@@ -482,6 +525,20 @@ function CreatureService.Start()
 	-- maree basse : la plage se couvre ; la vague emporte tout au passage de son front
 	WaveService.OnCalm(function(_, tide)
 		CreatureService.FillAll(tide)
+		local extreme = WaveService.Get().extreme
+		if extreme then
+			-- maree extreme : la mer se retire, le recif se couvre de creatures rares, puis la mer les reprend
+			local clock = workspace:GetServerTimeNow()
+			task.delay(math.max(0, extreme.revealAt - clock), function()
+				local count = CreatureService.SpawnReef(extreme.center, extreme.radius)
+				Net.NotifyAll("extreme", {
+					endsAt = extreme.endsAt,
+					count = count,
+					text = "The sea pulls back... something surfaces on the reef!",
+				})
+			end)
+			task.delay(math.max(0, extreme.endsAt - clock), CreatureService.ClearReef)
+		end
 	end)
 	WaveService.OnFront(function(_, front)
 		CreatureService.WashAway(WaveService.Get(), front, nil)

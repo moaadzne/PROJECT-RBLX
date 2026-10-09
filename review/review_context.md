@@ -149,6 +149,7 @@ wave = {
   intro,                    -- true seulement pour la vague d'intro personnelle
   startD, endD, speed,      -- présents seulement si différents des valeurs par défaut (vague d'intro)
   royal,                    -- {active = true, endsAt} pendant un cycle de Marée Royale, sinon absent
+  extreme,                  -- marée extrême, pendant le calme de son cycle seulement : {active, revealAt, endsAt, center, radius}
 }
 ```
 - `startTime` = départ de la vague, en cours ou à venir.
@@ -170,6 +171,7 @@ wave = {
 | lock | `{active, readyAt}` |
 | royal | `{phase = "start"|"end", top = {{userId, name, score}}, rank?, coins?}` |
 | purchase | `{product, species?, mutation?}` : achat accordé |
+| extreme | `{endsAt, count}` : à tous, au moment où le récif se découvre (marée extrême) |
 | saveOff | `{text}` |
 | capture | `{species, mutation, rarity, position (Vector3), bagCount, bagMax, isNew}` (isNew = nouvelle case du Codex) |
 | bagFull | `{bagMax}` (au plus une fois toutes les 3 s) |
@@ -219,6 +221,12 @@ wave = {
 - Joueur : `Carrying` ("HawksbillTurtle:Golden" ou ""), `Mount` (espèce ou ""), `MountStage` (3 ou 4), `Surfing` (bool, monture Titan pendant la vague), `Crown` (0..3), `Newbie` (bool), `VIP` (bool).
 - Monture : le serveur soude au HumanoidRootPart un clone de la créature, à l'échelle de son stade. C fournit l'Attachment `Saddle` dans `Root`. Le serveur relève `Humanoid.HipHeight`. L'animation assise et le surf sont côté client.
 - Créature royale : attribut `Royal = true` sur son modèle, sur la plage comme dans un bassin.
+- **Marée extrême** (P1-37) :
+  - environ 1 fois par heure (Config.IsExtremeCycle : cycle % 58 == 29), jamais en même temps qu'une marée spéciale ;
+  - pendant le calme, de `revealAt` à `endsAt` (environ 25 s), le récif est découvert. Le récif = `Map.Reef` (attributs Center + Radius, construit par C), sinon le repli de Config.ExtremeTide.reef, au sud ;
+  - des créatures rares y apparaissent (attribut `Reef = true`), puis le serveur les retire à `endsAt` ;
+  - le retrait de la mer et son retour sont joués par le client d'après `wave.extreme`. Côté serveur, le récif reste sous l'eau ;
+  - debug : `extreme`.
 - leaderstats : `Coins` et `Income` (StringValue).
 
 ## Debug (Studio seulement) : ServerStorage.TR_Debug (BindableFunction)

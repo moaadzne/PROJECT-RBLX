@@ -110,6 +110,19 @@ end
 
 local function checkTides(check)
 	check(Config.TideFor(1) == "Normal", "cycle 1 normal")
+	local extremes, clash = 0, 0
+	for cycle = 1, 600 do
+		if Config.IsExtremeCycle(cycle) then
+			extremes += 1
+			clash += Config.TideFor(cycle) ~= "Normal" and 1 or 0
+		end
+	end
+	check(extremes >= 9 and extremes <= 11, ("maree extreme : %d en 600 cycles (environ 1 par heure)"):format(extremes))
+	check(clash == 0, "jamais maree extreme et maree speciale en meme temps")
+	check(Config.Tides[Config.ExtremeTide.mutationTide] ~= nil, "maree de mutation du recif")
+	for _, entry in ipairs(Config.ExtremeTide.creatures) do
+		check(Config.Creatures[entry[1]] ~= nil, "recif : " .. tostring(entry[1]))
+	end
 	local every = Config.TideSchedule.every
 	check(Config.TideFor(every) == Config.TideSchedule.rotation[1], "premiere speciale")
 	local next = Config.NextSpecial(1)
@@ -275,7 +288,7 @@ local function checkCreatures(check)
 		end
 	end
 	local models = folder:GetChildren()
-	local expected = total + counts.personal + counts.royal
+	local expected = total + counts.personal + counts.royal + counts.reef
 	check(#models == expected, ("%d modeles pour %d comptes"):format(#models, expected))
 	check(counts.royal <= 1, "une seule creature royale")
 	for index, model in ipairs(models) do
@@ -289,12 +302,13 @@ local function checkCreatures(check)
 			and type(model:GetAttribute("BaseYaw")) == "number" and type(model:GetAttribute("SpinSpeed")) == "number"
 			and type(model:GetAttribute("Bob")) == "number" and model:GetAttribute("Rarity") == (def and def.rarity),
 			"attributs " .. model.Name)
-		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil and not model:GetAttribute("Royal") then
+		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil and not model:GetAttribute("Royal")
+			and not model:GetAttribute("Reef") then
 			check(model:GetAttribute("Zone") == Config.RingAt(pos) and not Config.InCove(pos), "anneau " .. model.Name)
 			for other = index + 1, #models do
 				local otherPos = models[other]:GetAttribute("BasePos")
 				if typeof(otherPos) == "Vector3" and models[other]:GetAttribute("Owner") == nil
-					and not models[other]:GetAttribute("Royal") then
+					and not models[other]:GetAttribute("Royal") and not models[other]:GetAttribute("Reef") then
 					local gap = Vector2.new(pos.X - otherPos.X, pos.Z - otherPos.Z).Magnitude
 					check(gap >= MIN_SPACING, ("ecart %.1f studs"):format(gap))
 				end

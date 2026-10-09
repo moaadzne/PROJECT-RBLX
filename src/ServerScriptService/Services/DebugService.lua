@@ -27,6 +27,7 @@ local HELP = table.concat({
 	"forceWave                  -> pendant le calme, l'alerte demarre tout de suite",
 	"tide Normal|Golden         -> maree du prochain cycle",
 	"direction N|E|S|W          -> direction de la vague du prochain cycle",
+	"extreme                    -> maree extreme au prochain cycle",
 	"grow minutes [joueur]      -> vieillit les creatures des bassins",
 	"intro [joueur]             -> rejoue l'intro",
 	"playtime minutes [joueur]  -> temps de jeu cumule (protection debutant)",
@@ -88,6 +89,10 @@ end
 function commands.give(species, count, mutation, name)
 	local player = findPlayer(name)
 	return player and CreatureService.GiveToBag(player, species, count, mutation) and "ok" or "echec"
+end
+
+function commands.extreme()
+	return WaveService.ForceExtreme() and "ok : prochain cycle"
 end
 
 function commands.direction(direction)
