@@ -1,6 +1,6 @@
 # Pipeline art des créatures : Reef Keepers (C, 09/10/2026)
 
-Le plus gros risque du concept. Références : docs/GDD.md §4.2 à 4.4, §11 C et §12 (la Phase 1 compte **2 espèces : Pebble Crab et Sand Star**, plus une espèce **montable** annoncée par D pour le GDD v2 **[GDD v2]**). Les IDs et les sons sont dans docs/SOURCING_C.md.
+Le plus gros risque du concept. Références : docs/GDD.md v2, §4.2 à 4.8, §11 C et §12. La Phase 1 compte **3 espèces : Pebble Crab, Sand Star et Reef Hatchling (montable)**. Les IDs et les sons sont dans docs/SOURCING_C.md.
 
 ## 1. Options de production
 Aucun prix n'est donné : je n'ai pas de source vérifiée.
@@ -14,7 +14,7 @@ Aucun prix n'est donné : je n'ai pas de source vérifiée.
 
 ### Avis franc : le gratuit peut-il atteindre le niveau visé ?
 - **Décor : oui, probablement**, avec _DecorLib bien assemblé. À confirmer lundi sur la hero shot. Les monuments des zones 2 à 5 manquent (Phase 2).
-- **Créatures : non, je ne compte pas dessus.** Les créatures se voient de près, en permanence, et en série. Il leur faut une famille cohérente. **Recherche faite le 09/10** (API publique du Creator Store, détail dans SOURCING_C.md) : un seul crabe est correct ; les étoiles de mer sont réalistes, pas stylisées ; il n'existe aucune monture utilisable (raies et tortues en blocs). La génération IA reste à prouver.
+- **Créatures : non, je ne compte pas dessus.** Les créatures se voient de près, en permanence, et en série. Il leur faut une famille cohérente. **Recherche faite le 09/10** (API publique du Creator Store, détail dans SOURCING_C.md) : un seul crabe est correct ; les étoiles de mer sont réalistes, pas stylisées ; il n'y a qu'une tortue stylisée correcte, mais c'est une tortue de terre, donc à adapter. La génération IA reste à prouver.
 
 **Décision de D (09/10)** : pas de modéliste avant le test fermé (~20–23/10). La Phase 1 se fait avec un prototype : génération + Creator Store. Le modéliste sera décidé selon les chiffres du test. Mon avis reste le même : les créatures finales passeront par un modéliste ou par un pack cohérent.
 - Règle : un seul style par lagon. Si le crabe vient du Store et l'étoile de la génération, on harmonise les couleurs et le matériau avec le preset §4. Sinon, on génère les deux.
@@ -25,7 +25,7 @@ Aucun prix n'est donné : je n'ai pas de source vérifiée.
 - Pivot au centre du corps, **face vers -Z** (LookVector), à l'échelle Adult = 1,0.
 - Parties séparées si possible : **Body** + **Fin/Tail/Claw** (pour l'animation par CFrame).
 - Rangement : `ReplicatedStorage.Assets.Creatures.<CreatureId>`, PrimaryPart `Root` invisible, attributs `CreatureId` et `Rarity`, tout Anchored, 0 script (même convention que `Assets.Items`).
-- Stades : **un seul modèle**, mis à l'échelle avec `Model:ScaleTo` (les Attachments suivent) : Baby 0,6 · Juvenile 0,8 · Adult 1,0 · Giant 1,5 (GDD §4.3).
+- Stades (arbitrage de D, 09/10) : **un seul modèle, dimensionné à la taille Adult = 1,0**. C'est le client qui applique l'échelle de `Config.Stages` (Baby 0,6 · Juvenile 0,8 · Adult 1 · Giant 1,5, relatives à l'Adult). Avec `Model:ScaleTo`, les Attachments, dont `Saddle`, suivent.
 
 ## 3. Fiches créatures
 Taille de référence = Adult (1,0). Repères de rareté communs :
@@ -43,29 +43,35 @@ Taille de référence = Adult (1,0). Repères de rareté communs :
 |---|---|---|---|---|
 | **PebbleCrab** | carapace ronde en galet, 2 pinces levées, yeux sur tiges | 2,5 × 1,5 studs | marche de côté en bassin, pinces qui claquent | Common |
 | **SandStar** | étoile à 5 bras épais, plate, yeux au centre | 2,5 × 0,6 | rotation lente, bras qui ondulent (roulis léger) | Common |
-| **[GDD v2] monture** | grand dos plat et large (tortue de mer ou raie manta, à confirmer) | voir §3 bis | nage lente, battement ample | [GDD v2] |
+| **ReefHatchling** (montable) | tortue de mer ronde : carapace large, basse et plate, 4 grandes nageoires, petite tête basse | 7,5 × 2,8 (dos à 2,6) ; voir §3 bis | nage lente, battement ample des nageoires avant | Uncommon (10 % dans Shallows en Phase 1) |
 
 ### Phase 2+ (GDD §4.2, emplacements)
 | Id | Silhouette | Adult (L) | Rareté |
 |---|---|---|---|
 | BubblePuffer | boule, épines douces, petites nageoires | 2 | Uncommon |
-| ReefHatchling | bébé tortue, dôme + 4 nageoires plates | 2,5 | Uncommon |
 | LanternSeahorse | « S » vertical, lanterne émissive sur la tête | 2,5 (H) | Rare |
-| CoralRay | disque plat, ailes, queue fine, motifs corail | 4 | Rare |
+| CoralRay (montable) | disque plat, ailes, queue fine, motifs corail | 8 d'envergure | Rare |
 | InkOctopus | tête ronde, 8 bras courts enroulés | 3 | Epic |
 | MoonJelly | cloche translucide (Glass) + filaments | 3 (H) | Epic |
-| StarWhaleCalf | baleineau rond, taches d'étoiles émissives | 6 | Legendary |
-| AbyssSerpent | serpent à crête, segments | 8 | Legendary |
+| StarWhaleCalf (montable) | baleineau rond, taches d'étoiles émissives | 9 | Legendary |
+| AbyssSerpent (montable) | serpent à crête, segments | 10 | Legendary |
 | Léviathan (décor) | serpent géant au large, modèle unique | ×10 | — |
 
-### 3 bis. Monture : spécification pour A
+### 3 bis. Monture (Reef Hatchling, puis Coral Ray, Star Whale Calf, Abyss Serpent) : spécification pour A et B
 - **Attachment `Saddle`** dans `Root`, au centre du dos, à la surface. Orientation : son axe avant = l'avant du modèle (-Z). A y soude le Seat ou le personnage.
 - **Taille** : seuls les stades Adult et Giant sont montables. Un avatar R15 mesure environ 5 studs et assis, ses jambes s'écartent d'environ 2 studs.
   - Adult (1,0) : dos plat d'au moins **3 studs de large × 4 de long**, surface du dos à **2,5–3 studs** du sol. Longueur totale 7–8 studs.
-  - Giant (1,5) : idem × 1,5 (dos à 4–4,5 studs, longueur 11–12), parce que `ScaleTo` déplace aussi `Saddle`.
+  - Giant (×1,5, appliqué par le client) : dos à environ 4 studs, longueur 11 environ ; `Saddle` suit l'échelle.
+  - Les stades Baby et Juvenile ne se montent pas : rien à prévoir.
 - Pas de pièce plus haute que le dos devant la selle (une tête basse, pas de crête), pour que la caméra ne soit pas bouchée.
 - Collision : `CanCollide = false` sur toutes les parties visibles ; A gère une hitbox simple sur `Root`.
-- Surf de la vague (Giant) : prévoir que le modèle tienne à l'horizontale, incliné de 15° vers l'avant, sans que la tête ne passe sous la crête de la vague (Y 22).
+- **Posture du joueur** : assis, avec l'animation Sit par défaut de Roblox, sur `Saddle`.
+- **Pose de surf (Giant, GDD §4.6)** :
+  - Créature : tangage de 15° vers l'avant, roulis ±8° qui oscille (1,5 s), nageoires avant écartées à 35° et figées.
+  - Joueur : debout sur `SurfStand`, un 2ᵉ Attachment du `Root` placé 0,3 stud au-dessus de `Saddle`. Pose « surfeur » : pieds écartés, genoux fléchis à 30°, bras ouverts.
+  - La pose du joueur demande une animation : à faire lundi dans l'éditeur d'animation de Studio, ou à défaut en réglant les articulations côté client (B).
+  - Lisibilité sous la vague : la Giant reste **au-dessus de la crête** (Y ≥ 22 + moitié de sa hauteur). Sa couleur turquoise clair doit se détacher de l'eau de la vague, d'où un liseré sombre sur la carapace.
+- **Effet de surf** (B) : embruns (le ParticleEmitter Spray de la vague, Rate 30) à l'avant de la créature, et le son `surfLoop`.
 
 ## 4. Mutations sans nouveau modèle (GDD §4.4)
 Les presets sont dans `ReplicatedStorage.Assets.FX.Mutations.<Nom>` (construits par tools/world/build_mutation_fx.luau). Le client les applique au clone.
@@ -89,7 +95,7 @@ Tout en CFrame local, calculé avec dt, jamais côté serveur (bible §6).
 - **Perf** : une seule boucle RenderStepped ; on anime seulement à < 120 studs de la caméra.
 
 ## 6. Ordre lundi
-1. `tools/world/list_decorlib.luau` puis les scripts du lagon et de la hero shot (tools/world/README.md).
-2. Créatures : importer les candidats du Store (SOURCING_C.md) et lancer les prompts `generate_mesh` (SOURCING_C.md §2). Juger chacun à côté de la hero shot avec la grille de SOURCING_C.md.
-3. Ranger les 2 retenus dans `Assets.Creatures` (règles §2), puis `build_mutation_fx.luau`.
+1. `tools/world/inspect_world.luau`, puis les scripts du lagon et de la hero shot (tools/world/README.md).
+2. Créatures : importer les candidats du Store (SOURCING_C.md §1) et lancer les prompts `generate_mesh` (SOURCING_C.md §2). Juger chacun à côté de la hero shot avec la grille de SOURCING_C.md §3.
+3. Ranger les 3 retenus dans `Assets.Creatures` (règles §2 ; `Saddle` et `SurfStand` sur la Reef Hatchling), puis `build_mutation_fx.luau` et `build_royal_fx.luau`.
 4. Verdict à D, avec captures.
