@@ -9,6 +9,7 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 | B | Tide Rush · B Interface | `claude/friendly-volta-qj504y` |
 | C | Tide Rush · C Monde | `claude/clever-wozniak-h2znoi` |
 | D | Tide Rush · D Chef de projet | `claude/epic-pasteur-q323d7` (intégration) |
+| F | Tide Rush · F Assistant chef de projet | `claude/awesome-allen-i2ni7b` |
 | E | Tide Rush · E Concept | `claude/laughing-lovelace-8xixq7` |
 
 ## Décisions
@@ -33,21 +34,29 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 - Modéliste de créatures : pas de dépense avant le test fermé ; prototype avec generate_mesh et le Creator Store.
 - E écrit le GDD v2. A, B et C démarrent le noyau commun (contrat v2, données, créatures, HUD, lagon).
 
-## Phase 1 — en cours (le détail suit le GDD v2)
+## Phase 1 v2 — en cours (référence : docs/GDD.md v2)
+Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux + PolicyService. Les échanges arrivent en semaine 2.
+
 | # | Qui | Tâche | État |
 |---|---|---|---|
-| P1-01 | A | Contrat des remotes v2 (additif) dans review/review_context.md | à faire, prioritaire |
-| P1-02 | A | Config : blocs GDD §13 + `LagoonTiers` ; marées Phase 1 = Normal + Golden | à faire |
-| P1-03 | A | Schéma de données v2 + migration v1 → v2 | à faire |
-| P1-04 | A | CreatureService (apparition en zone 1, mutation à l'apparition), croissance depuis `born`, revenu hors ligne, `wave.tide`, `LagoonTier` | à faire |
-| P1-05 | A | SelfTest mis à jour | à faire |
-| P1-06 | B | HUD Phase 1 : pièces, revenu, bandeau de marée | à faire |
-| P1-07 | B | Billboard de bassin (stade, mutation, barre), écran « Pendant ton absence », Codex 2×2 | à faire |
-| P1-08 | B | Onboarding des 60 s (GDD §8), preset Golden appliqué aux créatures | à faire |
-| P1-09 | C | tools/world : construction du lagon de Plot1 (palier 1) + assemblage de la hero shot | à faire |
-| P1-10 | C | Sourcing des modèles Pebble Crab et Sand Star (Creator Store : IDs à vérifier lundi ; prompts generate_mesh prêts) | à faire |
-| P1-11 | C | Presets Golden : FX (Assets.FX.Mutations.Golden) et valeurs de Lighting pour la Golden Tide | à faire |
-| P1-12 | E | Simulation de l'économie des 60 premières minutes (rythme) | à faire |
+| P1-01 | A | Contrat des remotes v2 (GDD §11), publié avant le code | en cours |
+| P1-02 | A | Config v2 (§13), schéma v2, migration vers legacy.v1 | en cours |
+| P1-03 | A | Intro : spawn au lagon, vague d'intro par joueur, 2e marée Golden | à faire |
+| P1-04 | A | Ouverture des lagons par phase de vague (`PlotN.Barrier`, attribut `Open`, autorité serveur) | à faire |
+| P1-05 | A | StealService et toutes les protections du §4.7 | à faire |
+| P1-06 | A | MountService (les Giant surfent la vague) | à faire |
+| P1-07 | A | RoyalService (score, top 3, créature unique) | à faire |
+| P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | à faire |
+| P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | en cours |
+| P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | à faire |
+| P1-12 | B | HUD de la Marée Royale, bouton Monter, billboard de bassin, animation de la barrière | à faire |
+| P1-13 | B | Boutique (probabilités avant achat, bascule PolicyService) | à faire |
+| P1-20 | C | 3 créatures (Pebble Crab, Sand Star, Reef Hatchling montable) : IDs + prompts | en cours |
+| P1-21 | C | Barrière de corail `PlotN.Barrier` + lagon de Plot1 + hero shot (tools/world) | en cours |
+| P1-22 | C | FX Golden + ambiance Golden Tide, 3 couronnes + FX royal, sons | à faire |
+| P1-30 | F | Contrôle qualité des pushes de A et B (luau-analyze, contrat v2) | en cours |
+| P1-31 | F | docs/IMPORT_LUNDI.md (MCP ou Rojo, étapes pour Moaad) | en cours |
+| P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | à faire |
 
 ## Fait
 - [A 09/10] Net.lua : plus de seau de limite recréé pour un joueur parti. **À réimporter lundi.**
@@ -58,5 +67,5 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 - [C 09/10] docs/DA_MONDE.md et docs/CREATURES_ART.md.
 
 ## Questions pour Moaad
-1. Nom du jeu : garder « Tide Rush », ou passer à « Reef Keepers » / « Tide Rush: Reef Keepers » ?
+1. Titre du jeu : « Ride the Tsunami » (recommandé par E), « Steal a Sea Creature » (titre de travail, mais « Steal a Fish » existe déjà) ou « Catch, Steal & Ride » ? À vérifier dans la recherche Roblox avant publication.
 2. Prix des gamepasses : les valeurs de départ du GDD §9 restent jusqu'aux premiers tests.
