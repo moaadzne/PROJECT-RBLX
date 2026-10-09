@@ -9,7 +9,12 @@ local REMOTES = {
 	GoHome = "RemoteFunction",
 	HatchEgg = "RemoteFunction",
 	EquipPet = "RemoteFunction",
+	LockLagoon = "RemoteFunction",
+	StartSteal = "RemoteFunction",
+	Mount = "RemoteFunction",
+	ChoosePick = "RemoteFunction",
 	StateChanged = "RemoteEvent",
+	RoyalBoard = "RemoteEvent",
 	WaveState = "RemoteEvent",
 	Notify = "RemoteEvent",
 }
@@ -118,6 +123,10 @@ function Net.NotifyAll(kind, data, except)
 	end
 end
 
+function Net.FireAll(name, ...)
+	Remotes[name]:FireAllClients(...)
+end
+
 function Net.SendState(player, state)
 	Remotes.StateChanged:FireClient(player, state)
 end
@@ -153,6 +162,7 @@ function Net.SetWave(wave)
 	remote:SetAttribute("StartTime", wave.startTime)
 	remote:SetAttribute("Cycle", wave.cycle)
 	remote:SetAttribute("Tide", wave.tide)
+	remote:SetAttribute("Direction", wave.direction)
 	for _, player in ipairs(Players:GetPlayers()) do
 		local own = personal[player]
 		if not (own and own.wave) then

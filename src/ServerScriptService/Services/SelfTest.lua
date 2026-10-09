@@ -38,16 +38,22 @@ local function checkConfig(check)
 			"croissance " .. def.rarity)
 	end
 	for itemId, species in pairs(Config.LegacyItemToCreature) do
-		check(Config.Items[itemId] ~= nil and Config.Creatures[species] ~= nil, "repli " .. itemId)
+		check(Config.Creatures[species] ~= nil and Config.Creatures[itemId] == nil, "ancien id " .. itemId)
 	end
-	local opened = 0
-	for i, zone in ipairs(Config.Zones) do
-		opened += zone.open and 1 or 0
-		for _, entry in ipairs(zone.creatures) do
-			check(Config.Creatures[entry[1]] ~= nil, ("zone %d : %s"):format(i, tostring(entry[1])))
+	check(#Config.Rings >= 1, "au moins un anneau")
+	local previousMax = Config.Island.coveRadius
+	for i, ring in ipairs(Config.Rings) do
+		check(ring.rMin >= previousMax and ring.rMax > ring.rMin and ring.rMax <= Config.Island.size / 2,
+			("anneau %d : %s-%s"):format(i, tostring(ring.rMin), tostring(ring.rMax)))
+		previousMax = ring.rMax
+		for _, entry in ipairs(ring.creatures) do
+			check(Config.Creatures[entry[1]] ~= nil, ("anneau %d : %s"):format(i, tostring(entry[1])))
 		end
 	end
-	check(opened >= 1, "au moins une zone ouverte")
+	for _, direction in ipairs(Config.Island.waveDirections) do
+		local dir = Config.WaveTravel[direction]
+		check(dir ~= nil and math.abs(dir.Magnitude - 1) < 1e-6 and dir.Y == 0, "direction " .. direction)
+	end
 	for tide, def in pairs(Config.Tides) do
 		local total = 0
 		for _, entry in ipairs(def.odds) do
@@ -79,13 +85,13 @@ end
 
 local function checkGrowth(check)
 	local stage, nextAt = Config.StageAt("Common", T0, T0)
-	check(stage == 1 and nextAt == T0 + 3 * 60, "bebe a la naissance")
+	check(stage == 1 and nextAt == T0 + 3 * 60, "Juvenile au depot")
 	stage = Config.StageAt("Common", T0, T0 + 3 * 60)
-	check(stage == 2, "Juvenile a 3 min")
+	check(stage == 2, "Adult a 3 min")
 	stage, nextAt = Config.StageAt("Common", T0, T0 + 10 ^ 9)
-	check(stage == #Config.Stages and nextAt == 0, "Giant pour toujours")
+	check(stage == #Config.Stages and nextAt == 0, "Titan pour toujours")
 	stage = Config.StageAt("Common", T0, T0 - 500)
-	check(stage == 1, "horloge qui recule : bebe")
+	check(stage == 1, "horloge qui recule : Juvenile")
 	local previous = 0
 	for minute = 0, 1300, 7 do
 		local s = Config.StageAt("Legendary", T0, T0 + minute * 60)
@@ -93,9 +99,9 @@ local function checkGrowth(check)
 		previous = s
 	end
 	local d = DataService._Sanitize(nil)
-	d.pools[1] = creature("PebbleCrab", "Golden", T0)
-	check(Stats.CreatureIncome(d.pools[1], T0) == 3, "Golden bebe = 1 x 3")
-	check(Stats.CreatureIncome(d.pools[1], T0 + 3600) == 24, "Golden Giant = 1 x 3 x 8")
+	d.pools[1] = creature("GhostCrab", "Golden", T0)
+	check(Stats.CreatureIncome(d.pools[1], T0) == 3, "Golden Juvenile = 1 x 3")
+	check(Stats.CreatureIncome(d.pools[1], T0 + 3600) == 24, "Golden Titan = 1 x 3 x 8")
 	-- 3 min bebe (x1) puis 2 min Juvenile (x2), revenu de base 3/s
 	check(math.abs(Stats.IncomeBetween(d, T0, T0 + 300) - (3 * 180 + 6 * 120)) < 1e-6, "revenu entre deux heures")
 	check(Stats.IncomeBetween(d, T0, T0) == 0, "duree nulle")
@@ -120,23 +126,44 @@ local function checkTides(check)
 	check(Stats.RollMutation("Inconnue", rng) ~= nil, "maree inconnue -> Normal")
 end
 
+local function checkIsland(check)
+	local c = Config.Island.center
+	check(Config.InCove(c) and not Config.InCove(c + Vector3.new(Config.Island.coveRadius + 1, 0, 0)), "crique")
+	for i, ring in ipairs(Config.Rings) do
+		local mid = (ring.rMin + ring.rMax) / 2
+		check(Config.RingAt(c + Vector3.new(0, 0, mid)) == i and Config.RingAt(c + Vector3.new(-mid, 0, 0)) == i,
+			"anneau " .. i .. " par distance")
+	end
+	check(Config.RingAt(c) == 0, "centre hors anneaux")
+	-- vague venue du nord : avance vers +Z, le front part de -reach
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	local wave = { startTime = 100, dir = Config.WaveTravel.N }
+	check(Config.WaveFrontD(wave, 100) == -reach and Config.WaveFrontD(wave, 10 ^ 6) == reach, "front de -reach a +reach")
+	check(Config.WaveAxis(wave, c + Vector3.new(0, 0, -200)) == -200 and Config.WaveAxis(wave, c + Vector3.new(50, 0, 0)) == 0,
+		"projection sur l'axe")
+	local east = { startTime = 0, dir = Config.WaveTravel.E }
+	check(Config.WaveAxis(east, c + Vector3.new(200, 0, 0)) == -200, "vague de l'est : +X est touche en premier")
+	local intro = { startTime = 0, startD = -484, endD = -70, dir = Config.WaveTravel.S }
+	check(Config.WaveFrontD(intro, 1000) == -70, "vague d'intro : s'arrete au bord de la crique")
+end
+
 local function checkDeposit(check)
 	local pools, placed, released = Stats.Deposit({ false, false, false }, 3,
-		{ creature("PebbleCrab", "", T0, "1"), creature("SandStar", "", T0, "2") }, T0)
+		{ creature("GhostCrab", "", T0, "1"), creature("CushionStar", "", T0, "2") }, T0)
 	check(#placed == 2 and #released == 0 and pools[3] == false, "bassins libres d'abord")
 	pools, placed, released = Stats.Deposit(
-		{ creature("PebbleCrab", "", T0, "1"), creature("SandStar", "", T0, "2") }, 2,
-		{ creature("SandStar", "Golden", T0, "3") }, T0)
+		{ creature("GhostCrab", "", T0, "1"), creature("CushionStar", "", T0, "2") }, 2,
+		{ creature("CushionStar", "Golden", T0, "3") }, T0)
 	check(#placed == 1 and placed[1].slot == 1 and pools[1].uid == "3" and #released == 1
 		and released[1].creature.uid == "1" and released[1].slot == 1, "remplace la plus faible et la relache")
 	pools, placed, released = Stats.Deposit(
-		{ creature("PebbleCrab", "", T0 - 3600, "1") }, 1, { creature("SandStar", "", T0, "2") }, T0)
+		{ creature("GhostCrab", "", T0 - 3600, "1") }, 1, { creature("CushionStar", "", T0, "2") }, T0)
 	check(#placed == 0 and #released == 1 and released[1].creature.uid == "2" and pools[1].uid == "1",
-		"un Giant n'est pas ecrase par un bebe")
-	pools, placed, released = Stats.Deposit({ creature("SandStar", "", T0, "1") }, 1,
-		{ creature("SandStar", "", T0, "2") }, T0)
+		"un Titan n'est pas ecrase par un Juvenile")
+	pools, placed, released = Stats.Deposit({ creature("CushionStar", "", T0, "1") }, 1,
+		{ creature("CushionStar", "", T0, "2") }, T0)
 	check(#placed == 0 and #released == 1 and pools[1].uid == "1", "egalite : la creature posee reste")
-	check(Stats.ReleaseValue("SandStar", "Golden") == 2 * 3 * Config.SellMultiplier, "relache = bebe x SellMultiplier")
+	check(Stats.ReleaseValue("CushionStar", "Golden") == 2 * 3 * Config.SellMultiplier, "relache = Juvenile x SellMultiplier")
 end
 
 local function checkSanitize(check)
@@ -170,8 +197,9 @@ local function checkSanitize(check)
 	check(#d.pools == Stats.Slots(d) and d.pools[1] and d.pools[1].born <= os.time() and d.pools[2] == false
 		and d.pools[3] == false and d.pools[4] == false and d.pools[5] == false, "bassins valides, naissance jamais future")
 	check(d.creatureSeq >= 4, "compteur d'uid >= plus grand uid")
-	check(d.codex.PebbleCrab and d.codex.PebbleCrab.Normal == true and d.codex.PebbleCrab.Golden == nil
-		and d.codex.Ghost == nil, "codex valide")
+	check(d.pools[1] and d.pools[1].id == "GhostCrab", "ancien id d'espece traduit (PebbleCrab -> GhostCrab)")
+	check(d.codex.GhostCrab and d.codex.GhostCrab.Normal == true and d.codex.GhostCrab.Golden == nil
+		and d.codex.Ghost == nil and d.codex.PebbleCrab == nil, "codex valide, ancien id traduit")
 	check(d.introStep == 2, "introStep borne")
 	check(#d.pets == 1 and #d.equipped == 1 and d.petSeq >= 8, "compagnons valides")
 	check(d.stats.pickups == 0, "NaN -> 0")
@@ -224,8 +252,12 @@ local function checkWave(check)
 	check(phaseKnown(wave.phase) and wave.phaseEnd > wave.phaseStart, "phase " .. tostring(wave.phase))
 	check(Config.Tides[wave.tide] ~= nil and type(wave.nextSpecial) == "table"
 		and wave.nextSpecial.cycle > wave.cycle, "maree " .. tostring(wave.tide))
-	check(WaveService.FrontZ(wave.startTime) == Config.Wave.startZ, "front au depart = startZ")
-	check(WaveService.FrontZ(wave.startTime + 1000) == Config.Wave.endZ, "front borne a endZ")
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	check(WaveService.FrontD(wave.startTime) == -reach, "front au depart = -reach")
+	check(WaveService.FrontD(wave.startTime + 1000) == reach, "front borne a +reach")
+	check(Config.WaveTravel[wave.direction] ~= nil and wave.dir == Config.WaveTravel[wave.direction]
+		and Config.WaveTravel[wave.nextDirection] ~= nil, "direction " .. tostring(wave.direction))
+	check(not Config.Island.noRepeatDirection or wave.nextDirection ~= wave.direction, "jamais deux fois la meme direction")
 end
 
 local function checkCreatures(check)
@@ -236,16 +268,16 @@ local function checkCreatures(check)
 	end
 	local wave = WaveService.Get()
 	local counts, total = CreatureService.Counts(), 0
-	for i, zone in ipairs(Config.Zones) do
+	for i, ring in ipairs(Config.Rings) do
 		total += counts[i]
-		if zone.open and wave and wave.phase == "calm" then
-			check(counts[i] > 0 and counts[i] <= zone.maxItems, ("zone %d : %d/%d"):format(i, counts[i], zone.maxItems))
-		elseif not zone.open then
-			check(counts[i] == 0, ("zone fermee %d vide"):format(i))
+		if wave and wave.phase == "calm" then
+			check(counts[i] > 0 and counts[i] <= ring.maxItems, ("anneau %d : %d/%d"):format(i, counts[i], ring.maxItems))
 		end
 	end
 	local models = folder:GetChildren()
-	check(#models == total + counts.personal, ("%d modeles pour %d comptes"):format(#models, total + counts.personal))
+	local expected = total + counts.personal + counts.royal
+	check(#models == expected, ("%d modeles pour %d comptes"):format(#models, expected))
+	check(counts.royal <= 1, "une seule creature royale")
 	for index, model in ipairs(models) do
 		local species = model:GetAttribute("CreatureId")
 		local def = Config.Creatures[species]
@@ -257,11 +289,12 @@ local function checkCreatures(check)
 			and type(model:GetAttribute("BaseYaw")) == "number" and type(model:GetAttribute("SpinSpeed")) == "number"
 			and type(model:GetAttribute("Bob")) == "number" and model:GetAttribute("Rarity") == (def and def.rarity),
 			"attributs " .. model.Name)
-		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil then
-			check(model:GetAttribute("Zone") == Config.ZoneAt(pos.Z) and pos.Z < Config.BaseLineZ, "zone " .. model.Name)
+		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil and not model:GetAttribute("Royal") then
+			check(model:GetAttribute("Zone") == Config.RingAt(pos) and not Config.InCove(pos), "anneau " .. model.Name)
 			for other = index + 1, #models do
 				local otherPos = models[other]:GetAttribute("BasePos")
-				if typeof(otherPos) == "Vector3" and models[other]:GetAttribute("Owner") == nil then
+				if typeof(otherPos) == "Vector3" and models[other]:GetAttribute("Owner") == nil
+					and not models[other]:GetAttribute("Royal") then
 					local gap = Vector2.new(pos.X - otherPos.X, pos.Z - otherPos.Z).Magnitude
 					check(gap >= MIN_SPACING, ("ecart %.1f studs"):format(gap))
 				end
@@ -298,7 +331,7 @@ local function checkPlots(check)
 				check(lock ~= nil and lock.Enabled == (slot > slots), ("cadenas socle %d"):format(slot))
 			end
 			local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-			check(humanoid ~= nil and humanoid.WalkSpeed == Stats.WalkSpeed(d), "WalkSpeed " .. player.Name)
+			check(humanoid ~= nil and humanoid.WalkSpeed == PlotService.SpeedOf(profile), "WalkSpeed " .. player.Name)
 		end
 	end
 	for index = 1, Config.MaxPlayersPerServer do
@@ -330,6 +363,14 @@ local function checkAttacks(check)
 		{ "EquipPet", table.pack(nil, nil), "BadRequest" },
 		{ "EquipPet", table.pack("best", false), "BadRequest" },
 		{ "EquipPet", table.pack("999999", true), "UnknownPet" },
+		{ "StartSteal", table.pack("1", 1), "BadRequest" },
+		{ "StartSteal", table.pack(1.5, 1), "BadRequest" },
+		{ "StartSteal", table.pack(0 / 0, 0 / 0), "BadRequest" },
+		{ "StartSteal", table.pack(99, 1), "BadRequest" },
+		{ "Mount", table.pack(123), "BadRequest" },
+		{ "Mount", table.pack("nope"), "NotMountable" },
+		{ "ChoosePick", table.pack("Ghost"), "BadRequest" },
+		{ "ChoosePick", table.pack({}), "BadRequest" },
 	}
 	for _, case in ipairs(cases) do
 		local ok, code = Net.Invoke(case[1], player, table.unpack(case[2], 1, case[2].n))
@@ -370,6 +411,7 @@ local SECTIONS = {
 	{ "config", checkConfig },
 	{ "croissance", checkGrowth },
 	{ "marees", checkTides },
+	{ "ile", checkIsland },
 	{ "depot", checkDeposit },
 	{ "donnees", checkSanitize },
 	{ "remotes", checkRemotes },

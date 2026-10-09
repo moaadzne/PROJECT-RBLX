@@ -10,6 +10,9 @@ local DO_DECOR = true
 local DO_LIGHTING = true
 local DO_CAMERA = true
 
+-- Houle de la vague posee a l'arret pour la capture (Assets.WaveSwell, construite par build_wave.luau). nil = pas de houle.
+local SWELL_POS = Vector3.new(-60, 20, -450) -- centre du corps : Y 20 = houle presque entierement levee (sommet vers Y 47)
+
 -- Centre de l'ilot du phare : relever la position donnee par inspect_world.luau (section Ilots). nil = phare non place.
 local ISLET_POS = nil -- ex. Vector3.new(-175, 0, -120)
 
@@ -51,9 +54,9 @@ local DECOR = {
 local LIGHT = {
 	Lighting = { ClockTime = 17.05, GeographicLatitude = 15 },
 	BloomEffect = { Intensity = 0.4, Threshold = 1.5, Size = 24 },
-	ColorCorrectionEffect = { Saturation = 0.1, Contrast = 0.05, TintColor = Color3.fromRGB(255, 246, 236) },
+	ColorCorrectionEffect = { Saturation = 0.05, Contrast = 0.08, TintColor = Color3.fromRGB(255, 248, 240) },
 	SunRaysEffect = { Intensity = 0.05, Spread = 0.6 },
-	Atmosphere = { Density = 0.3, Haze = 1, Glare = 0.2, Color = Color3.fromHex("FFB25A"), Decay = Color3.fromHex("16A0A8") },
+	Atmosphere = { Density = 0.32, Haze = 1.2, Glare = 0.2, Color = Color3.fromHex("F2A35E"), Decay = Color3.fromHex("13707A") },
 }
 
 local CHS = game:GetService("ChangeHistoryService")
@@ -211,6 +214,17 @@ local function build()
 				noShadow = item.noShadow,
 				parent = folder,
 			})
+		end
+		local swell = RS.Assets:FindFirstChild("WaveSwell")
+		if SWELL_POS and swell then
+			log(string.format("  houle de la vague en Z %.0f", SWELL_POS.Z))
+			if not DRY_RUN then
+				local c = swell:Clone()
+				c:PivotTo(CFrame.new(SWELL_POS) * (swell:GetPivot() - swell:GetPivot().Position))
+				c.Parent = folder
+			end
+		elseif SWELL_POS then
+			warn("[C] Assets.WaveSwell absent : lancer build_wave.luau d'abord")
 		end
 		if ISLET_POS then
 			place("lighthouse", ISLET_POS, { height = 60, yaw = 200, parent = folder })

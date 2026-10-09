@@ -164,9 +164,21 @@ local function sanitizeStats(d, raw)
 	end
 end
 
+-- Id d'espece actuel : les anciens ids (tresors v1, especes du GDD v1/v2) sont traduits
+local function speciesId(id)
+	if type(id) ~= "string" then
+		return nil
+	end
+	if Config.Creatures[id] then
+		return id
+	end
+	return Config.LegacyItemToCreature[id]
+end
+
 -- Une creature deposee valide : { uid, id, mut, born }, sinon nil
 local function sanitizeCreature(raw, now)
-	if type(raw) ~= "table" or type(raw.uid) ~= "string" or type(raw.id) ~= "string" or not Config.Creatures[raw.id] then
+	local id = type(raw) == "table" and speciesId(raw.id)
+	if not id or type(raw.uid) ~= "string" then
 		return nil
 	end
 	local mut = raw.mut
@@ -177,7 +189,7 @@ local function sanitizeCreature(raw, now)
 	if not born then
 		return nil
 	end
-	return { uid = raw.uid, id = raw.id, mut = mut, born = math.floor(born), royal = raw.royal == true or nil }
+	return { uid = raw.uid, id = id, mut = mut, born = math.floor(born), royal = raw.royal == true or nil }
 end
 
 -- Donnees v1 (trésors) : on repart de zero, l'ancien contenu est range dans legacy.v1
@@ -242,8 +254,9 @@ function DataService._Sanitize(raw)
 	d.creatureSeq = math.max(math.floor(num(raw.creatureSeq, 0, 0)), maxSeq)
 
 	if type(raw.codex) == "table" then
-		for species, variants in pairs(raw.codex) do
-			if type(species) == "string" and Config.Creatures[species] and type(variants) == "table" then
+		for rawSpecies, variants in pairs(raw.codex) do
+			local species = speciesId(rawSpecies)
+			if species and type(variants) == "table" then
 				for variant, value in pairs(variants) do
 					if value == true and (variant == "Normal" or Config.Mutations[variant]) then
 						d.codex[species] = d.codex[species] or {}
@@ -251,7 +264,7 @@ function DataService._Sanitize(raw)
 					end
 				end
 			else
-				keepLegacy(d, "codex", { species = species, variants = deepCopy(variants) })
+				keepLegacy(d, "codex", { species = rawSpecies, variants = deepCopy(variants) })
 			end
 		end
 	end
@@ -497,6 +510,27 @@ function DataService.BuildState(profile)
 		walkSpeed = Stats.WalkSpeed(d),
 		homeReadyAt = profile.homeReadyAt,
 		intro = INTRO_NAMES[d.introStep] or "done",
+		newbie = Stats.IsNewbie(d),
+		playTime = math.floor(d.playTime),
+		mount = profile.mountUid,
+		carrying = profile.carrying and {
+			species = profile.carrying.creature.id,
+			mutation = profile.carrying.creature.mut,
+			victim = profile.carrying.victim.UserId,
+			victimName = profile.carrying.victim.DisplayName,
+		} or false,
+		lockActive = profile.lockActive,
+		lockReadyAt = d.lockReadyAt,
+		shield = profile.shield,
+		protectedUntil = d.protectedUntil,
+		revenge = profile.revenge and { userId = profile.revenge.userId, name = profile.revenge.name } or false,
+		crown = profile.crown,
+		passes = {
+			FastGrowth = profile.passes.FastGrowth == true,
+			BigNet = profile.passes.BigNet == true,
+			VIPRider = profile.passes.VIPRider == true,
+		},
+		shop = { randomAllowed = profile.randomAllowed },
 		codex = codex,
 		codexCount = Stats.CodexCount(d),
 		codexTotal = Stats.CodexTotal(),
@@ -623,8 +657,8 @@ local function onLoaded(profile, record, err)
 	end
 	if not profile.saveEnabled then
 		Net.Notify(player, "saveOff", { text = "Your progress can't be saved right now. Rejoin later to keep it." })
-	elseif isNew then
-		Net.Notify(player, "welcome", { isNew = true, text = "Welcome, Keeper!" })
+	elseif isNew or profile.data.introStep == 0 then
+		-- nouveau joueur : aucun texte pendant l'intro (GDD 1 ter), IntroService parle a la fin
 	else
 		Net.Notify(player, "welcome", { isNew = false, text = "Welcome back, Keeper!" })
 	end
@@ -658,6 +692,17 @@ function DataService.Track(player)
 		carryMult = 1, -- ralenti quand il porte une creature volee (StealService)
 		carriedOut = {}, -- [uid] = voleur : creatures de ce joueur portees par un voleur
 		passes = {}, -- [nom] = true (ShopService)
+		randomAllowed = false, -- achat aleatoire permis (PolicyService), faux tant que pas verifie
+		pickupMult = 1, -- BigNet
+		pickChoice = nil, -- espece choisie pour Pick a Creature
+		carrying = nil, -- { creature, victim, slot } : creature volee portee (StealService)
+		lockCycle = nil, -- cycle dont la fenetre est verrouillee (LagoonService)
+		lockActive = false,
+		shield = "",
+		revenge = nil, -- { userId, name, cycle } (LagoonService)
+		crown = 0, -- Maree Royale (RoyalService)
+		surfing = false, -- sur une Giant pendant la vague (MountService)
+		movedByServerAt = 0, -- os.clock du dernier teleport serveur (verification de vitesse)
 	}
 	profiles[player] = profile
 	setupLeaderstats(player)

@@ -17,9 +17,14 @@ local PLACEHOLDER_SIZE = 1.6
 
 local rng = Random.new()
 local restOffsets = {}
-local legacyOf = {} -- [species] = ancien ItemId
-for itemId, species in pairs(Config.LegacyItemToCreature) do
-	legacyOf[species] = itemId
+-- [species] = anciens ids : Assets.Creatures.<id du GDD v2> si C en a deja pose, puis Assets.Items.<tresor v1>
+local legacyCreatures, legacyOf = {}, {}
+for oldId, species in pairs(Config.LegacyItemToCreature) do
+	if Config.Items[oldId] then
+		legacyOf[species] = oldId
+	else
+		legacyCreatures[species] = oldId
+	end
 end
 
 local warnedFallback = {}
@@ -33,7 +38,8 @@ end
 -- Modele de la creature, ou celui de l'ancien tresor, ou nil
 local function template(species)
 	local creatures = assetFolder("Creatures")
-	local model = creatures and creatures:FindFirstChild(species)
+	local model = creatures and (creatures:FindFirstChild(species)
+		or (legacyCreatures[species] and creatures:FindFirstChild(legacyCreatures[species])))
 	if model then
 		return model
 	end
@@ -120,7 +126,7 @@ local function addBeacon(root, color)
 end
 
 -- opts = { mutation = string, stage = number, zone = number, bob = number, beacon = boolean,
---          slot = number?, uid = string?, born = number?, owner = number?, royal = boolean? }
+--          slot = number?, uid = string?, born = number?, owner = number?, royal = boolean?, noSpin = boolean? }
 function CreatureFactory.Create(species, basePos, opts)
 	local def = Config.Creatures[species]
 	if not def then
@@ -172,7 +178,9 @@ function CreatureFactory.Create(species, basePos, opts)
 	if opts.beacon and rarity and rarity.order >= BEACON_MIN_ORDER and model.PrimaryPart then
 		addBeacon(model.PrimaryPart, rarity.color)
 	end
-	CollectionService:AddTag(model, SPIN_TAG)
+	if not opts.noSpin then
+		CollectionService:AddTag(model, SPIN_TAG)
+	end
 	return model
 end
 

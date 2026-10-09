@@ -1,4 +1,5 @@
--- WaveService : cycle de la vague (calm, warning, wave, recede), simulee en maths, et type de maree du cycle.
+-- WaveService : cycle de la vague (calm, warning, wave, recede), simulee en maths, type de maree du cycle
+-- et direction de la vague (N/E/S/W, jamais deux fois de suite la meme) : elle traverse l'ile ouverte sur son axe.
 -- Le serveur ne bouge aucune piece : les clients dessinent la vague a partir de WaveState.
 -- Crochets : OnCalm(cycle, tide) au debut du calme, OnFront(prevFront, front) a chaque tick de la vague.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,7 +13,8 @@ local PlotService = require(Services.PlotService)
 local WaveService = {}
 
 local W = Config.Wave
-local TRAVEL_TIME = (W.endZ - W.startZ) / W.speed
+local REACH = Config.Island.size / 2 + Config.Island.seaMargin
+local TRAVEL_TIME = 2 * REACH / W.speed
 local CATCH_TICK = 0.1
 local WAIT_TICK = 0.1
 local SWEPT_EXTRA = 0.5 -- pas de ramassage pendant qu'on est emporte
@@ -23,10 +25,28 @@ local wave = nil
 local skipCalm = false
 local forcedTide = nil -- debug : maree du prochain cycle
 local cycleTide = "Normal"
+local forcedDirection = nil -- debug : direction du prochain cycle
+local cycleDirection = nil
+local nextDirection = nil
+local rng = Random.new()
+
+-- Direction au hasard, differente de `previous` si le Config le demande
+local function rollDirection(previous)
+	local list = Config.Island.waveDirections
+	local choices = {}
+	for _, direction in ipairs(list) do
+		if not (Config.Island.noRepeatDirection and direction == previous and #list > 1) then
+			table.insert(choices, direction)
+		end
+	end
+	return choices[rng:NextInteger(1, #choices)]
+end
 local caught = {} -- [player] = true pendant la vague en cours
 local exposed = {} -- [player] = true si sur la plage pendant la vague
 local calmHooks = {}
 local frontHooks = {}
+local phaseHooks = {}
+local caughtHooks = {}
 
 local function now()
 	return workspace:GetServerTimeNow()
@@ -42,8 +62,20 @@ local function publish(phase, phaseStart, phaseEnd, startTime)
 		cycle = cycle,
 		tide = cycleTide,
 		nextSpecial = Config.NextSpecial(cycle),
+		direction = cycleDirection,
+		dir = Config.WaveTravel[cycleDirection],
+		nextDirection = nextDirection,
 	}
+	if Config.Royal.onSpecialTides and cycleTide ~= "Normal" then
+		wave.royal = { active = true, endsAt = startTime + TRAVEL_TIME + W.recedeTime }
+	end
 	Net.SetWave(wave)
+	for _, hook in ipairs(phaseHooks) do
+		local ok, err = pcall(hook, phase, wave)
+		if not ok then
+			warn("[TideRush] crochet de phase : " .. tostring(err))
+		end
+	end
 end
 
 local function runHooks(hooks, ...)
@@ -64,8 +96,9 @@ local function waitUntil(t, canSkip)
 	end
 end
 
-function WaveService.FrontZ(t)
-	return math.min(W.endZ, W.startZ + W.speed * (t - wave.startTime))
+-- Position du front sur l'axe de la vague (de -REACH a +REACH)
+function WaveService.FrontD(t)
+	return Config.WaveFrontD(wave, t)
 end
 
 local function feetY(humanoid, root)
@@ -77,6 +110,12 @@ end
 
 local function sweep(player, profile)
 	caught[player] = true
+	for _, hook in ipairs(caughtHooks) do
+		local ok, err = pcall(hook, player, profile)
+		if not ok then
+			warn("[TideRush] crochet de prise : " .. tostring(err))
+		end
+	end
 	local lost = profile.bag
 	profile.bag = {}
 	profile.sweptUntil = os.clock() + W.caughtDelay + SWEPT_EXTRA
@@ -106,9 +145,13 @@ local function checkPlayers(prevFront, front)
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 			if root and humanoid and humanoid.Health > 0 then
 				local pos = root.Position
-				if pos.Z < Config.BaseLineZ then
+				-- la crique est a l'abri ; ailleurs, on projette la position sur l'axe de la vague
+				if not Config.InCove(pos) then
 					exposed[player] = true
-					if pos.Z <= front and pos.Z >= prevFront - W.thickness and feetY(humanoid, root) < W.height then
+					local axis = Config.WaveAxis(wave, pos)
+					-- sur une monture Titan, il surfe la crete : jamais pris ; tours et terrain haut : pieds au-dessus
+					if not profile.surfing and axis <= front and axis >= prevFront - W.thickness
+						and feetY(humanoid, root) < W.height then
 						sweep(player, profile)
 					end
 				end
@@ -133,6 +176,9 @@ local function runCycle()
 	skipCalm = false
 	cycleTide = forcedTide or Config.TideFor(cycle)
 	forcedTide = nil
+	cycleDirection = forcedDirection or nextDirection or rollDirection(cycleDirection)
+	forcedDirection = nil
+	nextDirection = rollDirection(cycleDirection)
 	local calmStart = now()
 	local departure = calmStart + W.calmTime + W.warningTime
 	publish("calm", calmStart, calmStart + W.calmTime, departure)
@@ -149,10 +195,10 @@ local function runCycle()
 	publish("wave", departure, arrival, departure)
 	table.clear(caught)
 	table.clear(exposed)
-	local prevFront = W.startZ
+	local prevFront = -REACH
 	while true do
 		local t = now()
-		local front = WaveService.FrontZ(t)
+		local front = WaveService.FrontD(t)
 		checkPlayers(prevFront, front)
 		runHooks(frontHooks, prevFront, front)
 		prevFront = front
@@ -184,6 +230,15 @@ function WaveService.ForceTide(tide)
 	return true
 end
 
+-- Debug : direction du prochain cycle (N, E, S, W)
+function WaveService.ForceDirection(direction)
+	if not Config.WaveTravel[direction] then
+		return false
+	end
+	forcedDirection = direction
+	return true
+end
+
 function WaveService.Get()
 	return wave
 end
@@ -195,6 +250,19 @@ end
 function WaveService.OnFront(callback)
 	table.insert(frontHooks, callback)
 end
+
+-- callback(phase, wave) a chaque changement de phase de la vague globale
+function WaveService.OnPhase(callback)
+	table.insert(phaseHooks, callback)
+end
+
+-- callback(player, profile) quand la vague prend un joueur (avant que son sac soit vide)
+function WaveService.OnCaught(callback)
+	table.insert(caughtHooks, callback)
+end
+
+-- Duree d'un cycle complet (calme + alerte + trajet + reflux), en secondes
+WaveService.CycleTime = W.calmTime + W.warningTime + TRAVEL_TIME + W.recedeTime
 
 function WaveService.Forget(player)
 	caught[player] = nil
