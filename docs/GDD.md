@@ -1,4 +1,4 @@
-# GDD — Tide Rush : Steal & Ride (concept Reef Keepers) · v2
+# GDD — Ride the Tsunami 🌊 Steal & Ride (concept Reef Keepers) · v2
 
 Auteur : E (concept & game design). v1 le 2026-10-09, **v2 le 2026-10-09** après la levée des règles halal par Moaad et la décision de D (vol, monture, Marée Royale, monétisation v2). Cohérent avec docs/AUDIT_TOP10.md §6.
 Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ** à régler par playtest, pas des mesures.
@@ -16,7 +16,7 @@ Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ
 | Steal a Sea Creature | Pas de jeu trouvé, mais **« Steal a Fish »** existe déjà (vol + poissons) : trop proche, on serait vu comme un clone. | À éviter comme titre principal. |
 | Catch, Steal & Ride | Rien trouvé. Plus long, moins clair en 5 s. | Bon sous-titre. |
 
-**Titre de travail en attendant le choix de Moaad : « Steal a Sea Creature ».**
+**Titre choisi par Moaad (09/10) : « Ride the Tsunami ».**
 
 **Recommandation** : nom affiché **« Ride the Tsunami 🌊 Steal & Ride »**. « Steal » reste dans le titre pour la recherche Roblox, mais la promesse forte est la monture sur la vague.
 Limite : ma recherche web ne remplace pas la recherche Roblox. **Moaad doit taper les 3 titres dans la recherche Roblox avant de publier.**
@@ -444,5 +444,5 @@ Config.Shop = {
 ```
 
 ## 14. Questions ouvertes pour Moaad
-1. Titre : **« Ride the Tsunami »** (recommandé) ? À vérifier dans la recherche Roblox avant de publier.
+1. Titre : **« Ride the Tsunami 🌊 Steal & Ride »** (validé par Moaad le 09/10). Dernière vérification dans la recherche Roblox avant de publier.
 2. Prix de la boutique de lancement : valeurs de départ, à ajuster après 1 semaine de données.
