@@ -133,3 +133,18 @@ Ensuite **Cmd + S**.
 3. Playtest court, puis **Cmd + S**.
 
 Jamais de synchro pendant un Play : on arrête le Play avant `git pull`.
+
+## 5. Réglages Avatar (Moaad, une seule fois, décision de D du 09/10)
+On garde l'avatar de chaque joueur, avec R15, des proportions identiques pour tous et nos animations (VISION_TON §6.3).
+Prérequis : la place est publiée (File → Save to Roblox). Sinon, Game Settings reste grisé.
+
+1. Dans Studio, onglet **Home** → bouton **Game Settings**.
+2. Dans la colonne de gauche → **Avatar**.
+   Si cette page renvoie vers « Avatar Settings » : onglet **Avatar** du ruban → **Avatar Settings**. On y retrouve les mêmes réglages.
+3. **Avatar Type** → **R15**.
+4. **Animation** → **Standard** (tout le monde a les mêmes animations ; les nôtres les remplaceront via le script `Animate`).
+5. **Scale** : pour Height, Width, Head, Body Type et Proportions, mets le **minimum égal au maximum** pour que tout le monde ait les mêmes proportions.
+   Valeurs proposées, à valider sur capture : Height 100 %, Width 100 %, Head 100 %, Body Type 100 %, Proportions 0 %.
+6. **Save** en bas à droite, puis **Cmd + S**.
+
+Vérification (session locale) : playtest court, capture de l'avatar de Moaad à côté d'un bassin. Les proportions ne doivent pas faire tache à côté du décor. La capture va à D, qui valide les valeurs.
