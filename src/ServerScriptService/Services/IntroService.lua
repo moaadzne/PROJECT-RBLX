@@ -40,10 +40,12 @@ local function waitUntil(player, profile, t)
 	return alive(player, profile)
 end
 
--- Direction de la crique vers le lagon du joueur (vers la mer en face de chez lui)
+-- Direction de la crique vers la plage d'intro du joueur : celle de son lagon, tournee vers le passage
+-- voisin (les lagons sont adosses a des remparts, les passages vers la plage sont en diagonale)
 local function outwardOf(player)
 	local index = PlotService.GetIndex(player)
-	return index and PlotService.OutwardOf(index) or Vector3.new(0, 0, -1)
+	local outward = index and PlotService.OutwardOf(index) or Vector3.new(0, 0, -1)
+	return CFrame.Angles(0, math.rad(Config.Intro.angleOffset), 0):VectorToWorldSpace(outward)
 end
 
 local function introCreatures(player)

@@ -37,10 +37,10 @@ Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12,
 - **Reef Codex** : une case par espèce × variante (Config.CodexVariants : `Normal`, `Golden` en Phase 1). Nouvelle case à la capture : revenu de base × 50 pièces. Ligne d'espèce complète : +5 % de revenu permanent. Jamais remis à zéro.
 - **LagoonTier** (1..5) : calculé à partir du revenu/s (Config.LagoonTiers), écrit en attribut sur PlotN.
 - **Vague** :
-  - 35 s de calme, 7 s d'alerte, 46 studs/s, hauteur 22, épaisseur 40 ;
+  - 35 s de calme, 7 s d'alerte, 46 studs/s, **hauteur 30** (plateformes des tours à 34 = height + 4), épaisseur 40 ;
   - **une direction par cycle** (N/E/S/W, jamais deux fois de suite la même). Elle est tirée au début du cycle et annoncée dès le calme ; la suivante est aussi connue ;
   - elle traverse toute l'île sur son axe, de -reach à +reach (reach = size/2 + seaMargin = 330) ;
-  - prise si l'axe du joueur est dans `[front - thickness, front]`, pieds sous 22 et hors de la crique. Tours et terrain haut sont des abris (pieds au-dessus de 22), et une monture Titan surfe ;
+  - prise si l'axe du joueur est dans `[front - thickness, front]`, pieds sous 30 et hors de la crique. Tours, remparts, belvédère et terrain haut sont des abris (pieds au-dessus de 30), et une monture Titan surfe ;
   - prise = sac perdu, retour à la base 0,8 s plus tard, au plus 1 prise par cycle.
 - **Intro par joueur** (GDD §1 ter), pour un nouveau joueur seulement :
   - spawn dans son lagon ;
@@ -76,7 +76,7 @@ Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12,
   - ProcessReceipt idempotent ; les ids Roblox sont dans Config.Shop (0 = produit désactivé).
 - Mort ou reset = sac perdu (Notify `bagLost`). Bouton Home refusé hors du calme (`WaveActive`) et pendant le cooldown (`Cooldown`).
 - Données : DataStore, 3 essais, verrou de session, autosave 90 s, sauvegarde au départ et dans BindToClose. Si le chargement échoue, la session ne sauvegarde jamais (Notify `saveOff`). Schéma v2 ; une donnée v1 est rangée dans `legacy.v1`, rien n'est effacé.
-- Le serveur dépend seulement des NOMS et des ATTRIBUTS de la carte : `Plots/PlotN` (Index, **Center** (Vector3) + **Radius** (number) = cercle du lagon, SpawnPos ; repli : MinX/MaxX/MinZ/MaxZ), `Pedestals/PedestalN` (Slot, LockGui, hauteur Size.X ; un bassin = un PedestalN), `Towers/TowerN` (Center).
+- Le serveur dépend seulement des NOMS et des ATTRIBUTS de la carte : `Plots/PlotN` (Index, SpawnPos, emprise du lagon = **`PlotN.Bounds`** : Part invisible et tournée, test dans son repère local, entrée face au centre de l'île ; replis : attributs Center + Radius, puis MinX/MaxX/MinZ/MaxZ), `Pedestals/PedestalN` (Slot, LockGui, hauteur Size.X ; un bassin = un PedestalN), `Towers/TowerN` (Center).
 - Modèles : `ReplicatedStorage.Assets.Creatures.<Species>`. **Repli** tant qu'ils manquent : `Assets.Items.<ancien trésor>` via Config.LegacyItemToCreature.
 
 ## Contrat des remotes v2 (publié pour B — le serveur s'y tient exactement)
@@ -212,7 +212,9 @@ wave = {
 - PlotN : attributs `Owner` (UserId), `OwnerName` (DisplayName), `LagoonTier` (1..5). Owner et OwnerName sont retirés quand la base est libre.
 - PlotN : `Open` (bool, barrière baissée pour tous), `Locked` (bool), `Shield` ("" | "newbie" | "stolen" | "cap" | "lock").
 - `PlotN.Barrier` (Model de C) : attribut `Open`, écrit par le serveur. Le serveur règle `CanCollide` de ses parts. Les groupes de collision `TR_BarrierN` / `TR_CharN` laissent passer le propriétaire, et le joueur qui a la Revanche. B anime le visuel à partir de `Open`.
-- Un joueur trouvé sans droit dans un lagon fermé est ramené devant, côté mer : Center + o·(Radius + 5), où o = direction de la crique vers le lagon. Vérification serveur 10 fois/s.
+- Un joueur trouvé sans droit dans un lagon fermé est ramené devant l'entrée, côté crique, à 5 studs du bord de Bounds. Vérification serveur 10 fois/s.
+- Apparitions : uniquement sur le Terrain de plage (Config.Island.spawnMaterials = Sand, Mud), avec un sol entre spawnYMin et spawnYMax, et à plus de max(16, PlatformRadius + 4) studs du Center d'une tour.
+- `Config.Upgrades[*].icon = ""` (plus d'emoji) ; le LockGui des bassins affiche « LOCKED ». Les icônes viennent de B, d'après `key`.
 - Joueur : attributs `Plot`, `Loaded`, `Pets` ("CrabBuddy,Turtle"), `Bag` ("GhostCrab:Golden,CushionStar:" pour afficher la pile sur la tête).
 - Joueur : `Carrying` ("HawksbillTurtle:Golden" ou ""), `Mount` (espèce ou ""), `MountStage` (3 ou 4), `Surfing` (bool, monture Titan pendant la vague), `Crown` (0..3), `Newbie` (bool), `VIP` (bool).
 - Monture : le serveur soude au HumanoidRootPart un clone de la créature, à l'échelle de son stade. C fournit l'Attachment `Saddle` dans `Root`. Le serveur relève `Humanoid.HipHeight`. L'animation assise et le surf sont côté client.

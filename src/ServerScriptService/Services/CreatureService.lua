@@ -39,11 +39,15 @@ local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 rayParams.IgnoreWater = false
 
+local spawnMaterials = {}
+for _, name in ipairs(Config.Island.spawnMaterials) do
+	spawnMaterials[Enum.Material[name]] = true
+end
+
 local function nearTower(x, z)
-	local r2 = Config.Island.towerRadius * Config.Island.towerRadius
-	for _, center in ipairs(towerCenters) do
-		local dx, dz = x - center.X, z - center.Z
-		if dx * dx + dz * dz < r2 then
+	for _, tower in ipairs(towerCenters) do
+		local dx, dz = x - tower.center.X, z - tower.center.Z
+		if dx * dx + dz * dz < tower.radius * tower.radius then
 			return true
 		end
 	end
@@ -61,10 +65,10 @@ local function nearCreature(x, z)
 	return false
 end
 
--- Sol de Terrain sous (x, z) : position du sol, ou nil (eau, decor, hors de la plage de hauteurs)
+-- Sol de plage sous (x, z) : position du sol, ou nil (eau, roche, herbe, decor, trop haut ou trop bas)
 function CreatureService.GroundAt(x, z)
 	local hit = workspace:Raycast(Vector3.new(x, RAY_HEIGHT, z), Vector3.new(0, -RAY_LENGTH, 0), rayParams)
-	if hit and hit.Instance == workspace.Terrain and hit.Material ~= Enum.Material.Water
+	if hit and hit.Instance == workspace.Terrain and spawnMaterials[hit.Material]
 		and hit.Position.Y >= Config.Island.spawnYMin and hit.Position.Y <= Config.Island.spawnYMax then
 		return hit.Position
 	end
@@ -465,8 +469,13 @@ function CreatureService.Start()
 	if towers then
 		for _, tower in ipairs(towers:GetChildren()) do
 			local center = tower:GetAttribute("Center")
+			local platform = tower:GetAttribute("PlatformRadius")
 			if typeof(center) == "Vector3" then
-				table.insert(towerCenters, center)
+				local radius = Config.Island.towerRadius
+				if type(platform) == "number" then
+					radius = math.max(radius, platform + 4)
+				end
+				table.insert(towerCenters, { center = center, radius = radius })
 			end
 		end
 	end
