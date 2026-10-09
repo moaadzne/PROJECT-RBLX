@@ -101,9 +101,12 @@ Objectif : à 30 s, le joueur a eu **une montée d'adrénaline**, possède **une
 
 ## 3 bis. Île ouverte (Phase 1, légère)
 
-Demande de Moaad : « un open world, un peu ». Décision de D : **une île ouverte et compacte**. On abandonne la plage en couloir et ses 5 zones alignées sur Z. Le monde grandit ensuite avec les nouvelles îles (§6 ter).
+Demande de Moaad : « un open world, un peu ». Décision de D : **une île ouverte et compacte**.
 
-### 1. Plan de l'île de la Phase 1
+> **Version de lancement (décision de D, 09/10)** : île d'environ **600 × 600**, crique centrale (rayon 70) avec les 8 lagons, anneaux de rareté recalés (70–150 / 150–225 / 225–300), **vague dans les 4 directions**, **3 points d'intérêt** (belvédère, épave, récif à marée basse), **8 tours**, **boussole et direction de la vague dans le HUD, sans carte**.
+> **Phase 2 (première grosse mise à jour)** : île de 800 × 800 décrite ci-dessous, jungle, grotte, carte. On abandonne la plage en couloir et ses 5 zones alignées sur Z. Le monde grandit ensuite avec les nouvelles îles (§6 ter).
+
+### 1. Plan de l'île cible (Phase 2 : 800 × 800 ; le lancement en est la version réduite)
 - **Taille** : île d'environ **800 × 800 studs** (la plage actuelle fait environ 264 × 908, donc une surface du même ordre, × 2,5). Mer jouable autour jusqu'à 1 000 × 1 000. Le centre de la crique est en (0, 0).
 - **Crique centrale protégée** : les 8 lagons, en arc de cercle, dans une baie fermée par des falaises (rayon d'environ 90 studs). **La vague ne la touche jamais.**
 - **Rayons de rareté** : plus on s'éloigne de la crique, plus c'est rare et risqué (plus long à rentrer avant la vague).
@@ -168,11 +171,12 @@ Gain estimé : environ 1,5 jour pour C et 0,5 jour pour B.
 
 **Config proposée (pour A)** :
 ```lua
-Config.Island = { size = 800, coveRadius = 90, waveDirections = { "N", "E", "S", "W" }, noRepeatDirection = true }
+-- Version de lancement (600x600). Phase 2 : size = 800, coveRadius = 90, anneaux 90/200/300/400.
+Config.Island = { size = 600, coveRadius = 70, waveDirections = { "N", "E", "S", "W" }, noRepeatDirection = true }
 Config.Rings = {
-	{ rMin = 90, rMax = 200, rarity = "Common", items = { { "GhostCrab", 100 } } },
-	{ rMin = 200, rMax = 300, rarity = "Common", items = { { "GhostCrab", 40 }, { "CushionStar", 60 } } },
-	{ rMin = 300, rMax = 400, rarity = "Uncommon", items = { { "CushionStar", 60 }, { "HawksbillTurtle", 40 } } },
+	{ rMin = 70, rMax = 150, rarity = "Common", items = { { "GhostCrab", 100 } } },
+	{ rMin = 150, rMax = 225, rarity = "Common", items = { { "GhostCrab", 40 }, { "CushionStar", 60 } } },
+	{ rMin = 225, rMax = 300, rarity = "Uncommon", items = { { "CushionStar", 60 }, { "HawksbillTurtle", 40 } } },
 }
 ```
 
