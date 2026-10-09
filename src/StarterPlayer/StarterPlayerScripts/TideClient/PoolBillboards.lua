@@ -37,7 +37,8 @@ local function findPedestal(plot: number, slot: number): BasePart?
 end
 
 local function entryKey(entry): string
-	return ("%s|%s|%s|%s"):format(entry.species, entry.mutation or "", tostring(entry.bornAt), tostring(entry.stage))
+	-- le stade n'en fait pas partie : une croissance anime l'etiquette au lieu de la reconstruire
+	return ("%s|%s|%s|%s"):format(entry.uid or "", entry.species, entry.mutation or "", tostring(entry.born))
 end
 
 ---------------------------------------------------------------- Construction

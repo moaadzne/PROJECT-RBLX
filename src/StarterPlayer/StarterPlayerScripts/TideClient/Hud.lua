@@ -377,10 +377,12 @@ local function applyTide(wave)
 	tideAccent.BackgroundColor3 = style.color
 	tideBar:SetColor(style.color)
 	local ns = wave.nextSpecial
-	if ns and ns.cycles and ns.cycles >= 1 then
+	local cycles = if ns and ns.cycle then ns.cycle - wave.cycle else nil
+	-- pendant la marée speciale elle-meme, le bandeau suffit
+	if ns and cycles and cycles >= 1 and not (wave.tide == ns.tide and wave.tide ~= "Normal") then
 		local nsStyle = Theme.TideStyle(ns.tide)
 		local hex = nsStyle.color:ToHex()
-		local waves = if ns.cycles == 1 then "next wave" else ("in %d waves"):format(ns.cycles)
+		local waves = if cycles == 1 then "next wave" else ("in %d waves"):format(cycles)
 		specialText.Text = ('%s <font color="#%s">%s</font> %s'):format(nsStyle.icon, hex, nsStyle.label, waves)
 		specialChip.Visible = true
 	else
@@ -459,6 +461,7 @@ function Hud.SetVisible(visible: boolean, animate: boolean?)
 	local scale = Theme.GetScale(actionBar)
 	if visible then
 		hudRoot.Visible = true
+		Hud.Shown:Fire()
 		shownSecond = -1
 		for _, group in fadeGroups do
 			if animate then
@@ -619,6 +622,7 @@ end
 function Hud.Init(ctx)
 	Util, Theme, Components = ctx.Util, ctx.Theme, ctx.Components
 	Fx, Sfx, Config, Settings = ctx.Fx, ctx.Sfx, ctx.Config, ctx.Settings
+	Hud.Shown = Util.Signal.new() -- le HUD vient d'apparaitre (Notifications rejoue ses messages)
 	hudRoot = Theme.Create("Frame", {
 		Name = "Hud",
 		BackgroundTransparency = 1,

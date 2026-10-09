@@ -3,7 +3,7 @@
 --   2. nouveau joueur : aucun HUD jusqu'a la fin de sa 1re vague, puis fondu ; sinon HUD apres la descente ;
 --   3. pendant la 1re vague : fleche lumineuse au sol vers le lagon (pas de texte) ;
 --   4. apres : une ligne de texte, puis la fleche montre la tour la plus proche.
--- La vague scenarisee (18 s, sans capture) et la marée doree forcee sont cote serveur (A).
+-- La vague d'intro (wave.intro, 18 s, sans capture) et la marée Golden personnelle sont cote serveur (A).
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -272,26 +272,9 @@ local function caption(text: string, duration: number)
 end
 
 ---------------------------------------------------------------- Deroulement
+-- Contrat v2 : state.intro = "intro" (sequence en cours) -> "golden" (sa maree Golden perso) -> "done"
 local function isNewPlayer(state): boolean
-	if state.tutorialDone ~= nil then
-		return not state.tutorialDone
-	end
-	-- en attendant un drapeau serveur (demande a A) : rien gagne, rien attrape, lagon vide
-	local stats = state.stats or {}
-	for _, key in { "pickups", "deposited", "wavesSurvived", "coinsEarned" } do
-		if (tonumber(stats[key]) or 0) > 0 then
-			return false
-		end
-	end
-	if state.coins > 0 then
-		return false
-	end
-	for _, entry in state.pools do
-		if entry then
-			return false
-		end
-	end
-	return true
+	return state.intro == "intro"
 end
 
 local function waitLoaded()
@@ -336,12 +319,10 @@ local function finishFirstWave(promiseGolden: boolean)
 	task.delay(TOWER_HINT_TIME, stopArrow)
 end
 
+-- Le contrat garantit une maree Golden personnelle apres la vague d'intro : la promesse est tenue
 local function goldenNext(wave): boolean
-	if wave.tide == "Golden" and wave.phase == "calm" then
-		return true
-	end
-	local ns = wave.nextSpecial
-	return ns ~= nil and ns.tide == "Golden" and (ns.cycles or 99) <= 1
+	local state = Store.Get()
+	return wave.tide == "Golden" or (state ~= nil and state.intro ~= "done")
 end
 
 local function guideNewPlayer()

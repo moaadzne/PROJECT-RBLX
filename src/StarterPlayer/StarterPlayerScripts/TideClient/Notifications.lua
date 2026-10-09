@@ -23,13 +23,19 @@ local KIND_STYLE = {
 	survived = { priority = "wave", color = "Success", icon = "🏆", key = "survived" },
 	bagLost = { priority = "wave", color = "Coral", icon = "💧" },
 	deposit = { priority = "reward", color = "Lagoon", icon = "🏝️", key = "deposit" },
-	sold = { priority = "reward", color = "Gold", icon = "💰", key = "sold" },
+	released = { priority = "reward", color = "Gold", icon = "💰", key = "released" },
+	grown = { priority = "reward", color = "Success", icon = "🌱", key = "grown" },
+	codex = { priority = "reward", color = "Sunset", icon = "📖", key = "codex" },
+	offline = { priority = "reward", color = "Gold", icon = "🌙", duration = 5 },
+	stolen = { priority = "wave", color = "Danger", icon = "🚨", duration = 4 },
 	upgrade = { priority = "reward", color = "Success", icon = "⬆️" },
 	hatch = { priority = "reward", color = "Sunset", icon = "🥚" },
 	error = { priority = "info", color = "Danger", icon = "✖️" },
 }
 
-local Util, Theme, Config
+local Util, Theme, Config, Store, Hud
+local held = {} -- messages recus pendant que le HUD est cache (intro) : rejoues a son apparition
+local HELD_MAX = 4
 local container: Frame
 local stack: Frame
 local visible = {} -- toasts affiches, le plus recent en premier
@@ -312,22 +318,30 @@ end
 ---------------------------------------------------------------- Branchement serveur
 local function onNotify(kind: string, data: { [string]: any })
 	local style = KIND_STYLE[kind]
-	if kind == "pickup" then
-		-- seul un tresor jamais vu merite un toast (le reste = retours visuels)
-		local item = Config.Items[data.itemId]
-		if data.isNew and item then
-			-- rarete = couleur + lettre + nom (bible §5 accessibilite)
-			local rarity = Config.Rarities[item.rarity]
-			local rarityName = if rarity then rarity.label .. " " else ""
+	if kind == "capture" then
+		-- seule une nouvelle case du Codex merite un toast (le reste = retours visuels)
+		if data.isNew and type(data.species) == "string" then
+			local info = Store.CreatureInfo(data.species)
+			local rarityKey = if type(data.rarity) == "string" then data.rarity else info and info.rarity
+			-- rarete = couleur + lettre + nom (bible §5 accessibilite) ; mutation nommee aussi
+			local rarity = rarityKey and Config.Rarities[rarityKey]
+			local mutation = if type(data.mutation) == "string" and data.mutation ~= "" then data.mutation .. " " else ""
+			local rarityName = if rarity then " (" .. rarity.label .. ")" else ""
 			Notifications.Push({
-				text = "New " .. rarityName .. "treasure: " .. item.name .. "!",
-				rarity = item.rarity,
-				color = Theme.RarityColor(item.rarity),
+				text = "New in Codex: " .. mutation .. Store.CreatureName(data.species) .. rarityName .. "!",
+				rarity = rarityKey,
+				color = Theme.RarityColor(rarityKey),
 				priority = "reward",
-				key = "new:" .. tostring(data.itemId),
+				key = "new:" .. data.species .. ":" .. mutation,
 			})
 		end
 		return
+	end
+	if kind == "welcome" and data.isNew then
+		return -- nouveau joueur : aucun texte pendant les 30 premieres secondes (GDD §1 ter)
+	end
+	if kind == "offline" and tonumber(data.coins) and tonumber(data.coins) > 0 then
+		Notifications.Reward({ text = "+" .. Config.Format(tonumber(data.coins)), sub = "While you were away" })
 	end
 	if not style or type(data.text) ~= "string" then
 		return
@@ -369,7 +383,28 @@ function Notifications.Init(ctx)
 end
 
 function Notifications.Start(ctx)
-	ctx.Store.Notified:Connect(onNotify)
+	Store = ctx.Store
+	Hud = ctx.Hud
+	Store.Notified:Connect(function(kind, data)
+		-- HUD cache (intro, descente camera) : on garde les derniers messages pour son apparition
+		if Hud and not Hud.IsVisible() and kind ~= "saveOff" then
+			table.insert(held, { kind, data })
+			if #held > HELD_MAX then
+				table.remove(held, 1)
+			end
+			return
+		end
+		onNotify(kind, data)
+	end)
+	if Hud and Hud.Shown then
+		Hud.Shown:Connect(function()
+			local pending = held
+			held = {}
+			for i, msg in pending do
+				task.delay(0.6 + i * 0.35, onNotify, msg[1], msg[2])
+			end
+		end)
+	end
 end
 
 return Notifications
