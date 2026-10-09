@@ -63,6 +63,10 @@ function PlotService.GetIndex(player)
 	return plotOf[player]
 end
 
+function PlotService.PedestalOf(index, slot)
+	return plots[index] and pedestalOf(plots[index].model, slot)
+end
+
 function PlotService.GetModel(index)
 	return plots[index] and plots[index].model
 end
@@ -202,12 +206,17 @@ local function checkGrowth(player, profile, now)
 	end
 end
 
+-- Vitesse autorisee : amelioration Speed x monture x ralenti du porteur de creature volee
+function PlotService.SpeedOf(profile)
+	return Stats.WalkSpeed(profile.data) * profile.mountMult * profile.carryMult
+end
+
 function PlotService.ApplySpeed(player)
 	local profile = DataService.Get(player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if humanoid and profile and profile.loaded then
-		humanoid.WalkSpeed = Stats.WalkSpeed(profile.data)
+		humanoid.WalkSpeed = PlotService.SpeedOf(profile)
 	end
 end
 

@@ -298,7 +298,7 @@ local function checkPlots(check)
 				check(lock ~= nil and lock.Enabled == (slot > slots), ("cadenas socle %d"):format(slot))
 			end
 			local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-			check(humanoid ~= nil and humanoid.WalkSpeed == Stats.WalkSpeed(d), "WalkSpeed " .. player.Name)
+			check(humanoid ~= nil and humanoid.WalkSpeed == PlotService.SpeedOf(profile), "WalkSpeed " .. player.Name)
 		end
 	end
 	for index = 1, Config.MaxPlayersPerServer do

@@ -8,6 +8,7 @@ local PlotService = require(Services.PlotService)
 local CreatureService = require(Services.CreatureService)
 local IntroService = require(Services.IntroService)
 local LagoonService = require(Services.LagoonService)
+local StealService = require(Services.StealService)
 local WaveService = require(Services.WaveService)
 local UpgradeService = require(Services.UpgradeService)
 local PetService = require(Services.PetService)
@@ -15,7 +16,7 @@ local DebugService = require(Services.DebugService)
 
 -- WaveService en dernier : ses crochets (OnCalm, OnFront) sont branches avant le premier cycle
 for _, service in ipairs({
-	DataService, PlotService, CreatureService, IntroService, LagoonService,
+	DataService, PlotService, CreatureService, IntroService, LagoonService, StealService,
 	UpgradeService, PetService, WaveService, DebugService,
 }) do
 	service.Start()
@@ -29,6 +30,7 @@ local function onPlayerAdded(player)
 end
 
 local function onPlayerRemoving(player)
+	StealService.Forget(player) -- avant la sauvegarde : un vol en cours est annule
 	PlotService.Release(player)
 	CreatureService.Forget(player)
 	IntroService.Forget(player)
