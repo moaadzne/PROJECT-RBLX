@@ -45,16 +45,16 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 
 | # | Qui | Tâche | État |
 |---|---|---|---|
-| P1-01 | A | Contrat des remotes v2 (GDD §11), publié avant le code | en cours |
-| P1-02 | A | Config v2 (§13), schéma v2, migration vers legacy.v1 | en cours |
-| P1-03 | A | Intro : spawn au lagon, vague d'intro par joueur, 2e marée Golden | à faire |
+| P1-01 | A | Contrat des remotes v2 et v2.1 (GDD §11) | fait (73c5704) |
+| P1-02 | A | Config v2 (§13), schéma v2, migration vers legacy.v1 | fait (c9b95d2) ; reste le roster v3 et les stades renommés |
+| P1-03 | A | Intro : spawn au lagon, vague d'intro par joueur, 2e marée Golden | fait (c9b95d2) |
 | P1-04 | A | Ouverture des lagons par phase de vague (`PlotN.Barrier`, attribut `Open`, autorité serveur) | à faire |
 | P1-05 | A | StealService et toutes les protections du §4.7 | à faire |
 | P1-06 | A | MountService (les Giant surfent la vague) | à faire |
 | P1-07 | A | RoyalService (score, top 3, créature unique) | à faire |
 | P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | à faire |
 | P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
-| P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | en cours |
+| P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | fait (Onboarding) |
 | P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | à faire |
 | P1-12 | B | HUD de la Marée Royale, bouton Monter, billboard de bassin, animation de la barrière | à faire |
 | P1-13 | B | Boutique (probabilités avant achat, bascule PolicyService) | à faire |
@@ -62,13 +62,13 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-21 | C | Barrière de corail `PlotN.Barrier` + lagon de Plot1 + hero shot (tools/world) | en cours |
 | P1-22 | C | FX Golden + ambiance Golden Tide, 3 couronnes + FX royal, sons | à faire |
 | P1-30 | F | Contrôle qualité des pushes de A et B (luau-analyze, contrat v2) | en cours |
-| P1-31 | F | docs/IMPORT_LUNDI.md : **Rojo** retenu ; à corriger : `$ignoreUnknownInstances` sur chaque nœud + sauvegarde avant la 1re synchronisation | en cours |
-| P1-32 | B | Renommer TideClient.client.lua en init.client.lua (sinon aucun module client ne se charge avec Rojo) | à faire |
-| P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | à faire |
-| P1-41 | E | Appliquer DIRECTION_V2 au GDD : roster de vraies espèces, noms, ton des textes, onboarding, miniatures cinématiques | à faire, prioritaire |
+| P1-31 | F | docs/IMPORT_LUNDI.md : **Rojo** retenu, protections ignoreUnknownInstances, sauvegardes, réglages Avatar | fait |
+| P1-32 | B | Renommer TideClient.client.lua en init.client.lua (sinon aucun module client ne se charge avec Rojo) | fait (53a9f71) |
+| P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | fait (c9b95d2, créées au démarrage) |
+| P1-41 | E | Appliquer DIRECTION_V2 au GDD : roster de vraies espèces, noms, ton des textes, onboarding, miniatures cinématiques | fait (GDD v3, LagoonTiers) |
 | P1-23 | C | Appliquer DIRECTION_V2 : DA du monde, fiches et prompts des créatures réalistes, vague à grande échelle, sons | à faire, prioritaire |
 | P1-14 | B | Appliquer DIRECTION_V2 : système visuel console (police condensée, panneaux sombres, sans emojis), textes d'action | à faire, prioritaire |
-| P1-34 | F | Passe de cohérence de tous les docs face à DIRECTION_V2 : liste des contradictions par propriétaire | à faire |
+| P1-34 | F | Passe de cohérence face à DIRECTION_V2 | fait : VISION_TON §7 envoyé à A, B, C et E ; défauts Roblox (§6) distribués |
 | P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | fait (docs/LANCEMENT.md) |
 
 ## Fait
