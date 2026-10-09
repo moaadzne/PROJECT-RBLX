@@ -13,6 +13,7 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 | E | Tide Rush · E Concept | `claude/laughing-lovelace-8xixq7` |
 
 ## Décisions
+- **Moaad, 09/10 (fin d'après-midi)** : **pas enfantin, le public le plus large possible, effet « wow, c'est sur Roblox ça ? » sans renier Roblox.** Traduit et rendu applicable dans **docs/DIRECTION_V2.md**, qui prime sur la bible pour le ton, le public, le style et la police. Les créatures deviennent de vrais animaux marins crédibles, l'interface passe en style console (sans Fredoka ni emojis), la vague devient spectaculaire.
 - **Moaad, 09/10** : titre du jeu = **« Ride the Tsunami »** (nom affiché proposé : « Ride the Tsunami 🌊 Steal & Ride »). À vérifier dans la recherche Roblox avant publication.
 - **Moaad, 09/10** : concept **Reef Keepers** (docs/DIRECTIONS.md §A, détaillé dans docs/GDD.md).
 - **Moaad, 09/10** : objectif **top 10 Roblox**. Tout est permis pour y arriver, y compris un changement total de concept. E audite Reef Keepers face au top 10 (docs/AUDIT_TOP10.md) avant toute implémentation.
@@ -60,6 +61,10 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-31 | F | docs/IMPORT_LUNDI.md : **Rojo** retenu ; à corriger : `$ignoreUnknownInstances` sur chaque nœud + sauvegarde avant la 1re synchronisation | en cours |
 | P1-32 | B | Renommer TideClient.client.lua en init.client.lua (sinon aucun module client ne se charge avec Rojo) | à faire |
 | P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | à faire |
+| P1-41 | E | Appliquer DIRECTION_V2 au GDD : roster de vraies espèces, noms, ton des textes, onboarding, miniatures cinématiques | à faire, prioritaire |
+| P1-23 | C | Appliquer DIRECTION_V2 : DA du monde, fiches et prompts des créatures réalistes, vague à grande échelle, sons | à faire, prioritaire |
+| P1-14 | B | Appliquer DIRECTION_V2 : système visuel console (police condensée, panneaux sombres, sans emojis), textes d'action | à faire, prioritaire |
+| P1-34 | F | Passe de cohérence de tous les docs face à DIRECTION_V2 : liste des contradictions par propriétaire | à faire |
 | P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | fait (docs/LANCEMENT.md) |
 
 ## Fait
