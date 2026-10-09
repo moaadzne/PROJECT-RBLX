@@ -1,30 +1,89 @@
 -- tools/world/build_mutation_fx.luau
--- C : presets Golden (P1-11).
---  * ReplicatedStorage.Assets.FX.Mutations.Golden : apparence de la mutation (docs/CREATURES_ART.md §4)
---  * ReplicatedStorage.Assets.FX.TidePresets.Normal / Golden : valeurs de Lighting que B anime en jeu
---    Normal = copie de la lumiere actuelle (lancer APRES le reglage de la hero shot) ; Golden = Normal + ecarts.
+-- C : mutations credibles (direction v2) et ambiances de maree.
+--  * ReplicatedStorage.Assets.FX.Mutations.<Golden|Night|Storm|Rainbow> : apparence (docs/CREATURES_ART.md §4).
+--    Phase 1 : seul Golden est utilise ; les autres sont prets pour la Phase 2.
+--  * ReplicatedStorage.Assets.FX.TidePresets.<Normal|Golden|Night|Storm> : valeurs de Lighting que B anime en jeu.
+--    Normal = copie de la lumiere actuelle (lancer APRES le reglage de la hero shot) ; les autres = Normal + ecarts.
 -- Lancement manuel uniquement (execute_luau, mode edition). DRY_RUN = true d'abord. Ctrl+Z annule.
 --
--- Contrat pour B (attributs) :
+-- Contrat pour B (World.lua applique deja les 4 premiers points) :
 --  Mutation : Color (Color3), Material (string, nom d'Enum.Material), Reflectance (number),
---             ApplyTo (string : nom de la partie, ou "*" pour toutes) ; enfants ParticleEmitter a cloner dans Root.
---  TidePreset : un attribut par propriete, nomme "<Classe>_<Propriete>" (ex. Lighting_ClockTime,
---             Atmosphere_Color, BloomEffect_Intensity, ColorCorrectionEffect_TintColor). B tweene vers ces valeurs (2 s).
+--             ApplyTo ("*" = toutes les parties sauf Root), enfants ParticleEmitter a cloner dans Root.
+--             En plus (Phase 2) : enfant PointLight "Glow" a cloner dans Root, avec l'attribut Pulse (s) pour la faire respirer ;
+--             enfant Beam "Arc" : arcs electriques, deux Attachments au hasard sur la creature, deplaces toutes les ArcInterval s ;
+--             attribut HueCycle (s) : irisation, la teinte tourne lentement (saturation basse, IridescentSaturation).
+--  TidePreset : un attribut par propriete, nomme "<Classe>_<Propriete>" (ex. Lighting_ClockTime). B tweene vers ces valeurs (2 s).
 
 local DRY_RUN = true
 
-local GOLD = Color3.fromHex("FFC93C")
+local function seq(a, b)
+	return NumberSequence.new({ NumberSequenceKeypoint.new(0, a), NumberSequenceKeypoint.new(1, b) })
+end
 
--- Ecarts de la Golden Tide par rapport a Normal (number : ajoute ; Color3 : remplace)
-local GOLDEN_DELTA = {
-	Lighting_ClockTime = 0.45,
-	Lighting_Brightness = 0.3,
-	BloomEffect_Intensity = 0.2,
-	ColorCorrectionEffect_Saturation = 0.12,
-	ColorCorrectionEffect_TintColor = Color3.fromRGB(255, 236, 205),
-	SunRaysEffect_Intensity = 0.04,
-	Atmosphere_Color = Color3.fromHex("FFC97A"),
-	Atmosphere_Glare = 0.3,
+-- Mutations : metal et nacre, bioluminescence, arcs electriques, irisation. Jamais de couleur bonbon.
+local MUTATIONS = {
+	Golden = {
+		attrs = { Color = Color3.fromHex("D9A93F"), Material = "Foil", Reflectance = 0.3, ApplyTo = "*" },
+		emitters = {
+			-- reflets nacres lents, pas de paillettes de dessin anime
+			Sheen = { Color = ColorSequence.new(Color3.fromRGB(255, 244, 214), Color3.fromHex("D9A93F")), Rate = 3, Lifetime = NumberRange.new(1.2, 1.8), Size = seq(0.12, 0), Speed = NumberRange.new(0.2, 0.5), LightEmission = 0.5 },
+		},
+	},
+	Night = {
+		attrs = { Color = Color3.fromHex("14222E"), Material = "SmoothPlastic", Reflectance = 0.05, ApplyTo = "*" },
+		emitters = {
+			-- plancton bioluminescent qui derive autour de la creature
+			Plankton = { Color = ColorSequence.new(Color3.fromHex("3DF5FF")), Rate = 6, Lifetime = NumberRange.new(2, 3), Size = seq(0.1, 0.05), Speed = NumberRange.new(0.1, 0.3), LightEmission = 1, LightInfluence = 0 },
+		},
+		light = { Color = Color3.fromHex("3DF5FF"), Range = 8, Brightness = 1, Pulse = 2.5 },
+	},
+	Storm = {
+		attrs = { Color = Color3.fromHex("2A2E38"), Material = "Slate", Reflectance = 0, ApplyTo = "*", ArcInterval = 0.25 },
+		emitters = {
+			Sparks = { Color = ColorSequence.new(Color3.fromHex("C9B8FF")), Rate = 5, Lifetime = NumberRange.new(0.1, 0.2), Size = seq(0.25, 0), Speed = NumberRange.new(2, 4), LightEmission = 1, LightInfluence = 0 },
+		},
+		arc = { Color = Color3.fromHex("C9B8FF") },
+	},
+	Rainbow = {
+		attrs = { Color = Color3.fromHex("E8E2F0"), Material = "Foil", Reflectance = 0.35, ApplyTo = "*", HueCycle = 6, IridescentSaturation = 0.3 },
+		emitters = {
+			Sheen = { Color = ColorSequence.new(Color3.fromHex("F4F0FF")), Rate = 3, Lifetime = NumberRange.new(1.2, 1.8), Size = seq(0.12, 0), Speed = NumberRange.new(0.2, 0.5), LightEmission = 0.6 },
+		},
+	},
+}
+
+-- Ecarts des marees par rapport a Normal (number : ajoute ; Color3 : remplace)
+local TIDE_DELTAS = {
+	Golden = {
+		Lighting_ClockTime = 0.4,
+		Lighting_Brightness = 0.3,
+		BloomEffect_Intensity = 0.2,
+		ColorCorrectionEffect_Saturation = 0.06,
+		ColorCorrectionEffect_TintColor = Color3.fromRGB(255, 238, 210),
+		SunRaysEffect_Intensity = 0.04,
+		Atmosphere_Color = Color3.fromHex("E8B86A"),
+		Atmosphere_Glare = 0.3,
+	},
+	Night = {
+		Lighting_ClockTime = 3.45, -- vers 20 h 30
+		Lighting_Brightness = -0.8,
+		ColorCorrectionEffect_TintColor = Color3.fromRGB(215, 228, 255),
+		ColorCorrectionEffect_Saturation = -0.1,
+		Atmosphere_Color = Color3.fromHex("33496B"),
+		Atmosphere_Decay = Color3.fromHex("0D1B2A"),
+		Atmosphere_Density = 0.05,
+	},
+	Storm = {
+		Lighting_ClockTime = -1,
+		Lighting_Brightness = -0.5,
+		ColorCorrectionEffect_Saturation = -0.25,
+		ColorCorrectionEffect_Contrast = 0.05,
+		ColorCorrectionEffect_TintColor = Color3.fromRGB(225, 230, 238),
+		Atmosphere_Color = Color3.fromHex("8C939C"),
+		Atmosphere_Density = 0.15,
+		Atmosphere_Haze = 1,
+		SunRaysEffect_Intensity = -0.04,
+	},
 }
 
 -- Proprietes copiees depuis la lumiere actuelle
@@ -76,33 +135,61 @@ local function effectOf(className)
 	return nil
 end
 
-local function build()
-	-- 1. Mutation Golden
-	log("Assets.FX.Mutations.Golden : Foil #FFC93C, Reflectance 0.15, Sparkle Rate 4")
-	if not DRY_RUN then
-		local mutations = folder(folder(assets, "FX"), "Mutations")
-		local old = mutations:FindFirstChild("Golden")
-		if old then
-			old:Destroy()
+local function buildMutation(name, def)
+	local f = Instance.new("Folder")
+	f.Name = name
+	for k, v in def.attrs do
+		f:SetAttribute(k, v)
+	end
+	for emitterName, props in def.emitters do
+		local e = Instance.new("ParticleEmitter")
+		e.Name = emitterName -- texture par defaut de Roblox
+		e.Transparency = seq(0, 1)
+		e.SpreadAngle = Vector2.new(180, 180)
+		for k, v in props do
+			e[k] = v
 		end
-		local golden = Instance.new("Folder")
-		golden.Name = "Golden"
-		golden:SetAttribute("Color", GOLD)
-		golden:SetAttribute("Material", "Foil")
-		golden:SetAttribute("Reflectance", 0.15)
-		golden:SetAttribute("ApplyTo", "Body")
-		local sparkle = Instance.new("ParticleEmitter")
-		sparkle.Name = "Sparkle" -- texture par defaut de Roblox (etincelles)
-		sparkle.Color = ColorSequence.new(Color3.fromRGB(255, 240, 170), GOLD)
-		sparkle.LightEmission = 0.6
-		sparkle.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.18), NumberSequenceKeypoint.new(1, 0) })
-		sparkle.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) })
-		sparkle.Lifetime = NumberRange.new(0.8, 1.2)
-		sparkle.Rate = 4
-		sparkle.Speed = NumberRange.new(0.5, 1)
-		sparkle.SpreadAngle = Vector2.new(180, 180)
-		sparkle.Parent = golden
-		golden.Parent = mutations
+		e.Parent = f
+	end
+	if def.light then
+		local l = Instance.new("PointLight")
+		l.Name = "Glow"
+		l.Color = def.light.Color
+		l.Range = def.light.Range
+		l.Brightness = def.light.Brightness
+		l.Shadows = false
+		l:SetAttribute("Pulse", def.light.Pulse)
+		l.Parent = f
+	end
+	if def.arc then
+		local b = Instance.new("Beam")
+		b.Name = "Arc"
+		b.Color = ColorSequence.new(def.arc.Color)
+		b.LightEmission = 1
+		b.LightInfluence = 0
+		b.FaceCamera = true
+		b.Width0 = 0.12
+		b.Width1 = 0.05
+		b.Segments = 8
+		b.CurveSize0 = 1.5
+		b.CurveSize1 = -1.5
+		b.Parent = f
+	end
+	return f
+end
+
+local function build()
+	-- 1. Mutations
+	local mutations = not DRY_RUN and folder(folder(assets, "FX"), "Mutations") or nil
+	for name, def in MUTATIONS do
+		log(string.format("Mutations.%s : %s, %s", name, def.attrs.Material, tostring(def.attrs.Color)))
+		if mutations then
+			local old = mutations:FindFirstChild(name)
+			if old then
+				old:Destroy()
+			end
+			buildMutation(name, def).Parent = mutations
+		end
 	end
 
 	-- 2. Presets de marée
@@ -117,24 +204,26 @@ local function build()
 			normal[className .. "_" .. prop] = inst[prop]
 		end
 	end
-	local golden = table.clone(normal)
-	for key, delta in GOLDEN_DELTA do
-		if golden[key] == nil then
-			continue
+	local presets = { Normal = normal }
+	for tide, deltas in TIDE_DELTAS do
+		local values = table.clone(normal)
+		for key, delta in deltas do
+			if values[key] == nil then
+				continue
+			end
+			if typeof(delta) == "number" then
+				values[key] += delta
+			else
+				values[key] = delta
+			end
 		end
-		if typeof(delta) == "number" then
-			golden[key] += delta
-		else
-			golden[key] = delta
-		end
-	end
-	for key, value in golden do
-		log(string.format("  Golden %s = %s (Normal %s)", key, tostring(value), tostring(normal[key])))
+		presets[tide] = values
+		log("TidePresets." .. tide .. " = Normal + ecarts")
 	end
 	if not DRY_RUN then
-		local presets = folder(folder(assets, "FX"), "TidePresets")
-		for name, values in { Normal = normal, Golden = golden } do
-			local old = presets:FindFirstChild(name)
+		local tideFolder = folder(folder(assets, "FX"), "TidePresets")
+		for name, values in presets do
+			local old = tideFolder:FindFirstChild(name)
 			if old then
 				old:Destroy()
 			end
@@ -143,7 +232,7 @@ local function build()
 			for key, value in values do
 				f:SetAttribute(key, value)
 			end
-			f.Parent = presets
+			f.Parent = tideFolder
 		end
 	end
 end
@@ -152,7 +241,7 @@ if DRY_RUN then
 	build()
 	log("DRY_RUN : rien n'a ete modifie. Relancer avec DRY_RUN = false.")
 else
-	local rec = CHS:TryBeginRecording("C : presets Golden")
+	local rec = CHS:TryBeginRecording("C : mutations et marees")
 	assert(rec, "[C] enregistrement impossible (Play en cours ou autre enregistrement ouvert)")
 	local ok, err = pcall(build)
 	CHS:FinishRecording(rec, ok and Enum.FinishRecordingOperation.Commit or Enum.FinishRecordingOperation.Cancel)
