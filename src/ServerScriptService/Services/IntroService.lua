@@ -1,5 +1,5 @@
 -- IntroService : les premieres minutes d'un nouveau joueur (GDD 1 ter).
--- 1. Creatures personnelles pres de son lagon, puis vague d'intro propre a lui, 18 s apres le chargement :
+-- 1. Creatures personnelles sur la plage en face de son lagon, puis vague d'intro propre a lui, 18 s apres le chargement :
 --    elle ne peut pas le prendre (il garde son sac) mais emporte ses creatures restees sur le sable.
 -- 2. Au calme global suivant : maree Golden personnelle, avec des creatures personnelles dont au moins une mutee.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -16,8 +16,7 @@ local CreatureService = require(Services.CreatureService)
 local IntroService = {}
 
 local TICK = 0.1
-local EDGE_MARGIN = 4
-local SHALLOWS = 1
+local SHALLOWS = 1 -- premier anneau autour de la crique
 
 local rng = Random.new()
 local goldenCycle = {} -- [player] = cycle de sa maree Golden personnelle
@@ -41,24 +40,20 @@ local function waitUntil(player, profile, t)
 	return alive(player, profile)
 end
 
-local function plotCenterX(player)
+-- Direction de la crique vers le lagon du joueur (vers la mer en face de chez lui)
+local function outwardOf(player)
 	local index = PlotService.GetIndex(player)
-	local model = index and PlotService.GetModel(index)
-	local minX = model and model:GetAttribute("MinX")
-	local maxX = model and model:GetAttribute("MaxX")
-	if type(minX) == "number" and type(maxX) == "number" then
-		return (minX + maxX) / 2
-	end
-	return 0
+	return index and PlotService.OutwardOf(index) or Vector3.new(0, 0, -1)
 end
 
 local function introCreatures(player)
-	local centerX = plotCenterX(player)
+	local outward = outwardOf(player)
+	local right = outward:Cross(Vector3.yAxis)
+	local c = Config.Island.center
 	local list = {}
 	for _, entry in ipairs(Config.Intro.creatures) do
-		local x = math.clamp(centerX + entry.dx, Config.Beach.xMin + EDGE_MARGIN, Config.Beach.xMax - EDGE_MARGIN)
-		local z = Config.BaseLineZ + entry.dz
-		local ground = CreatureService.GroundAt(x, z) or Vector3.new(x, Config.Beach.groundY, z)
+		local p = c + outward * (Config.Island.coveRadius + entry.out) + right * entry.side
+		local ground = CreatureService.GroundAt(p.X, p.Z) or Vector3.new(p.X, Config.Island.seaY, p.Z)
 		table.insert(list, { species = entry.species, mutation = entry.mutation, ground = ground })
 	end
 	return list
@@ -69,7 +64,11 @@ local function runIntro(player, profile)
 	local t0 = now()
 	local alertAt = t0 + I.waveDelay
 	local departure = alertAt + I.warningTime
-	local arrival = departure + (W.endZ - I.startZ) / W.speed
+	local arrival = departure + I.travel
+	-- vague propre au joueur : elle vient de la mer en face de son lagon et s'arrete au bord de la crique
+	local dir = -outwardOf(player)
+	local endD = -Config.Island.coveRadius
+	local startD = endD - W.speed * I.travel
 	local function personalWave(phase, phaseStart, phaseEnd)
 		local global = Net.GetWave()
 		return {
@@ -80,8 +79,12 @@ local function runIntro(player, profile)
 			cycle = 0,
 			tide = "Normal",
 			nextSpecial = global and global.nextSpecial or Config.NextSpecial(0),
+			direction = "",
+			dir = dir,
+			startD = startD,
+			endD = endD,
+			nextDirection = global and global.nextDirection or nil,
 			intro = true,
-			startZ = I.startZ,
 		}
 	end
 
@@ -92,10 +95,11 @@ local function runIntro(player, profile)
 	if waitUntil(player, profile, alertAt) then
 		Net.SetPersonalWave(player, personalWave("warning", alertAt, departure))
 		if waitUntil(player, profile, departure) then
-			Net.SetPersonalWave(player, personalWave("wave", departure, arrival))
+			local wave = personalWave("wave", departure, arrival)
+			Net.SetPersonalWave(player, wave)
 			while alive(player, profile) do
 				local t = now()
-				CreatureService.WashAway(math.min(W.endZ, I.startZ + W.speed * (t - departure)), player.UserId)
+				CreatureService.WashAway(wave, Config.WaveFrontD(wave, t), player.UserId)
 				if t >= arrival then
 					break
 				end
@@ -143,7 +147,7 @@ local function startGolden(player, profile, cycle, tide)
 	for _ = 1, I.goldenCount do
 		local spot = CreatureService.FindSpot(SHALLOWS)
 		if spot then
-			local species = Stats.PickWeighted(Config.Zones[SHALLOWS].creatures, rng)
+			local species = Stats.PickWeighted(Config.Rings[SHALLOWS].creatures, rng)
 			table.insert(list, { species = species, mutation = Stats.RollMutation(I.goldenTide, rng), ground = spot })
 		end
 	end
