@@ -3,7 +3,7 @@
 Auteur : E (concept & game design). v1 le 2026-10-09, **v2 le 2026-10-09** après la levée des règles halal par Moaad et la décision de D (vol, monture, Marée Royale, monétisation v2). Cohérent avec docs/AUDIT_TOP10.md §6.
 Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ** à régler par playtest, pas des mesures.
 
-**Changements v3 (Direction v2, 09/10)** : secrets et plot twist (§6 bis), vraies espèces (§4.2), stades Juvenile/Adult/Elder/Titan, 30 s tendues (§1 ter), ton des textes, Config (§13).
+**Changements v3 (Direction v2, 09/10)** : secrets et plot twist (§6 bis), contenu sans fin (§6 ter), vraies espèces (§4.2), stades Juvenile/Adult/Elder/Titan, 30 s tendues (§1 ter), ton des textes, Config (§13).
 
 **Changements v2** : §0 (titre et miniatures), §2 (boucle avec vol), §4.6 Monture, §4.7 Vol, §4.8 Marée Royale, §7 Social, §8 (protection des nouveaux), §9 Monétisation v2, §11 Impact, §12 Phase 1 v2, §13 Config, §14. Les autres sections de la v1 restent valables.
 
@@ -24,10 +24,10 @@ Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ
 Limite : ma recherche web ne remplace pas la recherche Roblox. **Moaad doit taper les 3 titres dans la recherche Roblox avant de publier.**
 
 ### 3 miniatures à tester en A/B
-1. **Surf** : un avatar debout sur une raie géante dorée qui glisse sur la crête d'une vague énorme, bouche ouverte de joie. Ciel orange. Texte « RIDE IT! ».
+1. **Surf** : un avatar debout sur une raie manta Titan dorée qui glisse sur la crête d'une vague énorme, bouche ouverte de joie. Ciel orange. Texte « RIDE IT! ».
 2. **Vol** : un avatar qui court avec une créature arc-en-ciel dans les bras, un autre joueur qui le poursuit, la vague juste derrière. Texte « STEAL IT! ».
 3. **Rareté** : une tortue Titan arc-en-ciel au centre, brillante, entourée de petites créatures normales, un avatar choqué. Texte « RAINBOW GIANT? ».
-Règles : 3 éléments maximum, lisible sur un téléphone, couleurs saturées, aucune personne réelle ni personnage existant.
+Règles : 3 éléments maximum, lisible sur un téléphone, couleurs fortes mais naturelles, key art cinématique, aucune personne réelle ni personnage existant.
 
 ## 1. Univers et histoire courte
 
@@ -276,6 +276,40 @@ Principe : chaque secret se **voit** avant de se lire. Un joueur de 10 ans le re
 **Le plot twist de fond (révélé par étapes en mises à jour)** : les tsunamis ne sont pas naturels. Une créature colossale **dort sous l'île** et chaque vague est sa respiration. Les gravures le laissent deviner ; la rogue wave est un « soupir » plus fort ; le Léviathan (§5.5) est la révélation finale : il se réveille. Personne n'est obligé de suivre l'histoire pour jouer, mais ceux qui la suivent la racontent.
 
 Règles : aucun secret payant, aucun secret indispensable pour progresser, un indice visuel ou sonore pour chacun.
+
+## 6 ter. Ne jamais avoir fait le tour
+
+Le contenu fait à la main s'épuise toujours : un joueur motivé finit en quelques jours ce qu'on met des semaines à produire. On ne vise donc pas « assez de contenu » mais des **systèmes qui produisent de la nouveauté tout seuls**, et un monde qui **s'agrandit**.
+
+### 1. Des combinaisons au lieu de contenu (zéro modèle en plus)
+- **Mutations cumulables** (Phase 2) : une créature peut porter 1 mutation de marée **et** 1 trait rare (Albinos 1 %, Mélanique 1 %, Balafré 2 %, Géant record). Ça donne 10 espèces × 5 mutations × 5 traits = **250 combinaisons**, avec les probabilités affichées.
+- **Taille unique** : chaque créature a une taille (de 0,85 à 1,25, distribution affichée). « La plus grande Manta du serveur » ou « du jeu » : un record à battre, sans fin.
+- **Marées combinées** : de temps en temps, deux marées à la fois (Golden + Storm), qui ouvrent des mutations doubles.
+
+### 2. Un monde qui s'agrandit
+- **Nouvelles îles** (une par grosse mise à jour) : Mangrove, Récif profond, Glacier, Volcan sous-marin. Chacune apporte 2 à 3 espèces, une règle de vague différente (vague de glace qui ralentit, coulée de lave au reflux) et un secret.
+- On voyage entre les îles en **chevauchant sa monture** au large : la monture devient le moyen d'explorer.
+
+### 3. Toujours un objectif devant (jamais « plus rien à faire »)
+| Rythme | Objectif |
+|---|---|
+| Chaque minute | La vague, une nouvelle plage, un vol possible |
+| Chaque heure | Marée extrême (épave), Rainbow Tide |
+| Chaque jour | 3 défis du jour (changés à minuit), Titan qui arrive à maturité, Léviathan disponible |
+| Chaque semaine | **Marée de la semaine** : une règle spéciale (vague double, vol interdit, toutes les créatures sont Night…) + 1 défi de serveur collectif |
+| Chaque mois | **Saison** : un pass de saison gratuit (les paliers payants sont optionnels), 1 espèce saisonnière qui revient l'année suivante, classement de saison |
+| Sans fin | Codex à 250 combinaisons, records de taille, Tide Rank, gravures de l'histoire |
+
+### 4. Le contenu que les joueurs créent eux-mêmes
+- **Le vol et la revanche** : chaque serveur raconte une histoire différente.
+- **Les échanges** (semaine 2) : une économie qui bouge chaque jour (« combien vaut une Lionfish Storm albinos ? »).
+- **Les records** : plus grand Titan, plus de vols dans une vague, plus longue série de vagues survécues. Affichés sur des panneaux en jeu.
+- **Les mystères de serveur** : un indice visuel caché apparaît pour tout le serveur, et le premier qui le résout débloque quelque chose pour tous.
+
+### 5. Le rythme de mises à jour (réaliste pour l'équipe)
+- **Chaque semaine** : une petite mise à jour (1 événement, 1 défi, 1 secret ou 1 trait).
+- **Toutes les 3 à 4 semaines** : une grosse mise à jour (1 île ou 2 à 3 espèces, et un chapitre de l'histoire de la créature sous l'île).
+- **Le point dur reste les modèles 3D** : 2 à 3 espèces par mois est réaliste seulement avec un modéliste ou des packs. Les systèmes 1, 3 et 4 ne demandent **aucun** nouveau modèle : c'est là qu'on met l'effort entre deux grosses mises à jour.
 
 ## 7. Social
 
