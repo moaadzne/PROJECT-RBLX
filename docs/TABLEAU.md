@@ -63,7 +63,7 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | fait (ShopService, ids à 0 en attendant Moaad) |
 | P1-35 | A | Roster v3 + stades Juvenile/Adult/Elder/Titan dans Config, migration et services | fait (4ee2b25) |
 | P1-37 | A, B, C | Marée extrême ≈ 1/h qui révèle le récif (A : événement serveur + apparitions rares ; B : signes sans texte ; C : récif + mouettes + son) | après P1-36, priorité basse |
-| P1-36 | A, B, C | Île ouverte, version intermédiaire : A = vague à 4 directions + biomes par anneaux ; B = boussole + direction de la vague ; C = île de 600×600 + 3 points d'intérêt + 8 tours | GO (A après P1-35) |
+| P1-36 | A, B, C | Île ouverte, version intermédiaire : A = vague à 4 directions + anneaux (fait, 1ba0aa3) ; B = boussole + direction de la vague ; C = île de 600×600 + 3 points d'intérêt + 8 tours (format Center + Radius de A) | en cours (B, C) |
 | P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
 | P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | fait (Onboarding) |
 | P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | fait (a24dbc7) |
