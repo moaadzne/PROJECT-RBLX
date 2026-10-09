@@ -1,5 +1,7 @@
 -- Notifications : toasts empiles a droite (3 max, 2,5 s, priorite vague > recompenses > infos)
--- et toast de recompense au centre ("+1.25K"). Branche sur Store.Notified (data.text du serveur).
+-- et recompense au centre ("+1.25K"). Branche sur Store.Notified (data.text du serveur).
+-- Style console (DIRECTION_V2) : plaque sombre, trait de couleur, icone dessinee, aucun emoji.
+-- Les messages du vol, de la Maree Royale et des achats sont geres par StealHud, RoyalHud et Shop.
 local Notifications = {}
 
 local MAX_VISIBLE = 3
@@ -13,24 +15,23 @@ local STACK_RIGHT = 12
 local REWARD_TIME = 1.8
 local PRIORITY = { wave = 3, reward = 2, info = 1 }
 
--- Style de chaque message serveur (contrat v1) ; un kind inconnu est ignore
+-- Style de chaque message serveur (contrat v2.1) ; un kind absent d'ici est ignore
 local KIND_STYLE = {
-	welcome = { priority = "info", color = "Lagoon", icon = "🌴", duration = 4 },
-	info = { priority = "info", color = "Lagoon", icon = "ℹ️" },
-	saveOff = { priority = "wave", color = "Danger", icon = "⚠️", duration = 8, key = "saveOff" },
-	bagFull = { priority = "info", color = "Sunset", icon = "🎒", key = "bagFull" },
-	caught = { priority = "wave", color = "Danger", icon = "🌊", duration = 4 },
-	survived = { priority = "wave", color = "Success", icon = "🏆", key = "survived" },
-	bagLost = { priority = "wave", color = "Coral", icon = "💧" },
-	deposit = { priority = "reward", color = "Lagoon", icon = "🏝️", key = "deposit" },
-	released = { priority = "reward", color = "Gold", icon = "💰", key = "released" },
-	grown = { priority = "reward", color = "Success", icon = "🌱", key = "grown" },
-	codex = { priority = "reward", color = "Sunset", icon = "📖", key = "codex" },
-	offline = { priority = "reward", color = "Gold", icon = "🌙", duration = 5 },
-	stolen = { priority = "wave", color = "Danger", icon = "🚨", duration = 4 },
-	upgrade = { priority = "reward", color = "Success", icon = "⬆️" },
-	hatch = { priority = "reward", color = "Sunset", icon = "🥚" },
-	error = { priority = "info", color = "Danger", icon = "✖️" },
+	welcome = { priority = "info", color = "Lagoon", icon = "info", duration = 4 },
+	info = { priority = "info", color = "Lagoon", icon = "info" },
+	saveOff = { priority = "wave", color = "Danger", icon = "alert", duration = 8, key = "saveOff" },
+	bagFull = { priority = "info", color = "Warning", icon = "alert", key = "bagFull" },
+	caught = { priority = "wave", color = "Danger", icon = "wave", duration = 4 },
+	survived = { priority = "wave", color = "Success", icon = "shield", key = "survived" },
+	bagLost = { priority = "wave", color = "Danger", icon = "wave" },
+	deposit = { priority = "reward", color = "Lagoon", icon = "dot", key = "deposit" },
+	released = { priority = "reward", color = "Gold", icon = "coin", key = "released" },
+	grown = { priority = "reward", color = "Success", icon = "ride", key = "grown" },
+	codex = { priority = "reward", color = "Gold", icon = "spark", key = "codex" },
+	offline = { priority = "reward", color = "Gold", icon = "clock", duration = 5 },
+	upgrade = { priority = "reward", color = "Success", icon = "ride" },
+	hatch = { priority = "reward", color = "Warning", icon = "spark" },
+	error = { priority = "info", color = "Danger", icon = "close" },
 }
 
 local Util, Theme, Config, Store, Hud
@@ -42,7 +43,7 @@ local visible = {} -- toasts affiches, le plus recent en premier
 local queue = {} -- en attente (tries par priorite a l'affichage)
 local rewardLabel: TextLabel
 local rewardSub: TextLabel
-local rewardFrame: Frame
+local rewardFrame: CanvasGroup
 local rewardToken = 0
 
 ---------------------------------------------------------------- Toasts
@@ -55,7 +56,7 @@ end
 local function reflow()
 	local y = 0
 	for _, toast in visible do
-		Util.Tween(toast.frame, 0.25, { Position = UDim2.new(1, 0, 0, y) }, Enum.EasingStyle.Quad)
+		Util.Tween(toast.frame, Theme.Time.Fast, { Position = UDim2.new(1, 0, 0, y) }, Enum.EasingStyle.Quart)
 		y += toast.height + GAP
 	end
 end
@@ -71,49 +72,37 @@ local function buildToast(opts)
 		BackgroundTransparency = 1,
 		GroupTransparency = 1,
 	})
-	local panel = Theme.Create("Frame", {
+	Theme.Plate({
 		Name = "Panel",
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.new(1, -4, 1, -4),
-		BackgroundColor3 = Theme.Colors.White,
-		BackgroundTransparency = 0.1,
-		BorderSizePixel = 0,
+		Size = UDim2.new(1, -2, 1, -2),
+		Strong = true,
 		Parent = group,
 	})
-	Theme.Corner(panel, 14)
-	Theme.Gradient(panel, Theme.Colors.PanelLight, Theme.Colors.Night, 90)
-	Theme.Stroke(panel, Theme.Colors.White, 0.72, 1.5)
-	local accent = Theme.Create("Frame", {
+	-- trait de couleur a gauche : la categorie du message
+	Theme.Create("Frame", {
 		Name = "Accent",
-		Position = UDim2.fromOffset(6, 8),
-		Size = UDim2.new(0, 5, 1, -16),
+		Position = UDim2.fromOffset(1, 6),
+		Size = UDim2.new(0, 3, 1, -12),
 		BackgroundColor3 = color,
 		BorderSizePixel = 0,
 		Parent = group,
 	})
-	Theme.Round(accent)
 	local icon: GuiObject
 	if opts.rarity then
-		icon = Theme.RarityBadge(opts.rarity, 30)
+		icon = Theme.RarityBadge(opts.rarity, 24)
 	else
-		icon = Theme.Create("TextLabel", {
-			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(30, 30),
-			Text = opts.icon or "•",
-			TextScaled = true,
-			FontFace = Theme.Fonts.Bold,
-			TextColor3 = color,
-		})
+		icon = Theme.Icon(opts.icon, 22, color)
 	end
 	icon.Name = "Icon"
 	icon.AnchorPoint = Vector2.new(0, 0.5)
-	icon.Position = UDim2.new(0, 16, 0.5, 0)
+	icon.Position = UDim2.new(0, 14, 0.5, 0)
 	icon.Parent = group
 	Theme.Text({
 		Name = "Text",
-		Position = UDim2.fromOffset(56, 0),
-		Size = UDim2.new(1, -66, 1, 0),
+		Position = UDim2.fromOffset(48, 0),
+		Size = UDim2.new(1, -58, 1, 0),
 		Text = opts.text,
 		TextSize = Theme.TextSize.Small,
 		TextWrapped = true,
@@ -152,7 +141,7 @@ local function show(toast)
 	hit.Activated:Connect(function()
 		dismiss(toast)
 	end)
-	Util.Tween(frame, 0.3, { GroupTransparency = 0 }, Enum.EasingStyle.Quad)
+	Util.Tween(frame, Theme.Time.Fast, { GroupTransparency = 0 }, Enum.EasingStyle.Quad)
 	reflow()
 	armTimer(toast)
 end
@@ -190,8 +179,8 @@ function dismiss(toast)
 	table.remove(visible, i)
 	toast.token += 1
 	local frame = toast.frame
-	Util.Tween(frame, 0.2, { GroupTransparency = 1, Position = frame.Position + UDim2.fromOffset(30, 0) }, Enum.EasingStyle.Quad)
-	task.delay(0.22, function()
+	Util.Tween(frame, Theme.Time.Fast, { GroupTransparency = 1, Position = frame.Position + UDim2.fromOffset(24, 0) }, Enum.EasingStyle.Quad)
+	task.delay(Theme.Time.Fast + 0.02, function()
 		frame:Destroy()
 	end)
 	reflow()
@@ -227,7 +216,7 @@ function Notifications.Push(opts: { [string]: any })
 		if label then
 			label.Text = opts.text
 		end
-		Theme.Pop(same.frame, 0.06)
+		Theme.Pop(same.frame, 0.04)
 		armTimer(same)
 		return
 	end
@@ -265,12 +254,12 @@ function Notifications.Reward(opts: { [string]: any })
 	local token = rewardToken
 	rewardLabel.Text = opts.text
 	rewardLabel.TextColor3 = opts.color or Theme.Colors.Gold
-	rewardSub.Text = opts.sub or ""
+	rewardSub.Text = Theme.Caps(opts.sub or "")
 	rewardFrame.Visible = true
 	local scale = Theme.GetScale(rewardFrame)
-	scale.Scale = 0.6
+	scale.Scale = 0.85
 	rewardFrame.GroupTransparency = 1
-	Util.Tween(scale, 0.35, { Scale = 1 }, Enum.EasingStyle.Back)
+	Util.Tween(scale, Theme.Time.Normal, { Scale = 1 }, Enum.EasingStyle.Quart)
 	Util.Tween(rewardFrame, 0.15, { GroupTransparency = 0 }, Enum.EasingStyle.Quad)
 	task.delay(REWARD_TIME, function()
 		if rewardToken ~= token then
@@ -304,7 +293,6 @@ local function buildReward(parent: Instance)
 		FontFace = Theme.Fonts.Title,
 		Parent = rewardFrame,
 	})
-	Theme.TextStroke(rewardLabel, 0.2, 3)
 	rewardSub = Theme.Text({
 		Name = "Sub",
 		Position = UDim2.fromOffset(0, 62),
@@ -326,9 +314,9 @@ local function onNotify(kind: string, data: { [string]: any })
 			-- rarete = couleur + lettre + nom (bible §5 accessibilite) ; mutation nommee aussi
 			local rarity = rarityKey and Config.Rarities[rarityKey]
 			local mutation = if type(data.mutation) == "string" and data.mutation ~= "" then data.mutation .. " " else ""
-			local rarityName = if rarity then " (" .. rarity.label .. ")" else ""
+			local rarityName = if rarity then "  ·  " .. string.upper(rarity.label) else ""
 			Notifications.Push({
-				text = "New in Codex: " .. mutation .. Store.CreatureName(data.species) .. rarityName .. "!",
+				text = "NEW  " .. mutation .. Store.CreatureName(data.species) .. rarityName,
 				rarity = rarityKey,
 				color = Theme.RarityColor(rarityKey),
 				priority = "reward",
