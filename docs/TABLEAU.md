@@ -52,10 +52,10 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-03 | A | Intro : spawn au lagon, vague d'intro par joueur, 2e marée Golden | fait (c9b95d2) |
 | P1-04 | A | Ouverture des lagons par phase de vague (`PlotN.Barrier`, attribut `Open`, autorité serveur) | fait (LagoonService) |
 | P1-05 | A | StealService et toutes les protections du §4.7 | fait |
-| P1-06 | A | MountService (les Titan surfent la vague) | fait ; à aligner sur les stades renommés |
+| P1-06 | A | MountService (les Titan surfent la vague) | fait |
 | P1-07 | A | RoyalService (score, top 3, créature unique) | fait |
 | P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | fait (ShopService, ids à 0 en attendant Moaad) |
-| P1-35 | A | Roster v3 + stades Juvenile/Adult/Elder/Titan dans Config, migration et services | à faire |
+| P1-35 | A | Roster v3 + stades Juvenile/Adult/Elder/Titan dans Config, migration et services | fait (4ee2b25) |
 | P1-37 | A, B, C | Marée extrême ≈ 1/h qui révèle le récif (A : événement serveur + apparitions rares ; B : signes sans texte ; C : récif + mouettes + son) | après P1-36, priorité basse |
 | P1-36 | A, B, C | Île ouverte, version intermédiaire : A = vague à 4 directions + biomes par anneaux ; B = boussole + direction de la vague ; C = île de 600×600 + 3 points d'intérêt + 8 tours | GO (A après P1-35) |
 | P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
