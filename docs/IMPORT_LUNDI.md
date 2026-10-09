@@ -39,8 +39,8 @@ Règle qui en découle, pour toute l'équipe : **on ne modifie plus dans Studio 
 - Conséquence : un script supprimé ou renommé **au premier niveau** (par exemple `ServerScriptService.Main`) reste dans Studio comme orphelin. L'étape 8 les liste, et rien n'est supprimé sans l'accord de D.
 
 Prérequis côté repo, déjà signalés aux auteurs le 09/10 :
-- **B** : renommer `TideClient/TideClient.client.lua` en `TideClient/init.client.lua`. Sinon Rojo crée un Folder TideClient, les modules ne sont plus enfants du LocalScript et le client ne charge rien, sans aucune erreur.
-- **A** : décider comment naissent les remotes v2 (`Net.lua` fait `WaitForChild` sans délai) : soit créées par Net au démarrage, soit en fichiers `src/ReplicatedStorage/Remotes/<Nom>.model.json`. Les remotes v1 de Studio sont conservées dans les deux cas.
+- **B** : réglé dans 53a9f71 (`TideClient/init.client.lua`). Sans ce renommage, Rojo crée un Folder TideClient, les modules ne sont plus enfants du LocalScript et le client ne charge rien, sans aucune erreur.
+- **A** : réglé dans c9b95d2. `Net.lua` crée au démarrage les remotes manquantes à partir d'une liste, et remplace celles qui ont une mauvaise classe. Il n'y a pas de fichier Rojo pour les remotes : le dossier `src/ReplicatedStorage/Remotes` reste absent et Rojo ne touche pas aux remotes de Studio.
 
 ## 3. Procédure de lundi
 
