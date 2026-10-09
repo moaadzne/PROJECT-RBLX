@@ -103,6 +103,7 @@ Modèle existant `Assets.Wave` (Body 300×22×40, Foam, Crest, Spray), rendu cli
 - Arrivée : bible §6 (horizon assombri à -7 s, embruns, sable mouillé qui sèche en 3 s).
 
 ### Lumière par marée (Lighting, client-side tween 2 s)
+Les valeurs livrées à B sont dans `ReplicatedStorage.Assets.FX.TidePresets.<Marée>`, construits par `tools/world/build_mutation_fx.luau` : Normal = copie de la lumière réglée pour la hero shot, Golden = Normal + écarts. Night et Storm arrivent en Phase 2.
 | Marée | ClockTime | Ambiance | Atmosphere |
 |---|---|---|---|
 | Normale | 17 | chaude, ombres douces | Density 0,3, teinte orangée |
@@ -132,7 +133,7 @@ Règles : tout mouvement d'ambiance (palmes, nage, défilement d'écume) côté 
 Objectif : **une capture qui pourrait servir de miniature** (pilier 1). Vue depuis Plot1 vers la zone 1, au coucher du soleil. C'est le **niveau final dès la première capture**, pas un brouillon : si la checklist de validation n'est pas entièrement verte, on ne la montre pas à Moaad, on corrige d'abord.
 
 ### Cadre
-- **Caméra** : position (-112, 14, 78), regarde vers (-60, 3, -110). FOV 60. Légère plongée (~6°). Format 16:9, puis recadrage 1:1 pour vérifier que la miniature tient.
+- **Caméra** : position (-112, 14, 80), regarde vers (-80, 3, -120). FOV 60. Légère plongée (~6°). Format 16:9, puis recadrage 1:1 pour vérifier que la miniature tient.
 - **Composition (règle des tiers)** : tiers gauche = lagon de Plot1 (premier plan) ; centre = plage et rivage mouillé ; tiers droit, en fond = phare sur son îlot avec le soleil bas derrière.
 
 ### Placements (assets de `ReplicatedStorage.Assets._DecorLib`)
@@ -141,11 +142,13 @@ Objectif : **une capture qui pourrait servir de miniature** (pilier 1). Vue depu
 | 1 | Cabane stylisée | (-120, 0, 62), tournée vers -Z | fond de base, palier 1 |
 | 2 | Palmiers ×3 | (-126, 0, 20), (-98, 0, 50), (-60, 0, -40) | cadre vertical gauche + profondeur |
 | 3 | Ponton | entrée de Plot1, Z 4–12 | ligne directrice vers la plage |
-| 4 | Palourdes ×5 | sur Pedestal1..5 de Plot1 | bassins de la rangée avant |
-| 5 | Coraux + coquillages | bords des bassins, rivage Z -20..-40 | détails bas, couleur corail |
-| 6 | Pack nature (rochers, herbes, buissons) | lisières X -132, bord de l'îlot | casser les lignes droites |
-| 7 | Radeau | dans l'eau, (-40, -2, -130) | point d'intérêt milieu |
-| 8 | Phare | îlot rocheux, (+105, 0, -110) | monument zone 1, fond |
+| 4 | Rochers du pack nature (anneaux) ; palourde en option | autour de chaque PedestalN | rebords des bassins (palourde testée après l'inventaire) |
+| 5 | Coraux + coquillages | rivage gauche, X -118..-128, Z -20..-102 | détails bas, couleur corail |
+| 6 | Pack nature (rochers, buissons) | lisière X -132, bord de l'îlot | casser les lignes droites |
+| 7 | Radeau | dans l'eau près du rivage gauche, (-152, eau, -85) | point d'intérêt au milieu du cadre |
+| 8 | Phare | sur l'îlot rocheux existant (position relevée par `inspect_world.luau`), placé du côté du soleil | monument de la zone 1, au fond |
+
+Les positions exactes et la caméra sont dans `tools/world/build_hero_shot.luau` (et `build_lagoon.luau` pour la base). Elles sont à affiner lundi, capture après capture.
 - Créatures : **pas de placeholder dans le cadre**. Des sphères colorées feraient « prototype ». Si on n'a pas encore de vraies créatures lundi, le cadre montre les bassins avec de l'eau, des coraux et des coquillages, sans créature.
 - Personnage : un avatar habillé se tient sur le ponton, de dos, et regarde la plage (il donne l'échelle). Jamais l'avatar gris par défaut.
 - À masquer pour la capture : Gates, Towers, decks et arches en blocs, panneaux « BASE i » (Transparency locale, pas de suppression).
