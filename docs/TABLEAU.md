@@ -57,7 +57,9 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-21 | C | Barrière de corail `PlotN.Barrier` + lagon de Plot1 + hero shot (tools/world) | en cours |
 | P1-22 | C | FX Golden + ambiance Golden Tide, 3 couronnes + FX royal, sons | à faire |
 | P1-30 | F | Contrôle qualité des pushes de A et B (luau-analyze, contrat v2) | en cours |
-| P1-31 | F | docs/IMPORT_LUNDI.md (MCP ou Rojo, étapes pour Moaad) | en cours |
+| P1-31 | F | docs/IMPORT_LUNDI.md : **Rojo** retenu ; à corriger : `$ignoreUnknownInstances` sur chaque nœud + sauvegarde avant la 1re synchronisation | en cours |
+| P1-32 | B | Renommer TideClient.client.lua en init.client.lua (sinon aucun module client ne se charge avec Rojo) | à faire |
+| P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | à faire |
 | P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | fait (docs/LANCEMENT.md) |
 
 ## Fait
