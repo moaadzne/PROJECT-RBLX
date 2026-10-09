@@ -1,5 +1,6 @@
 -- tools/world/build_lagoon.luau
--- C : lagon d'une base, palier 1 (docs/DA_MONDE.md §1). Plot1 par defaut ; mettre { 1, 2, ..., 8 } pour la hero shot.
+-- C : lagon d'une base, palier 1, et sa barriere de corail (docs/DA_MONDE.md §1).
+-- Plot1 par defaut ; mettre { 1, 2, ..., 8 } pour la hero shot.
 -- Lancement manuel uniquement (execute_luau, mode edition), jamais automatique.
 -- 1er passage avec DRY_RUN = true (affiche le plan, ne modifie rien), puis DRY_RUN = false.
 -- Un seul enregistrement ChangeHistoryService : Ctrl+Z annule tout ; en cas d'erreur, rien n'est garde.
@@ -20,17 +21,18 @@ local FIND = {
 	clam = { "clam", "palourde" },
 	rock = { "rock", "stone", "boulder" },
 	shell = { "shell", "coquillage" },
+	coral = { "coral", "corail" },
 }
 
 -- Enfants de PlotN qu'on garde en place (le serveur en depend, ou c'est notre dossier)
-local KEEP = { Pedestals = true, Display = true, SignAnchor = true, Deck = true, Lagoon = true }
+local KEEP = { Pedestals = true, Display = true, SignAnchor = true, Deck = true, Lagoon = true, Barrier = true }
 
 local POOL = {
 	waterDepth = 0.8, -- eau au-dessus du fond ; le fond = haut du socle (le serveur y pose la creature)
 	rimExtra = 0.4, -- rebord au-dessus de l'eau
 	minDiameter = 5,
 	maxDiameter = 7,
-	rocks = 7, -- rochers par anneau
+	rocks = 5, -- rochers par anneau (budget : 150 parts par base)
 	waterColor = Color3.fromHex("16A0A8"),
 	waterTransparency = 0.35,
 	floorColor = Color3.fromHex("C9A86E"),
@@ -40,7 +42,18 @@ local POOL = {
 local DECOR = {
 	{ key = "cabin", x = -7, fromBack = 7, height = 9, yaw = 180 },
 	{ key = "palm", x = 12, fromBack = 12, height = 22, yaw = 30 },
-	{ key = "dock", x = 0, fromFront = 3, scale = 1, yaw = 0, decorOnly = false },
+	{ key = "dock", x = 0, fromFront = -5, scale = 1, yaw = 0, decorOnly = false }, -- sur la plage, devant la barriere
+}
+
+-- Barriere de corail (PlotN.Barrier) : A pilote l'attribut Open et la collision des Blockers ; B anime le corail.
+-- Fermee : mur de corail. Ouverte : le corail descend de RetractDepth dans le sable.
+local BARRIER = {
+	spacing = 4.5, -- un corail tous les 4,5 studs sur le contour
+	coralHeight = 6.5,
+	retractDepth = 5.5,
+	blockerHeight = 12, -- plus haut qu'un saut
+	blockerThickness = 1,
+	inset = 1, -- retrait depuis le bord de la base
 }
 
 local CHS = game:GetService("ChangeHistoryService")
@@ -183,6 +196,69 @@ local function disc(name, center, diameter, height, props, parent)
 	return p
 end
 
+local function buildBarrier(plot, index, minX, maxX, minZ, maxZ, groundY)
+	local x0, x1 = minX + BARRIER.inset, maxX - BARRIER.inset
+	local z0, z1 = minZ + BARRIER.inset, maxZ - BARRIER.inset
+	local sides = {
+		{ name = "Front", a = Vector3.new(x0, 0, z0), b = Vector3.new(x1, 0, z0) },
+		{ name = "Back", a = Vector3.new(x0, 0, z1), b = Vector3.new(x1, 0, z1) },
+		{ name = "Left", a = Vector3.new(x0, 0, z0), b = Vector3.new(x0, 0, z1) },
+		{ name = "Right", a = Vector3.new(x1, 0, z0), b = Vector3.new(x1, 0, z1) },
+	}
+	local count = 0
+	for _, side in sides do
+		count += math.max(1, math.floor((side.b - side.a).Magnitude / BARRIER.spacing))
+	end
+	log(string.format("  barriere : %d coraux sur le contour, 4 Blockers, Open = false", count))
+	if DRY_RUN then
+		return
+	end
+	local old = plot:FindFirstChild("Barrier")
+	if old then
+		old:Destroy()
+	end
+	local barrier = Instance.new("Model")
+	barrier.Name = "Barrier"
+	barrier:SetAttribute("Open", false)
+	barrier:SetAttribute("RetractDepth", BARRIER.retractDepth)
+	local coralFolder = Instance.new("Folder")
+	coralFolder.Name = "Coral"
+	coralFolder.Parent = barrier
+	local blockers = Instance.new("Folder")
+	blockers.Name = "Blockers"
+	blockers.Parent = barrier
+	local rng = Random.new(index * 1000)
+	for _, side in sides do
+		local delta = side.b - side.a
+		local n = math.max(1, math.floor(delta.Magnitude / BARRIER.spacing))
+		for k = 0, n - 1 do
+			local p = side.a + delta * ((k + 0.5) / n)
+			place("coral", Vector3.new(p.X, groundY, p.Z), {
+				height = BARRIER.coralHeight * rng:NextNumber(0.8, 1.15),
+				yaw = rng:NextNumber(0, 360),
+				sink = -0.3,
+				decorOnly = true,
+				noShadow = k % 2 == 1, -- une ombre sur deux suffit
+				parent = coralFolder,
+			})
+		end
+		local b = Instance.new("Part")
+		b.Name = side.name
+		b.Anchored = true
+		b.Transparency = 1
+		b.CanCollide = true
+		b.CanTouch = false
+		b.CastShadow = false
+		local mid = (side.a + side.b) / 2
+		local long = delta.Magnitude + BARRIER.blockerThickness
+		b.Size = math.abs(delta.X) > math.abs(delta.Z) and Vector3.new(long, BARRIER.blockerHeight, BARRIER.blockerThickness)
+			or Vector3.new(BARRIER.blockerThickness, BARRIER.blockerHeight, long)
+		b.CFrame = CFrame.new(mid.X, groundY + BARRIER.blockerHeight / 2, mid.Z)
+		b.Parent = blockers
+	end
+	barrier.Parent = plot
+end
+
 local function buildPlot(index)
 	local plot = plotsFolder:FindFirstChild("Plot" .. index)
 	if not plot then
@@ -318,7 +394,10 @@ local function buildPlot(index)
 		end
 	end
 
-	-- 5. Decor du palier 1 (les paliers 2 a 5 iront dans Lagoon.Tier2..5, affiches selon LagoonTier cote client)
+	-- 5. Barriere de corail
+	buildBarrier(plot, index, minX, maxX, minZ, maxZ, deckTop)
+
+	-- 6. Decor du palier 1 (les paliers 2 a 5 iront dans Lagoon.Tier2..5, affiches selon LagoonTier cote client)
 	local tier = not DRY_RUN and Instance.new("Folder") or nil
 	if tier then
 		tier.Name = "Tier1"

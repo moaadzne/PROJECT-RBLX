@@ -50,7 +50,7 @@ Z 67  └───────────────────────�
 - La créature nage **dans** son bassin (voir CREATURES_ART.md §5) : le `Display` reste le dossier runtime où le serveur pose le modèle.
 
 ### Lisibilité de la richesse (5 paliers, visibles de loin)
-Le palier se lit en un coup d'œil depuis la plage, sans UI. Piloté par un attribut lu côté client (ex. `LagoonTier` 1..5 calculé depuis l'income) **[à valider par A/D, aucun attribut ajouté sans eux]**.
+Le palier se lit en un coup d'œil depuis la plage, sans UI. Il est piloté par l'attribut `LagoonTier` (1..5) que A écrit sur PlotN (validé par D le 09/10) ; le client affiche `Lagoon.Tier1..N`.
 
 | Palier | Repère principal (lisible de loin) | Détails |
 |---|---|---|
@@ -61,6 +61,19 @@ Le palier se lit en un coup d'œil depuis la plage, sans UI. Piloté par un attr
 | 5 Légende | + arche de corail géante + halo doré sur l'eau | particules dorées légères, eau bioluminescente la nuit |
 
 Règle : chaque palier **ajoute** un élément haut (silhouette) + un détail bas. Les achats déco du concept (coraux, lumières, cascades) se posent dans des **emplacements fixes** prévus par palier, jamais en placement libre (perf et anti-laideur).
+
+### Barrière de corail (GDD v2 §4.7)
+Elle se lit de loin et sans texte : **fermée = mur de corail, ouverte = corail rétracté**.
+- **Structure** (`tools/world/build_lagoon.luau`) : `PlotN.Barrier` (Model) avec l'attribut `Open` (false par défaut) et l'attribut `RetractDepth` (5,5).
+  - `Coral` : environ 40 coraux de _DecorLib sur le contour de la base, avec un retrait de 1 stud, 6,5 studs de haut. Ils sont purement décoratifs, sans collision.
+  - `Blockers` : 4 murs invisibles (Front, Back, Left, Right), de 12 studs de haut, donc plus haut qu'un saut.
+- **Qui fait quoi** : A écrit `Open` et règle la collision des Blockers. A choisit aussi comment le propriétaire traverse sa barrière fermée (groupe de collision, par exemple). B anime le corail côté client : il descend de `RetractDepth` en 0,6 s à l'ouverture et remonte avec un léger rebond à la fermeture. Sons `barrierOpen` et `barrierClose`.
+- **Lecture** : fermée, une haie continue de corail rose #FF7A8A au-dessus de la tête des avatars. Ouverte, seules des pointes de 1 stud dépassent du sable : le passage est visiblement libre et rien ne gêne la poursuite.
+- **Perf** : environ 44 parts par base (40 coraux + 4 Blockers). Une ombre sur deux est coupée.
+
+### Marée Royale (GDD v2 §4.8)
+- **Couronnes** : `Assets.FX.Crowns.Gold/Silver/Bronze`, des Accessory faits à partir d'un seul modèle recoloré (Foil #FFC93C, #D9DEE6, #C98A4B). Elles flottent 1,2 stud au-dessus de la tête, avec des étincelles légères et sans lumière. Script : `tools/world/build_royal_fx.luau`.
+- **Créature royale** (unique sur le serveur) : `Assets.FX.Royal`, avec un faisceau doré plus large que celui des Legendary, une PointLight (la seule autorisée sur une créature en Phase 1), des étincelles et une mini-couronne au-dessus du modèle. On la repère depuis n'importe quel point de la plage.
 
 ## 2. La plage et ses 5 zones
 Plage X -132..132, Z -784..124, sol Y 0, océan Y -2. Zones et Z : PASSATION §4. Chaque zone a une **couleur dominante**, un **sol**, un **monument** (silhouette repère, visible depuis la base) et une **ambiance son**.
@@ -169,6 +182,5 @@ Technology **Future** (à passer à la main). ClockTime 17,05, GeographicLatitud
 4. Si un point est rouge, on ne montre pas la capture : on corrige, ou on signale à D ce qui manque (souvent un asset).
 
 ## 6. Ce qu'il me faut
-- Liste des créatures et des marées **[GDD de E]**.
-- Accord A/D : (a) attribut de palier `LagoonTier` (ou équivalent) ; (b) masquer le cylindre des PedestalN en gardant objet, Slot et LockGui.
-- Moaad : passer Lighting.Technology en Future ; dire si les 9 assets suffisent après la hero shot.
+- A : le passage du propriétaire à travers sa barrière fermée (groupe de collision ou autre).
+- Moaad : passer Lighting.Technology en Future ; dire si les 9 assets suffisent après la hero shot ; importer dans _DecorLib la couronne et les créatures candidates (docs/SOURCING_C.md).
