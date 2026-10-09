@@ -292,7 +292,7 @@ local function checkPlots(check)
 					("bassin %d affiche %s"):format(slot, want and want.id or "rien"))
 				if shown and want then
 					check(shown:GetAttribute("CreatureId") == want.id and shown:GetAttribute("Mutation") == want.mut
-						and shown:GetAttribute("Stage") == Stats.Stage(want, os.time()), ("attributs bassin %d"):format(slot))
+						and shown:GetAttribute("Stage") == Stats.Stage(want, os.time(), Stats.GrowthSpeed(d)), ("attributs bassin %d"):format(slot))
 				end
 				local lock = model.Pedestals["Pedestal" .. slot]:FindFirstChild("LockGui")
 				check(lock ~= nil and lock.Enabled == (slot > slots), ("cadenas socle %d"):format(slot))

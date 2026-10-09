@@ -120,7 +120,7 @@ local function addBeacon(root, color)
 end
 
 -- opts = { mutation = string, stage = number, zone = number, bob = number, beacon = boolean,
---          slot = number?, uid = string?, born = number?, owner = number? }
+--          slot = number?, uid = string?, born = number?, owner = number?, royal = boolean? }
 function CreatureFactory.Create(species, basePos, opts)
 	local def = Config.Creatures[species]
 	if not def then
@@ -162,6 +162,9 @@ function CreatureFactory.Create(species, basePos, opts)
 	end
 	if opts.owner then
 		model:SetAttribute("Owner", opts.owner)
+	end
+	if opts.royal then
+		model:SetAttribute("Royal", true)
 	end
 	model:PivotTo(CFrame.new(basePos) * CFrame.Angles(0, math.rad(yaw), 0))
 

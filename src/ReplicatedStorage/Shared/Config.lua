@@ -1,10 +1,10 @@
--- Tide Rush : Reef Keepers. Configuration partagee (serveur + client).
+-- Ride the Tsunami (Reef Keepers). Configuration partagee (serveur + client).
 -- Tout l'equilibrage du jeu est ici : creatures, croissance, marees, mutations, zones, vague,
 -- ameliorations, compagnons. Le client lit les memes chiffres (probabilites affichees).
 
 local Config = {}
 
-Config.GameName = "Tide Rush"
+Config.GameName = "Ride the Tsunami"
 
 Config.Rarities = {
 	Common = { order = 1, label = "Common", color = Color3.fromRGB(215, 215, 215) },
@@ -93,6 +93,54 @@ Config.Intro = {
 	goldenCount = 5, -- creatures personnelles de cette maree, dont au moins une mutee
 }
 
+-- Monture (GDD 4.6) : especes montables a partir de minStage, vitesse x speedMult[stade]
+Config.Mount = {
+	species = { ReefHatchling = true, CoralRay = true, StarWhaleCalf = true, AbyssSerpent = true },
+	minStage = "Adult",
+	speedMult = { Adult = 1.3, Giant = 1.6 },
+	giantSurfs = true, -- une Giant n'est jamais prise par la vague
+}
+
+-- Vol entre lagons (GDD 4.7). Fenetre = alerte + vague ; retour possible jusqu'a la fin du reflux.
+Config.Steal = {
+	grabHold = 1.0, -- s de maintien pres du bassin
+	grabRange = 8, -- studs entre le voleur et le centre du bassin
+	moveTolerance = 2.5, -- studs de mouvement permis pendant le maintien
+	touchRange = 5, -- studs : le proprietaire "touche" le voleur
+	pushStrength = 40, -- recul du voleur touche (joue par le client)
+	carrySpeedMult = 0.8,
+	maxCarry = 1,
+	lockDurationWaves = 1,
+	lockCooldownCycles = 4,
+	protectAfterStolenWaves = 2,
+	maxStolenPer10Min = 3,
+	newbieMinutes = 15, -- de jeu cumule
+	newbieMinCreatures = 4,
+}
+
+-- Maree Royale (GDD 4.8) : a chaque maree speciale
+Config.Royal = {
+	onSpecialTides = true,
+	rewardMinutes = { 5, 3, 2 }, -- pieces = minutes de revenu du top 3
+	royalMutation = "Golden",
+}
+
+-- Boutique (GDD 9). id = 0 : produit pas encore cree sur Roblox, desactive.
+Config.Shop = {
+	Passes = {
+		FastGrowth = { id = 0, price = 299, growth = 2 },
+		BigNet = { id = 0, price = 149, pickupMult = 1.5 },
+		VIPRider = { id = 0, price = 399, coinBonus = 0.10, mountSpeedBonus = 0.10 },
+	},
+	-- aleatoire, probabilites affichees ; cache si ArePaidRandomItemsRestricted
+	TideEgg = { id = 0, price = 79, odds = { { "PebbleCrab", 50 }, { "SandStar", 35 }, { "ReefHatchling", 15 } }, goldenChance = 10 },
+	-- choix direct, montre a la place du Tide Egg si l'aleatoire est restreint
+	PickCreature = { id = 0, price = 149, species = { "PebbleCrab", "SandStar", "ReefHatchling" } },
+}
+
+-- Verification serveur de la vitesse reelle (anti speed hack) : distance horizontale sur `window` s
+Config.SpeedGuard = { window = 1.0, tolerance = 1.35, slack = 6, surfSpeed = 60 }
+
 -- Anciens tresors : gardes seulement pour les modeles de repli (Assets.Items) et l'ancien client
 Config.Items = {
 	Shell = { name = "Seashell", rarity = "Common", income = 1 },
@@ -114,7 +162,7 @@ Config.SellMultiplier = 20
 -- open = false : zone fermee (Phase 1 = Shallows seule). La plage se remplit au debut du calme,
 -- puis se recharge toutes les spawnEvery secondes pendant le calme ; la vague emporte tout.
 Config.Zones = {
-	{ name = "Shallows", rarity = "Common", open = true, zMin = -150, zMax = -25, maxItems = 14, spawnEvery = 2.5, creatures = { { "PebbleCrab", 70 }, { "SandStar", 30 } } },
+	{ name = "Shallows", rarity = "Common", open = true, zMin = -150, zMax = -25, maxItems = 14, spawnEvery = 2.5, creatures = { { "PebbleCrab", 60 }, { "SandStar", 30 }, { "ReefHatchling", 10 } } },
 	{ name = "Coral Coast", rarity = "Uncommon", open = false, zMin = -280, zMax = -150, maxItems = 12, spawnEvery = 3.5, creatures = { { "BubblePuffer", 65 }, { "ReefHatchling", 35 } } },
 	{ name = "Sunken Reef", rarity = "Rare", open = false, zMin = -420, zMax = -280, maxItems = 10, spawnEvery = 5, creatures = { { "LanternSeahorse", 65 }, { "CoralRay", 35 } } },
 	{ name = "Wreck Cove", rarity = "Epic", open = false, zMin = -570, zMax = -420, maxItems = 8, spawnEvery = 8, creatures = { { "InkOctopus", 65 }, { "MoonJelly", 35 } } },
@@ -191,16 +239,27 @@ end
 
 -- Stade (1..4) d'une creature deposee a `born`, et heure du stade suivant (0 si dernier stade).
 -- Fonction pure, partagee : le client calcule la meme progression que le serveur.
-function Config.StageAt(rarity: string, born: number, now: number): (number, number)
+-- speed = vitesse de croissance (2 avec FastGrowth), 1 par defaut.
+function Config.StageAt(rarity: string, born: number, now: number, speed: number?): (number, number)
 	local minutes = Config.GrowthMinutes[rarity] or Config.GrowthMinutes.Common
-	local age = math.max(0, now - born)
+	local rate = speed or 1
+	local age = math.max(0, now - born) * rate
 	for i, threshold in ipairs(minutes) do
 		local at = threshold * 60
 		if age < at then
-			return i, born + at
+			return i, born + at / rate
 		end
 	end
 	return #minutes + 1, 0
+end
+
+function Config.StageIndex(id: string): number
+	for i, stage in ipairs(Config.Stages) do
+		if stage.id == id then
+			return i
+		end
+	end
+	return #Config.Stages
 end
 
 -- Type de maree d'un cycle (1, 2, 3...) : calendrier deterministe

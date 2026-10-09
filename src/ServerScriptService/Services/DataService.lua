@@ -33,6 +33,7 @@ local STAT_KEYS = {
 	"mutationsFound", "offlineCoins",
 }
 local INTRO_NAMES = { [0] = "intro", [1] = "golden", [2] = "done" }
+local MAX_RECEIPTS = 100
 
 local SESSION_ID = HttpService:GenerateGUID(false)
 
@@ -88,6 +89,11 @@ local function defaultData()
 		creatureSeq = 0,
 		codex = {}, -- [species] = { [variant] = true }
 		introStep = 0, -- 0 intro a jouer, 1 maree Golden personnelle a venir, 2 fini
+		playTime = 0, -- secondes de jeu cumulees (protection debutant)
+		lockReadyAt = 0, -- heure Unix ou le verrou gratuit redevient possible
+		protectedUntil = 0, -- heure Unix de fin de protection apres un vol subi
+		stolenAt = {}, -- heures des vols subis recents (max 3 / 10 min)
+		receipts = {}, -- PurchaseId des achats deja accordes (les plus recents)
 		pets = {},
 		equipped = {},
 		petSeq = 0,
@@ -171,7 +177,7 @@ local function sanitizeCreature(raw, now)
 	if not born then
 		return nil
 	end
-	return { uid = raw.uid, id = raw.id, mut = mut, born = math.floor(born) }
+	return { uid = raw.uid, id = raw.id, mut = mut, born = math.floor(born), royal = raw.royal == true or nil }
 end
 
 -- Donnees v1 (trésors) : on repart de zero, l'ancien contenu est range dans legacy.v1
@@ -250,6 +256,24 @@ function DataService._Sanitize(raw)
 		end
 	end
 	d.introStep = math.floor(num(raw.introStep, 0, 0, 2))
+	d.playTime = math.floor(num(raw.playTime, 0, 0))
+	d.lockReadyAt = num(raw.lockReadyAt, 0, 0, now + 3600)
+	d.protectedUntil = num(raw.protectedUntil, 0, 0, now + 3600)
+	if type(raw.stolenAt) == "table" then
+		for _, t in ipairs(raw.stolenAt) do
+			local at = num(t, nil, now - 600, now)
+			if at and type(t) == "number" and t >= now - 600 then
+				table.insert(d.stolenAt, at)
+			end
+		end
+	end
+	if type(raw.receipts) == "table" then
+		for _, id in ipairs(raw.receipts) do
+			if type(id) == "string" and #d.receipts < MAX_RECEIPTS then
+				table.insert(d.receipts, id)
+			end
+		end
+	end
 	d.firstJoin = num(raw.firstJoin, d.firstJoin, 0)
 	d.lastSeen = num(raw.lastSeen, d.lastSeen, 0, now)
 	return d
@@ -355,6 +379,8 @@ local function save(profile, release)
 	profile.saving = true
 	profile.data.lastSeen = os.time()
 	local snapshot = deepCopy(profile.data)
+	snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
+	snapshot._passBonus = nil
 	local lockLost = false
 	local ok, err = pcall(function()
 		store:UpdateAsync(profile.key, function(record)
@@ -402,9 +428,22 @@ local function setupLeaderstats(player)
 	folder.Parent = player
 end
 
--- Creature telle que le client la recoit (contrat v2)
-function DataService.CreatureView(creature, now)
-	local stage, nextStageAt = Stats.Stage(creature, now)
+-- Creatures qu'un depot ne doit jamais remplacer : la monture, celles qu'un voleur porte
+function DataService.LockedUids(profile)
+	local locked = {}
+	if profile.mountUid ~= "" then
+		locked[profile.mountUid] = true
+	end
+	for uid in pairs(profile.carriedOut) do
+		locked[uid] = true
+	end
+	return locked
+end
+
+-- Creature telle que le client la recoit (contrat v2.1)
+function DataService.CreatureView(profile, creature, now)
+	local speed = Stats.GrowthSpeed(profile.data)
+	local stage, nextStageAt = Stats.Stage(creature, now, speed)
 	return {
 		uid = creature.uid,
 		species = creature.id,
@@ -412,7 +451,10 @@ function DataService.CreatureView(creature, now)
 		born = creature.born,
 		stage = stage,
 		nextStageAt = nextStageAt,
-		income = Stats.CreatureIncome(creature, now),
+		income = Stats.CreatureIncome(creature, now, speed),
+		royal = creature.royal == true,
+		mounted = profile.mountUid == creature.uid,
+		carried = profile.carriedOut[creature.uid] ~= nil,
 	}
 end
 
@@ -425,7 +467,7 @@ function DataService.BuildState(profile)
 	end
 	local pools = {}
 	for slot, creature in ipairs(d.pools) do
-		pools[slot] = creature and DataService.CreatureView(creature, now) or false
+		pools[slot] = creature and DataService.CreatureView(profile, creature, now) or false
 	end
 	local bag = {}
 	for i, entry in ipairs(profile.bag) do
@@ -611,6 +653,11 @@ function DataService.Track(player)
 		coinCarry = 0,
 		sweptUntil = 0,
 		introActive = false, -- vague d'intro personnelle en cours (IntroService)
+		mountUid = "", -- monture active (MountService)
+		mountMult = 1,
+		carryMult = 1, -- ralenti quand il porte une creature volee (StealService)
+		carriedOut = {}, -- [uid] = voleur : creatures de ce joueur portees par un voleur
+		passes = {}, -- [nom] = true (ShopService)
 	}
 	profiles[player] = profile
 	setupLeaderstats(player)

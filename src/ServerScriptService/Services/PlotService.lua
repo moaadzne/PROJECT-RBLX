@@ -120,14 +120,18 @@ function PlotService.RenderDisplay(player)
 	local stages = {}
 	for slot = 1, Config.MaxSlots do
 		local creature = slot <= slots and d.pools[slot] or nil
+		local stage = creature and Stats.Stage(creature, now, Stats.GrowthSpeed(d))
+		if creature then
+			stages[creature.uid] = stage
+			-- la monture et la creature portee par un voleur ne sont pas dans leur bassin
+			if profile.mountUid == creature.uid or profile.carriedOut[creature.uid] then
+				creature = nil
+			end
+		end
 		local have = current[slot]
 		if have and (not creature or have:GetAttribute("Uid") ~= creature.uid) then
 			have:Destroy()
 			have = nil
-		end
-		local stage = creature and Stats.Stage(creature, now)
-		if creature then
-			stages[creature.uid] = stage
 		end
 		local pedestal = pedestalOf(model, slot)
 		if have then
@@ -143,6 +147,7 @@ function PlotService.RenderDisplay(player)
 				slot = slot,
 				uid = creature.uid,
 				born = creature.born,
+				royal = creature.royal,
 				beacon = false,
 			})
 			if item then
@@ -169,7 +174,7 @@ local function checkGrowth(player, profile, now)
 	local grown = false
 	for slot, creature in ipairs(profile.data.pools) do
 		if creature then
-			local stage = Stats.Stage(creature, now)
+			local stage = Stats.Stage(creature, now, Stats.GrowthSpeed(profile.data))
 			local before = known[creature.uid]
 			if before and stage > before then
 				grown = true

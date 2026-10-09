@@ -237,7 +237,7 @@ end
 
 local function newCreature(d, entry, now)
 	d.creatureSeq += 1
-	return { uid = tostring(d.creatureSeq), id = entry.species, mut = entry.mutation, born = now }
+	return { uid = tostring(d.creatureSeq), id = entry.species, mut = entry.mutation, born = now, royal = entry.royal }
 end
 
 local function release(player, d, creature, slot)
@@ -261,7 +261,8 @@ local function deposit(player, profile)
 		table.insert(newcomers, newCreature(d, entry, now))
 	end
 	profile.bag = {}
-	local newPools, placed, released = Stats.Deposit(d.pools, Stats.Slots(d), newcomers, now)
+	local newPools, placed, released = Stats.Deposit(d.pools, Stats.Slots(d), newcomers, now,
+		Stats.GrowthSpeed(d), DataService.LockedUids(profile))
 	d.pools = newPools
 	d.stats.deposited += #placed
 

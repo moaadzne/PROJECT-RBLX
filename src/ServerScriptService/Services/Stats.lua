@@ -40,15 +40,40 @@ function Stats.ReleaseValue(species, mutation)
 	return Stats.BabyIncome(species, mutation) * Config.SellMultiplier
 end
 
+-- Champs passagers poses sur data par ShopService (jamais relus du DataStore) :
+-- _growth = vitesse de croissance (FastGrowth), _passBonus = bonus de pieces (VIPRider)
+function Stats.GrowthSpeed(data)
+	return data._growth or 1
+end
+
 -- Stade (1..4) et heure du stade suivant (0 si Giant)
-function Stats.Stage(creature, now)
-	return Config.StageAt(Stats.Rarity(creature.id), creature.born, now)
+function Stats.Stage(creature, now, speed)
+	return Config.StageAt(Stats.Rarity(creature.id), creature.born, now, speed)
 end
 
 -- Revenu/s d'une creature deposee (stade et mutation), sans bonus
-function Stats.CreatureIncome(creature, now)
-	local stage = Stats.Stage(creature, now)
+function Stats.CreatureIncome(creature, now, speed)
+	local stage = Stats.Stage(creature, now, speed)
 	return Stats.BabyIncome(creature.id, creature.mut) * Config.Stages[stage].mult
+end
+
+function Stats.CreatureCount(data)
+	local count = 0
+	for _, creature in ipairs(data.pools) do
+		if creature then
+			count += 1
+		end
+	end
+	return count
+end
+
+function Stats.FindCreature(data, uid)
+	for slot, creature in ipairs(data.pools) do
+		if creature and creature.uid == uid then
+			return creature, slot
+		end
+	end
+	return nil, nil
 end
 
 -- Codex ---------------------------------------------------------------------
@@ -159,9 +184,9 @@ end
 
 -- Revenu ------------------------------------------------------------------------
 
--- Multiplicateur commun : 1 + compagnons + Codex
+-- Multiplicateur commun : 1 + compagnons + Codex + gamepass
 function Stats.Bonus(data)
-	return 1 + Stats.PetBoost(data) + Stats.CodexBonus(data)
+	return 1 + Stats.PetBoost(data) + Stats.CodexBonus(data) + (data._passBonus or 0)
 end
 
 -- Revenu des bassins seuls, par seconde
@@ -169,7 +194,7 @@ function Stats.BaseIncome(data, now)
 	local total = 0
 	for _, creature in ipairs(data.pools) do
 		if creature then
-			total += Stats.CreatureIncome(creature, now)
+			total += Stats.CreatureIncome(creature, now, Stats.GrowthSpeed(data))
 		end
 	end
 	return total
@@ -186,11 +211,12 @@ function Stats.IncomeBetween(data, t0, t1)
 		return 0
 	end
 	local total = 0
+	local speed = Stats.GrowthSpeed(data)
 	for _, creature in ipairs(data.pools) do
 		if creature then
 			local t = t0
 			while t < t1 do
-				local stage, nextAt = Stats.Stage(creature, t)
+				local stage, nextAt = Stats.Stage(creature, t, speed)
 				local stop = if nextAt > 0 then math.min(nextAt, t1) else t1
 				if stop <= t then
 					stop = t1 -- securite : jamais de boucle infinie
@@ -231,8 +257,10 @@ end
 -- Depot : bassin libre d'abord ; lagon plein -> la nouvelle remplace la plus faible si elle vaut plus,
 -- sinon elle est relachee. Les meilleures nouvelles passent en premier.
 -- newcomers = creatures deja creees ({uid, id, mut, born}).
+-- locked = { [uid] = true } : jamais remplacees (montee, portee par un voleur). speed = vitesse de croissance.
 -- Renvoie newPools, placed = {{slot, creature}}, released = {{creature, slot?}}
-function Stats.Deposit(pools, slots, newcomers, now)
+function Stats.Deposit(pools, slots, newcomers, now, speed, locked)
+	locked = locked or {}
 	local out = table.create(slots, false)
 	for slot = 1, slots do
 		out[slot] = pools[slot] or false
@@ -248,12 +276,14 @@ function Stats.Deposit(pools, slots, newcomers, now)
 		if not target then
 			local weakest, weakestIncome = nil, math.huge
 			for slot = 1, slots do
-				local income = Stats.CreatureIncome(out[slot], now)
-				if income < weakestIncome then
-					weakest, weakestIncome = slot, income
+				if not locked[out[slot].uid] then
+					local income = Stats.CreatureIncome(out[slot], now, speed)
+					if income < weakestIncome then
+						weakest, weakestIncome = slot, income
+					end
 				end
 			end
-			if weakest and Stats.CreatureIncome(creature, now) > weakestIncome then
+			if weakest and Stats.CreatureIncome(creature, now, speed) > weakestIncome then
 				table.insert(released, { creature = out[weakest], slot = weakest })
 				target = weakest
 			end
