@@ -40,8 +40,8 @@ local function waitUntil(player, profile, t)
 	return alive(player, profile)
 end
 
--- Direction de la crique vers la plage d'intro du joueur : celle de son lagon, tournee vers le passage
--- voisin (les lagons sont adosses a des remparts, les passages vers la plage sont en diagonale)
+-- Direction de la crique vers la plage d'intro du joueur : celle de son lagon (sortie et breche face a la mer),
+-- tournee de Config.Intro.angleOffset si le decor l'impose
 local function outwardOf(player)
 	local index = PlotService.GetIndex(player)
 	local outward = index and PlotService.OutwardOf(index) or Vector3.new(0, 0, -1)

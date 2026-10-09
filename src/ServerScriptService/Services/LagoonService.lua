@@ -253,11 +253,11 @@ local function ejectIntruders()
 		if root then
 			local index = plotAt(root.Position)
 			if index and not LagoonService.CanEnter(player, index) then
-				-- devant l'entree du lagon, cote crique, tourne vers la crique
-				local spot = PlotService.EntranceOf(index)
+				-- devant la sortie du lagon, cote mer (dans la breche de la falaise), tourne vers la mer
+				local spot = PlotService.ExitOf(index)
 				local center = PlotService.CenterOf(index)
 				local target = Vector3.new(spot.X, math.max(root.Position.Y, center.Y + EJECT_HEIGHT), spot.Z)
-				character:PivotTo(CFrame.lookAt(target, target + (spot - center) * Vector3.new(1, 0, 1)))
+				character:PivotTo(CFrame.lookAt(target, target + PlotService.OutwardOf(index)))
 				root.AssemblyLinearVelocity = Vector3.zero
 				local profile = DataService.Get(player)
 				if profile then
