@@ -262,6 +262,8 @@ local function onCharacter(player, character)
 	if not humanoid or not root or player.Character ~= character then
 		return
 	end
+	-- pas de nom ni de barre de vie Roblox au-dessus des tetes : B dessine l'etiquette maison
+	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 	PlotService.ApplySpeed(player)
 	humanoid.Died:Connect(function()
 		-- mort (reset compris) = sac perdu, sinon le reset deviendrait un retour gratuit avec le sac

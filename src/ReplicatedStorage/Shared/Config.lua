@@ -14,35 +14,43 @@ Config.Rarities = {
 	Legendary = { order = 5, label = "Legendary", color = Color3.fromRGB(255, 195, 45) },
 }
 
--- Creatures (GDD 4.2) : revenu par seconde d'un bebe sans mutation
+-- Creatures (GDD v3, 4.2) : revenu par seconde au premier stade, sans mutation
 Config.Creatures = {
-	PebbleCrab = { name = "Pebble Crab", rarity = "Common", income = 1 },
-	SandStar = { name = "Sand Star", rarity = "Common", income = 2 },
-	BubblePuffer = { name = "Bubble Puffer", rarity = "Uncommon", income = 6 },
-	ReefHatchling = { name = "Reef Hatchling", rarity = "Uncommon", income = 10 },
-	LanternSeahorse = { name = "Lantern Seahorse", rarity = "Rare", income = 30 },
-	CoralRay = { name = "Coral Ray", rarity = "Rare", income = 50 },
-	InkOctopus = { name = "Ink Octopus", rarity = "Epic", income = 150 },
-	MoonJelly = { name = "Moon Jelly", rarity = "Epic", income = 250 },
-	StarWhaleCalf = { name = "Star Whale Calf", rarity = "Legendary", income = 800 },
-	AbyssSerpent = { name = "Abyss Serpent", rarity = "Legendary", income = 1500 },
+	GhostCrab = { name = "Ghost Crab", rarity = "Common", income = 1 },
+	CushionStar = { name = "Cushion Star", rarity = "Common", income = 2 },
+	Lionfish = { name = "Lionfish", rarity = "Uncommon", income = 6 },
+	HawksbillTurtle = { name = "Hawksbill Turtle", rarity = "Uncommon", income = 10 },
+	BlueRingedOctopus = { name = "Blue-ringed Octopus", rarity = "Rare", income = 30 },
+	LeopardRay = { name = "Leopard Ray", rarity = "Rare", income = 50 },
+	GiantPacificOctopus = { name = "Giant Pacific Octopus", rarity = "Epic", income = 150 },
+	LionsManeJelly = { name = "Lion's Mane Jelly", rarity = "Epic", income = 250 },
+	MantaRay = { name = "Manta Ray", rarity = "Legendary", income = 800 },
+	WhaleShark = { name = "Whale Shark", rarity = "Legendary", income = 1500 },
 }
 
--- Anciens tresors -> especes : modeles de repli tant que Assets.Creatures manque
+-- Anciens ids -> especes actuelles : tresors v1 et especes du GDD v1/v2.
+-- Sert a la migration des donnees et aux modeles de repli tant que Assets.Creatures manque.
 Config.LegacyItemToCreature = {
-	Shell = "PebbleCrab", Starfish = "SandStar", Pearl = "BubblePuffer", BlueCrab = "ReefHatchling",
-	CoralCrown = "LanternSeahorse", GoldenCrab = "CoralRay", TreasureChest = "InkOctopus",
-	AbyssCrystal = "MoonJelly", MoonPearl = "StarWhaleCalf", TideHeart = "AbyssSerpent",
+	Shell = "GhostCrab", PebbleCrab = "GhostCrab",
+	Starfish = "CushionStar", SandStar = "CushionStar",
+	Pearl = "Lionfish", BubblePuffer = "Lionfish",
+	BlueCrab = "HawksbillTurtle", ReefHatchling = "HawksbillTurtle",
+	CoralCrown = "BlueRingedOctopus", LanternSeahorse = "BlueRingedOctopus",
+	GoldenCrab = "LeopardRay", CoralRay = "LeopardRay",
+	TreasureChest = "GiantPacificOctopus", InkOctopus = "GiantPacificOctopus",
+	AbyssCrystal = "LionsManeJelly", MoonJelly = "LionsManeJelly",
+	MoonPearl = "MantaRay", StarWhaleCalf = "MantaRay",
+	TideHeart = "WhaleShark", AbyssSerpent = "WhaleShark",
 }
 
--- Stades de croissance (GDD 4.3) : echelle appliquee par le client, multiplicateur de revenu
+-- Stades de croissance (GDD v3, 4.3) : echelle appliquee par le client, multiplicateur de revenu
 Config.Stages = {
-	{ id = "Baby", scale = 0.6, mult = 1 },
-	{ id = "Juvenile", scale = 0.8, mult = 2 },
-	{ id = "Adult", scale = 1.0, mult = 4 },
-	{ id = "Giant", scale = 1.5, mult = 8 },
+	{ id = "Juvenile", scale = 0.6, mult = 1 },
+	{ id = "Adult", scale = 0.8, mult = 2 },
+	{ id = "Elder", scale = 1.0, mult = 4 },
+	{ id = "Titan", scale = 1.5, mult = 8 },
 }
--- Minutes cumulees depuis le depot pour atteindre Juvenile, Adult, Giant
+-- Minutes cumulees depuis le depot pour atteindre Adult, Elder, Titan
 Config.GrowthMinutes = {
 	Common = { 3, 15, 60 },
 	Uncommon = { 5, 30, 120 },
@@ -73,8 +81,8 @@ Config.Codex = { newEntryIncomeMult = 50, speciesBonus = 0.05 }
 -- Revenu hors ligne : part du revenu, plafond, duree minimale pour l'ecran "Pendant ton absence"
 Config.Offline = { incomeRate = 0.5, maxHours = 8, minSeconds = 60 }
 
--- Palier visuel du lagon (attribut LagoonTier 1..5) : revenu/s minimal de chaque palier [a caler par E]
-Config.LagoonTiers = { 0, 25, 250, 2500, 25000 }
+-- Palier visuel du lagon (attribut LagoonTier 1..5) : revenu/s minimal de chaque palier (E, GDD v3)
+Config.LagoonTiers = { 0, 30, 200, 5000, 100000 }
 
 -- Intro d'un nouveau joueur (GDD 1 ter). Positions relatives au centre X de sa base et a BaseLineZ.
 Config.Intro = {
@@ -83,11 +91,11 @@ Config.Intro = {
 	startZ = -414, -- 9 s de trajet a Config.Wave.speed
 	recedeTime = 2.5,
 	creatures = {
-		{ species = "PebbleCrab", mutation = "", dx = 0, dz = -10 },
-		{ species = "SandStar", mutation = "", dx = -12, dz = -24 },
-		{ species = "PebbleCrab", mutation = "", dx = 12, dz = -30 },
-		{ species = "PebbleCrab", mutation = "", dx = -4, dz = -38 },
-		{ species = "SandStar", mutation = "Golden", dx = 8, dz = -52 },
+		{ species = "GhostCrab", mutation = "", dx = 0, dz = -10 },
+		{ species = "CushionStar", mutation = "", dx = -12, dz = -24 },
+		{ species = "GhostCrab", mutation = "", dx = 12, dz = -30 },
+		{ species = "GhostCrab", mutation = "", dx = -4, dz = -38 },
+		{ species = "CushionStar", mutation = "Golden", dx = 8, dz = -52 },
 	},
 	goldenTide = "Golden", -- deuxieme maree du joueur
 	goldenCount = 5, -- creatures personnelles de cette maree, dont au moins une mutee
@@ -95,10 +103,10 @@ Config.Intro = {
 
 -- Monture (GDD 4.6) : especes montables a partir de minStage, vitesse x speedMult[stade]
 Config.Mount = {
-	species = { ReefHatchling = true, CoralRay = true, StarWhaleCalf = true, AbyssSerpent = true },
-	minStage = "Adult",
-	speedMult = { Adult = 1.3, Giant = 1.6 },
-	giantSurfs = true, -- une Giant n'est jamais prise par la vague
+	species = { HawksbillTurtle = true, LeopardRay = true, MantaRay = true, WhaleShark = true },
+	minStage = "Elder",
+	speedMult = { Elder = 1.3, Titan = 1.6 },
+	giantSurfs = true, -- au dernier stade (Titan), jamais prise par la vague : elle la surfe
 }
 
 -- Vol entre lagons (GDD 4.7). Fenetre = alerte + vague ; retour possible jusqu'a la fin du reflux.
@@ -133,9 +141,9 @@ Config.Shop = {
 		VIPRider = { id = 0, price = 399, coinBonus = 0.10, mountSpeedBonus = 0.10 },
 	},
 	-- aleatoire, probabilites affichees ; cache si ArePaidRandomItemsRestricted
-	TideEgg = { id = 0, price = 79, odds = { { "PebbleCrab", 50 }, { "SandStar", 35 }, { "ReefHatchling", 15 } }, goldenChance = 10 },
+	TideEgg = { id = 0, price = 79, odds = { { "GhostCrab", 50 }, { "CushionStar", 35 }, { "HawksbillTurtle", 15 } }, goldenChance = 10 },
 	-- choix direct, montre a la place du Tide Egg si l'aleatoire est restreint
-	PickCreature = { id = 0, price = 149, species = { "PebbleCrab", "SandStar", "ReefHatchling" } },
+	PickCreature = { id = 0, price = 149, species = { "GhostCrab", "CushionStar", "HawksbillTurtle" } },
 }
 
 -- Verification serveur de la vitesse reelle (anti speed hack) : distance horizontale sur `window` s
@@ -162,11 +170,11 @@ Config.SellMultiplier = 20
 -- open = false : zone fermee (Phase 1 = Shallows seule). La plage se remplit au debut du calme,
 -- puis se recharge toutes les spawnEvery secondes pendant le calme ; la vague emporte tout.
 Config.Zones = {
-	{ name = "Shallows", rarity = "Common", open = true, zMin = -150, zMax = -25, maxItems = 14, spawnEvery = 2.5, creatures = { { "PebbleCrab", 60 }, { "SandStar", 30 }, { "ReefHatchling", 10 } } },
-	{ name = "Coral Coast", rarity = "Uncommon", open = false, zMin = -280, zMax = -150, maxItems = 12, spawnEvery = 3.5, creatures = { { "BubblePuffer", 65 }, { "ReefHatchling", 35 } } },
-	{ name = "Sunken Reef", rarity = "Rare", open = false, zMin = -420, zMax = -280, maxItems = 10, spawnEvery = 5, creatures = { { "LanternSeahorse", 65 }, { "CoralRay", 35 } } },
-	{ name = "Wreck Cove", rarity = "Epic", open = false, zMin = -570, zMax = -420, maxItems = 8, spawnEvery = 8, creatures = { { "InkOctopus", 65 }, { "MoonJelly", 35 } } },
-	{ name = "Abyss Shore", rarity = "Legendary", open = false, zMin = -740, zMax = -570, maxItems = 6, spawnEvery = 12, creatures = { { "StarWhaleCalf", 70 }, { "AbyssSerpent", 30 } } },
+	{ name = "Shallows", rarity = "Common", open = true, zMin = -150, zMax = -25, maxItems = 14, spawnEvery = 2.5, creatures = { { "GhostCrab", 60 }, { "CushionStar", 30 }, { "HawksbillTurtle", 10 } } },
+	{ name = "Coral Coast", rarity = "Uncommon", open = false, zMin = -280, zMax = -150, maxItems = 12, spawnEvery = 3.5, creatures = { { "Lionfish", 65 }, { "HawksbillTurtle", 35 } } },
+	{ name = "Sunken Reef", rarity = "Rare", open = false, zMin = -420, zMax = -280, maxItems = 10, spawnEvery = 5, creatures = { { "BlueRingedOctopus", 65 }, { "LeopardRay", 35 } } },
+	{ name = "Wreck Cove", rarity = "Epic", open = false, zMin = -570, zMax = -420, maxItems = 8, spawnEvery = 8, creatures = { { "GiantPacificOctopus", 65 }, { "LionsManeJelly", 35 } } },
+	{ name = "Abyss Shore", rarity = "Legendary", open = false, zMin = -740, zMax = -570, maxItems = 6, spawnEvery = 12, creatures = { { "MantaRay", 70 }, { "WhaleShark", 30 } } },
 }
 
 Config.Beach = { xMin = -116, xMax = 116, groundY = 0 }

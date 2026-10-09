@@ -2,6 +2,12 @@
 
 Mis à jour par A le 2026-10-09. Le contrat v1 (trésors) est remplacé : le client v1 n'est pas compatible, B code contre la v2.
 - **v2.1** (GDD v2 « Steal & Ride ») : ouverture des lagons, vol, monture, Marée Royale et boutique sont en Phase 1. Elles remplacent les « emplacements réservés » de la v2.
+- **v3 des noms** (GDD v3, DIRECTION_V2) :
+  - espèces : GhostCrab, CushionStar, Lionfish, HawksbillTurtle, BlueRingedOctopus, LeopardRay, GiantPacificOctopus, LionsManeJelly, MantaRay, WhaleShark ;
+  - stades : Juvenile / Adult / Elder / Titan (indices 1..4 inchangés) ;
+  - monture dès Elder ; Titan surfe ;
+  - les anciens ids sont traduits à la lecture des données (Config.LegacyItemToCreature).
+- Le serveur met `Humanoid.DisplayDistanceType = None` à chaque personnage : plus de nom ni de barre de vie Roblox.
 - Tout le reste de la v2 est inchangé.
 Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12, §13) et docs/TABLEAU.md (décisions de D).
 
@@ -11,7 +17,7 @@ Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12,
 - 8 joueurs max par serveur, mobile d'abord. Serveur qui fait autorité : temps, stades, mutations et valeurs sont calculés côté serveur.
 
 ## Règles de jeu (Phase 1, GDD §12)
-- Zone ouverte : Shallows (zone 1) avec Pebble Crab, Sand Star et Reef Hatchling (10 %, montable). Les zones 2 à 5 sont dans Config mais `open = false`.
+- Zone ouverte : Shallows (zone 1) avec Ghost Crab, Cushion Star et Hawksbill Turtle (10 %, montable). Les zones 2 à 5 sont dans Config mais `open = false`.
 - **Phases et lagons** (GDD §2) :
   - calme : les lagons sont **fermés** ;
   - alerte et vague : ils sont **ouverts**, c'est la fenêtre de vol, sauf lagon verrouillé ou protégé ;
@@ -20,7 +26,7 @@ Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12,
 - **Marée** : chaque cycle de vague a un type (`Normal` ou `Golden` en Phase 1). Calendrier déterministe à partir du numéro de cycle (Config.TideSchedule).
 - **Créatures sur la plage** : au début du calme, la plage se remplit ; pendant le calme, elle se recharge. La **mutation est tirée à l'apparition**, avec les chances de la marée en cours (Config.Tides). La vague emporte les créatures de la plage au passage de son front.
 - **Capture** : au contact (rayon Config.PickupRadius, vérifié 10 fois/s par le serveur), sac limité (Bag).
-- **Dépôt** automatique en entrant dans sa base : bassin libre d'abord ; lagon plein → la nouvelle remplace la plus faible si elle vaut plus (revenu/s courant, stade et mutation compris) ; sinon elle est relâchée contre des pièces. Une créature remplacée est relâchée aussi. Prix de relâche = revenu bébé (mutation comprise) × Config.SellMultiplier.
+- **Dépôt** automatique en entrant dans sa base : bassin libre d'abord ; lagon plein → la nouvelle remplace la plus faible si elle vaut plus (revenu/s courant, stade et mutation compris) ; sinon elle est relâchée contre des pièces. Une créature remplacée est relâchée aussi. Prix de relâche = revenu au stade Juvenile (mutation comprise) × Config.SellMultiplier.
 - **Croissance** : 4 stades (Config.Stages) calculés depuis `born` (heure Unix du serveur, au dépôt). Aucune minuterie : la croissance hors ligne est automatique.
 - **Revenu** /s = Σ (base × mult. de stade × mult. de mutation) × (1 + bonus compagnons + bonus Codex), versé chaque seconde.
 - **Hors ligne** : 50 % du revenu (croissance comprise), plafonné à 8 h, versé au chargement (Notify `offline`).
@@ -29,7 +35,7 @@ Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12,
 - **Vague** (inchangée) : 35 s de calme, 7 s d'alerte, part de Z = -800 à 46 studs/s, s'arrête à Z = 0, hauteur 22, épaisseur 40. Prise si Z < 0, dans le corps de la vague et pieds sous 22. Jamais sur une tour ni dans sa base. Prise = sac perdu, retour à la base 0,8 s plus tard, au plus 1 prise par cycle.
 - **Intro par joueur** (GDD §1 ter), pour un nouveau joueur seulement :
   - spawn dans son lagon ;
-  - 5 créatures personnelles près du lagon : un Pebble Crab à environ 10 studs, puis 3 autres, puis une Sand Star Golden plus loin ;
+  - 5 créatures personnelles près du lagon : un Ghost Crab à environ 10 studs, puis 3 autres, puis une Cushion Star Golden plus loin ;
   - **vague d'intro personnelle** 18 s après le chargement : elle ne peut pas attraper le joueur, mais elle emporte ses créatures personnelles restées sur le sable ;
   - au premier calme global qui suit, **marée Golden personnelle** : sa WaveState indique `tide = "Golden"` et 5 créatures personnelles sont tirées avec les chances Golden, dont au moins une Golden ;
   - ensuite, le calendrier normal.
@@ -46,9 +52,9 @@ Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12,
     - verrou gratuit (`LockLagoon`) : 1 vague, puis 4 cycles de recharge.
   - Un joueur hors ligne n'a pas de lagon : il ne peut pas être volé.
 - **Monture** (GDD §4.6) :
-  - espèces de Config.Mount, à partir du stade Adult, une seule à la fois ;
-  - vitesse : Adult ×1,3, Giant ×1,6 ;
-  - une Giant n'est jamais prise par la vague, elle la surfe, et le joueur garde son sac ;
+  - espèces de Config.Mount, à partir du stade Elder, une seule à la fois ;
+  - vitesse : Elder ×1,3, Titan ×1,6 ;
+  - une Titan n'est jamais prise par la vague, elle la surfe, et le joueur garde son sac ;
   - une créature montée rapporte toujours son revenu et ne peut pas être volée ;
   - la vitesse passe uniquement par WalkSpeed, fixé par le serveur, qui vérifie aussi la vitesse réelle.
 - **Marée Royale** (GDD §4.8), à chaque marée spéciale :
@@ -112,7 +118,7 @@ creature = {
   mutation,                 -- "" (aucune) ou clé de Config.Mutations
   born,                     -- heure du dépôt
   stage,                    -- 1..4 (index dans Config.Stages)
-  nextStageAt,              -- heure du prochain stade, 0 si Giant
+  nextStageAt,              -- heure du prochain stade, 0 si Titan (dernier stade)
   income,                   -- revenu/s de cette créature (stade et mutation), sans bonus
   royal,                    -- true pour la créature royale
   mounted,                  -- true si c'est la monture active (le bassin s'affiche vide)
@@ -140,7 +146,7 @@ wave = {
 ### Notify (RemoteEvent S→C) : `(kind, data)`, `data.text` toujours présent (anglais)
 | kind | data |
 |---|---|
-| welcome | `{text, isNew}` |
+| welcome | `{text, isNew = false}` : seulement pour un joueur qui revient. Un nouveau joueur ne reçoit aucun texte pendant son intro, et `state.intro` sert de drapeau de tutoriel. |
 | stealStart | `{role = "victim"|"thief", thief, thiefName, victim, victimName, species, mutation, slot}` : la créature vient d'être prise (alerte du propriétaire) |
 | stealWin | `{victim, victimName, species, mutation, slot}` : le voleur est rentré, la créature est à lui |
 | stolen | `{thief, thiefName, species, mutation, protectedUntil}` : au volé, quand le vol réussit |
@@ -193,8 +199,8 @@ wave = {
 - PlotN : `Open` (bool, barrière baissée pour tous), `Locked` (bool), `Shield` ("" | "newbie" | "stolen" | "cap" | "lock").
 - `PlotN.Barrier` (Model de C) : attribut `Open`, écrit par le serveur. Le serveur règle `CanCollide` de ses parts. Les groupes de collision `TR_BarrierN` / `TR_CharN` laissent passer le propriétaire, et le joueur qui a la Revanche. B anime le visuel à partir de `Open`.
 - Un joueur trouvé sans droit dans un lagon fermé est ramené devant la barrière (vérification serveur 10 fois/s).
-- Joueur : attributs `Plot`, `Loaded`, `Pets` ("CrabBuddy,Turtle"), `Bag` ("PebbleCrab:Golden,SandStar:" pour afficher la pile sur la tête).
-- Joueur : `Carrying` ("ReefHatchling:Golden" ou ""), `Mount` (espèce ou ""), `MountStage` (3 ou 4), `Surfing` (bool, Giant pendant la vague), `Crown` (0..3), `Newbie` (bool), `VIP` (bool).
+- Joueur : attributs `Plot`, `Loaded`, `Pets` ("CrabBuddy,Turtle"), `Bag` ("GhostCrab:Golden,CushionStar:" pour afficher la pile sur la tête).
+- Joueur : `Carrying` ("HawksbillTurtle:Golden" ou ""), `Mount` (espèce ou ""), `MountStage` (3 ou 4), `Surfing` (bool, monture Titan pendant la vague), `Crown` (0..3), `Newbie` (bool), `VIP` (bool).
 - Monture : le serveur soude au HumanoidRootPart un clone de la créature, à l'échelle de son stade. C fournit l'Attachment `Saddle` dans `Root`. Le serveur relève `Humanoid.HipHeight`. L'animation assise et le surf sont côté client.
 - Créature royale : attribut `Royal = true` sur son modèle, sur la plage comme dans un bassin.
 - leaderstats : `Coins` et `Income` (StringValue).
