@@ -1,29 +1,26 @@
--- Shop : boutique de lancement (GDD v2 §9). S'ouvre seulement quand le joueur appuie sur Shop (jamais de pop-up),
--- aucun compte a rebours, prix fixes.
---   - Tide Egg (produit aleatoire) : probabilites affichees AVANT l'achat, lues dans Config.Shop (jamais en dur) ;
---     remplace par « Pick a Creature » (achat direct) si state.policy.paidRandomRestricted (PolicyService, expose par A).
---   - Gamepasses : Fast Growth, Big Net, VIP Rider ; « Owned » si deja possede.
--- HYPOTHESE (a valider par A) : Config.Shop = { gamepasses = {{key, id, name, price, icon, lines}},
---   tideEgg = {id, price, odds = {{species, chance}}, goldenChance}, pick = {id, price, species = {...}} }
--- et RF PickCreature(species) appele avant l'achat de Pick a Creature (le recu ne porte pas le choix).
--- Sans id (0 ou absent), la carte s'affiche mais l'achat est desactive (« Soon »).
+-- Shop : boutique de lancement (GDD v2 §9, contrat v2.1). Style console. S'ouvre seulement sur demande
+-- (jamais de pop-up), aucun compte a rebours, prix fixes, « Everything here is optional ».
+--   - Tide Egg (aleatoire) : probabilites de Config.Shop.TideEgg affichees AVANT l'achat ;
+--     remplace par Pick a Creature (achat direct, RF ChoosePick avant l'achat) si state.shop.randomAllowed est faux.
+--   - Gamepasses de Config.Shop.Passes ; « OWNED » d'apres state.passes.
+--   - id = 0 dans Config : produit pas encore cree, carte affichee mais achat coupe (« SOON »).
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 
 local Shop = {}
 
-local PANEL_SIZE = Vector2.new(820, 400)
-local OPEN_TIME = 0.25
-local BLUR_SIZE = 14
+local PANEL_SIZE = Vector2.new(800, 400)
+local OPEN_TIME = 0.2
+local BLUR_SIZE = 12
 local CARD_H = 300
 local PASS_W = 150
 local RANDOM_W = 260
 
--- Catalogue de reference (GDD §9) : textes et prix affiches tant que Config.Shop manque ; achats coupes sans id
-local DEFAULT_PASSES = {
-	{ key = "FastGrowth", name = "Fast Growth", price = 299, icon = "🌱", lines = { "Creatures grow", "2× faster" } },
-	{ key = "BigNet", name = "Big Net", price = 149, icon = "🕸️", lines = { "Catch radius", "×1.5" } },
-	{ key = "VipRider", name = "VIP Rider", price = 399, icon = "⭐", lines = { "+10% coins", "Rides +10%", "Title & trail" } },
+-- Textes des gamepasses (6 mots au plus par ligne) ; prix et ids viennent de Config.Shop.Passes
+local PASS_INFO = {
+	{ key = "FastGrowth", name = "Fast Growth", icon = "ride", lines = { "Creatures grow", "2x faster" } },
+	{ key = "BigNet", name = "Big Net", icon = "net", lines = { "Catch radius", "x1.5" } },
+	{ key = "VIPRider", name = "VIP Rider", icon = "crown", lines = { "+10% coins", "+10% ride speed", "VIP title" } },
 }
 
 local Util, Theme, Components, Store, Hud, Notifications, Config, Sfx
@@ -34,108 +31,78 @@ local scale: UIScale
 local blur: BlurEffect? = nil
 local isOpen = false
 local openToken = 0
-local owned: { [number]: boolean } = {}
 local cardsFrame: Frame
-local builtFor: string? = nil -- "egg" | "pick" : la carte aleatoire suit la politique du joueur
+local builtKey: string? = nil -- la grille suit la politique du joueur et ses gamepasses
 
 local function shopConfig(): any
 	local s = (Config :: any).Shop
 	return if type(s) == "table" then s else {}
 end
 
-local function robux(price: number?): string
+local function priceText(price: number?): string
 	return if price then "R$ " .. tostring(price) else "Soon"
 end
 
----------------------------------------------------------------- Achat
-local function buyPass(id: number?)
-	if not id or id <= 0 then
-		Notifications.Push({ text = "Coming soon!", color = Theme.Colors.Lagoon, icon = "🛒", key = "shop" })
-		return
-	end
-	MarketplaceService:PromptGamePassPurchase(player, id)
-end
-
-local function buyProduct(id: number?)
-	if not id or id <= 0 then
-		Notifications.Push({ text = "Coming soon!", color = Theme.Colors.Lagoon, icon = "🛒", key = "shop" })
-		return
-	end
-	MarketplaceService:PromptProductPurchase(player, id)
+local function soon()
+	Notifications.Push({ text = "COMING SOON", color = Theme.Colors.Lagoon, icon = "info", key = "shop" })
 end
 
 ---------------------------------------------------------------- Cartes
-local function passCard(def, order: number)
-	local cfg = nil
-	for _, p in shopConfig().gamepasses or {} do
-		if p.key == def.key then
-			cfg = p
-		end
-	end
-	local id = cfg and tonumber(cfg.id)
-	local price = cfg and tonumber(cfg.price) or def.price
+local function passCard(info, order: number)
+	local cfg = (shopConfig().Passes or {})[info.key]
+	local id = cfg and tonumber(cfg.id) or 0
+	local price = cfg and tonumber(cfg.price)
+	local owned = Store.Get().passes[info.key] == true
+	local sellable = id > 0 and not owned
 	local card = Components.Card({
-		Name = def.key,
+		Name = info.key,
 		Size = UDim2.fromOffset(PASS_W, CARD_H),
-		Icon = cfg and cfg.icon or def.icon,
-		Title = cfg and cfg.name or def.name,
-		Lines = cfg and cfg.lines or def.lines,
+		Icon = info.icon,
+		Title = info.name,
+		Lines = info.lines,
 		Color = Theme.Colors.Lagoon,
-		ButtonText = if id and owned[id] then "Owned" else robux(price),
-		ButtonColor = if id and id > 0 then Theme.Colors.Success else Theme.Colors.Disabled,
+		ButtonText = if owned then "Owned" elseif id > 0 then priceText(price) else "Soon",
+		ButtonColor = if sellable then Theme.Colors.Lagoon else Theme.Colors.Disabled,
 		LayoutOrder = order,
 	})
-	-- parent pose apres coup : pas d'ombre soeur qui prendrait une place dans la liste
 	card.Instance.Parent = cardsFrame
 	card.Button.Activated:Connect(function()
-		if id and owned[id] then
+		if owned then
+			return
+		elseif not sellable then
+			soon()
 			return
 		end
-		buyPass(id)
+		MarketplaceService:PromptGamePassPurchase(player, id)
 	end)
-	-- possession verifiee en arriere-plan
-	if id and id > 0 and owned[id] == nil then
-		task.spawn(function()
-			local ok, has = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, id)
-			if ok then
-				owned[id] = has
-				if has and card.Button.Parent then
-					local label = card.Button:FindFirstChild("Label") :: TextLabel?
-					if label then
-						label.Text = "Owned"
-					end
-					Theme.SetButtonColor(card.Button, Theme.Colors.Disabled)
-				end
-			end
-		end)
-	end
 end
 
 -- Grande carte : Tide Egg (probabilites completes) ou Pick a Creature (choix de l'espece)
-local function randomCard(restricted: boolean)
+local function randomCard(randomAllowed: boolean)
 	local cfg = shopConfig()
 	local card = Components.Glass({
-		Name = if restricted then "PickCreature" else "TideEgg",
+		Name = if randomAllowed then "TideEgg" else "PickCreature",
 		Size = UDim2.fromOffset(RANDOM_W, CARD_H),
+		Accent = Theme.Colors.Gold,
 		Strong = true,
 		LayoutOrder = 0,
 	})
 	card.Parent = cardsFrame
-	Theme.Text({
+	Theme.Title({
 		Name = "Title",
-		Position = UDim2.fromOffset(0, 10),
-		Size = UDim2.new(1, 0, 0, 30),
-		Text = if restricted then "🐾 Pick a Creature" else "🥚 Tide Egg",
+		Position = UDim2.fromOffset(0, 12),
+		Size = UDim2.new(1, 0, 0, 28),
+		Text = if randomAllowed then "Tide Egg" else "Pick a Creature",
 		TextSize = Theme.TextSize.Large,
-		FontFace = Theme.Fonts.Title,
+		TextColor3 = Theme.Colors.Gold,
 		ZIndex = 2,
 		Parent = card,
 	})
 	local list = Theme.Create("Frame", {
 		Name = "List",
 		BackgroundTransparency = 1,
-		Position = UDim2.fromOffset(14, 46),
-		Size = UDim2.new(1, -28, 1, -110),
+		Position = UDim2.fromOffset(14, 50),
+		Size = UDim2.new(1, -28, 1, -112),
 		ZIndex = 2,
 		Parent = card,
 	})
@@ -143,43 +110,66 @@ local function randomCard(restricted: boolean)
 	local buy = Theme.Button({
 		Name = "Buy",
 		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -12),
-		Size = UDim2.new(1, -24, 0, 46),
+		Position = UDim2.new(0.5, 0, 1, -10),
+		Size = UDim2.new(1, -20, 0, 42),
+		Color = Theme.Colors.Gold,
 		Parent = card,
 	})
 	buy.ZIndex = 2
 
-	if not restricted then
+	if randomAllowed then
 		-- probabilites affichees avant l'achat ; sans table dans Config, pas de vente (jamais de chiffres inventes)
-		local egg = cfg.tideEgg
+		local egg = cfg.TideEgg
 		local odds = type(egg) == "table" and egg.odds or nil
-		if type(odds) == "table" and #odds > 0 then
+		local hasOdds = type(odds) == "table" and #odds > 0
+		if hasOdds then
 			for i, o in odds do
-				local info = Store.CreatureInfo(o.species)
+				local species, chance = o[1], o[2]
+				local info = Store.CreatureInfo(species)
 				local rarity = info and info.rarity
-				local row = Theme.Text({
+				local row = Theme.Create("Frame", {
 					Name = "Odds" .. i,
+					BackgroundTransparency = 1,
 					Size = UDim2.new(1, 0, 0, 24),
-					Text = Store.CreatureName(o.species) .. "  " .. tostring(o.chance) .. "%",
-					TextSize = Theme.TextSize.Small,
-					TextColor3 = Theme.RarityColor(rarity),
-					TextXAlignment = Enum.TextXAlignment.Left,
 					LayoutOrder = i,
 					ZIndex = 2,
 					Parent = list,
 				})
 				local badge = Theme.RarityBadge(rarity, 20)
-				badge.AnchorPoint = Vector2.new(1, 0.5)
-				badge.Position = UDim2.new(1, 0, 0.5, 0)
+				badge.AnchorPoint = Vector2.new(0, 0.5)
+				badge.Position = UDim2.new(0, 0, 0.5, 0)
 				badge.ZIndex = 3
 				badge.Parent = row
+				Theme.Text({
+					Position = UDim2.fromOffset(28, 0),
+					Size = UDim2.new(1, -80, 1, 0),
+					Text = string.upper(Store.CreatureName(species)),
+					TextSize = Theme.TextSize.Small,
+					FontFace = Theme.Fonts.Title,
+					TextColor3 = Theme.RarityColor(rarity),
+					TextXAlignment = Enum.TextXAlignment.Left,
+					ZIndex = 3,
+					Parent = row,
+				})
+				Theme.Text({
+					AnchorPoint = Vector2.new(1, 0),
+					Position = UDim2.new(1, 0, 0, 0),
+					Size = UDim2.new(0, 60, 1, 0),
+					Text = tostring(chance) .. "%",
+					TextSize = Theme.TextSize.Small,
+					FontFace = Theme.Fonts.Number,
+					TextXAlignment = Enum.TextXAlignment.Right,
+					ZIndex = 3,
+					Parent = row,
+				})
 			end
 			if tonumber(egg.goldenChance) then
 				Theme.Text({
 					Name = "Golden",
 					Size = UDim2.new(1, 0, 0, 24),
-					Text = "✨ then " .. tostring(egg.goldenChance) .. "% Golden",
+					Text = "THEN " .. tostring(egg.goldenChance) .. "% GOLDEN",
 					TextSize = Theme.TextSize.Small,
+					FontFace = Theme.Fonts.Title,
 					TextColor3 = Theme.Mutations.Golden.color,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					LayoutOrder = 99,
@@ -187,96 +177,92 @@ local function randomCard(restricted: boolean)
 					Parent = list,
 				})
 			end
-		else
-			Theme.Text({
-				Name = "NoOdds",
-				Size = UDim2.new(1, 0, 0, 48),
-				Text = "Odds will be shown here.",
-				TextSize = Theme.TextSize.Small,
-				TextColor3 = Theme.Colors.TextDim,
-				TextWrapped = true,
-				ZIndex = 2,
-				Parent = list,
-			})
 		end
-		local id = type(egg) == "table" and tonumber(egg.id) or nil
-		local sellable = id ~= nil and id > 0 and type(odds) == "table" and #odds > 0
-		local label = buy:FindFirstChild("Label") :: TextLabel
-		label.Text = if sellable then robux(tonumber(egg.price)) else "Soon"
-		Theme.SetButtonColor(buy, if sellable then Theme.Colors.Success else Theme.Colors.Disabled)
+		local id = type(egg) == "table" and tonumber(egg.id) or 0
+		local sellable = (id or 0) > 0 and hasOdds
+		Theme.SetButtonText(buy, if sellable then priceText(tonumber(egg.price)) else "Soon")
+		Theme.SetButtonColor(buy, if sellable then Theme.Colors.Gold else Theme.Colors.Disabled)
 		buy.Activated:Connect(function()
-			buyProduct(if sellable then id else nil)
+			if sellable then
+				MarketplaceService:PromptProductPurchase(player, id)
+			else
+				soon()
+			end
 		end)
 		return
 	end
 
-	-- Pick a Creature : le joueur choisit l'espece, puis achat direct (Baby normal)
-	local pick = cfg.pick
-	local species = type(pick) == "table" and pick.species or nil
+	-- Pick a Creature : le joueur choisit l'espece, ChoosePick, puis achat direct
+	local pick = cfg.PickCreature
+	local speciesList = type(pick) == "table" and pick.species or {}
 	local chosen: string? = nil
 	local choiceButtons = {}
-	if type(species) == "table" then
-		for i, sp in species do
-			local info = Store.CreatureInfo(sp)
-			local b = Theme.Button({
-				Name = sp,
-				Size = UDim2.new(1, 0, 0, 36),
-				Text = Store.CreatureName(sp),
-				TextSize = Theme.TextSize.Small,
-				Color = Theme.Colors.PanelLight,
-				LayoutOrder = i,
-				Parent = list,
-			})
-			b.ZIndex = 2
-			choiceButtons[sp] = b
-			b.Activated:Connect(function()
-				chosen = sp
-				for other, ob in choiceButtons do
-					Theme.SetButtonColor(ob, if other == sp then Theme.RarityColor(info and info.rarity) else Theme.Colors.PanelLight)
-				end
-			end)
-		end
+	for i, sp in speciesList do
+		local b = Theme.Button({
+			Name = sp,
+			Size = UDim2.new(1, 0, 0, 34),
+			Text = Store.CreatureName(sp),
+			TextSize = Theme.TextSize.Small,
+			Color = Theme.Colors.PlateLight,
+			LayoutOrder = i,
+			Parent = list,
+		})
+		b.ZIndex = 2
+		choiceButtons[sp] = b
+		b.Activated:Connect(function()
+			chosen = sp
+			for other, ob in choiceButtons do
+				local info = Store.CreatureInfo(other)
+				Theme.SetButtonColor(ob, if other == sp then Theme.RarityColor(info and info.rarity) else Theme.Colors.PlateLight)
+			end
+		end)
 	end
-	local id = type(pick) == "table" and tonumber(pick.id) or nil
-	local sellable = id ~= nil and id > 0 and Store.HasRemote("PickCreature")
-	local label = buy:FindFirstChild("Label") :: TextLabel
-	label.Text = if sellable then robux(tonumber(pick.price)) else "Soon"
-	Theme.SetButtonColor(buy, if sellable then Theme.Colors.Success else Theme.Colors.Disabled)
+	local id = type(pick) == "table" and tonumber(pick.id) or 0
+	local sellable = (id or 0) > 0
+	Theme.SetButtonText(buy, if sellable then priceText(tonumber(pick.price)) else "Soon")
+	Theme.SetButtonColor(buy, if sellable then Theme.Colors.Gold else Theme.Colors.Disabled)
 	buy.Activated:Connect(function()
 		if not sellable then
-			buyProduct(nil)
+			soon()
 			return
 		end
 		if not chosen then
 			Theme.Shake(buy)
-			Notifications.Push({ text = "Pick a creature first!", color = Theme.Colors.Sunset, icon = "🐾", key = "shop" })
+			Notifications.Push({ text = "PICK A CREATURE FIRST", color = Theme.Colors.Warning, icon = "info", key = "shop" })
 			return
 		end
-		local callOk, ok = Store.Invoke("PickCreature", chosen)
-		if callOk and ok == true then
-			buyProduct(id)
+		local ok = Store.ChoosePick(chosen)
+		if ok then
+			MarketplaceService:PromptProductPurchase(player, id)
 		else
-			Notifications.Push({ text = "Can't buy right now.", color = Theme.Colors.Danger, icon = "✖️", key = "shop" })
+			Notifications.Push({ text = "CAN'T BUY RIGHT NOW", color = Theme.Colors.Danger, icon = "close", key = "shop" })
 		end
 	end)
 end
 
+local function gridKey(state): string
+	local owned = {}
+	for _, info in PASS_INFO do
+		table.insert(owned, if state.passes[info.key] then "1" else "0")
+	end
+	return (if state.shop.randomAllowed then "egg" else "pick") .. table.concat(owned)
+end
+
 local function buildCards()
 	local state = Store.Get()
-	local restricted = state.policy.paidRandomRestricted
-	local key = if restricted then "pick" else "egg"
-	if builtFor == key then
+	local key = gridKey(state)
+	if builtKey == key then
 		return
 	end
-	builtFor = key
+	builtKey = key
 	for _, child in cardsFrame:GetChildren() do
 		if child:IsA("GuiObject") then
 			child:Destroy()
 		end
 	end
-	randomCard(restricted)
-	for i, def in DEFAULT_PASSES do
-		passCard(def, i)
+	randomCard(state.shop.randomAllowed)
+	for i, info in PASS_INFO do
+		passCard(info, i)
 	end
 end
 
@@ -290,13 +276,13 @@ function Shop.Open()
 	buildCards()
 	root.Visible = true
 	panel.GroupTransparency = 1
-	scale.Scale = 0.9
+	scale.Scale = 0.94
 	Util.Tween(panel, OPEN_TIME, { GroupTransparency = 0 }, Enum.EasingStyle.Quad)
-	Util.Tween(scale, OPEN_TIME, { Scale = 1 }, Enum.EasingStyle.Back)
+	Util.Tween(scale, OPEN_TIME, { Scale = 1 }, Enum.EasingStyle.Quart)
 	local cam = workspace.CurrentCamera
 	if cam then
-		blur = blur or Instance.new("BlurEffect")
-		local b = blur :: BlurEffect
+		local b = blur or Instance.new("BlurEffect")
+		blur = b
 		b.Name = "TR_ShopBlur"
 		b.Size = 0
 		b.Parent = cam -- effets client dans la camera, jamais dans Lighting
@@ -312,12 +298,12 @@ function Shop.Close()
 	isOpen = false
 	openToken += 1
 	local token = openToken
-	Util.Tween(panel, 0.18, { GroupTransparency = 1 }, Enum.EasingStyle.Quad)
-	Util.Tween(scale, 0.18, { Scale = 0.94 }, Enum.EasingStyle.Quad)
+	Util.Tween(panel, Theme.Time.Fast, { GroupTransparency = 1 }, Enum.EasingStyle.Quad)
+	Util.Tween(scale, Theme.Time.Fast, { Scale = 0.96 }, Enum.EasingStyle.Quad)
 	if blur then
-		Util.Tween(blur, 0.18, { Size = 0 }, Enum.EasingStyle.Quad)
+		Util.Tween(blur, Theme.Time.Fast, { Size = 0 }, Enum.EasingStyle.Quad)
 	end
-	task.delay(0.2, function()
+	task.delay(Theme.Time.Fast + 0.02, function()
 		if openToken == token then
 			root.Visible = false
 			if blur then
@@ -331,13 +317,13 @@ local function build(parent: Instance)
 	root = Theme.Create("Frame", {
 		Name = "Shop",
 		BackgroundColor3 = Theme.Colors.Black,
-		BackgroundTransparency = 0.55,
+		BackgroundTransparency = 0.5,
 		Size = UDim2.fromScale(1, 1),
 		Visible = false,
 		ZIndex = 20,
 		Parent = parent,
 	})
-	-- clic sur le fond = fermer
+	-- toucher le fond = fermer
 	local backdrop = Theme.Create("TextButton", {
 		Name = "Backdrop",
 		BackgroundTransparency = 1,
@@ -359,33 +345,52 @@ local function build(parent: Instance)
 	scale = Theme.GetScale(panel)
 	local plate = Theme.Plate({
 		Name = "Plate",
-		Position = UDim2.fromOffset(6, 6),
-		Size = UDim2.new(1, -12, 1, -12),
-		Accent = Theme.Colors.Gold,
+		Position = UDim2.fromOffset(2, 2),
+		Size = UDim2.new(1, -4, 1, -4),
+		Strong = true,
 		Parent = panel,
 	})
-	Theme.Text({
+	Theme.Title({
 		Name = "Title",
-		Position = UDim2.fromOffset(20, 10),
-		Size = UDim2.new(1, -80, 0, 40),
-		Text = "SHOP",
+		Position = UDim2.fromOffset(20, 12),
+		Size = UDim2.new(0, 200, 0, 36),
+		Text = "Shop",
 		TextSize = Theme.TextSize.Huge,
-		FontFace = Theme.Fonts.Title,
-		TextColor3 = Theme.Colors.Gold,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 3,
 		Parent = plate,
 	})
-	local close = Theme.Button({
-		Name = "Close",
+	Theme.Text({
+		Name = "Note",
 		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -12, 0, 10),
-		Size = UDim2.fromOffset(44, 44),
-		Text = "✕",
-		Color = Theme.Colors.Danger,
+		Position = UDim2.new(1, -70, 0, 20),
+		Size = UDim2.fromOffset(300, 24),
+		Text = "Everything here is optional.",
+		TextSize = Theme.TextSize.Small,
+		FontFace = Theme.Fonts.Medium,
+		TextColor3 = Theme.Colors.TextDim,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		ZIndex = 3,
 		Parent = plate,
 	})
-	close.ZIndex = 3
+	local close = Theme.Create("TextButton", {
+		Name = "Close",
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -12, 0, 12),
+		Size = UDim2.fromOffset(44, 44),
+		BackgroundColor3 = Theme.Colors.PlateLight,
+		Text = "",
+		AutoButtonColor = false,
+		ZIndex = 3,
+		Parent = plate,
+	})
+	Theme.Corner(close, 6)
+	local x = Theme.Icon("close", 22, Theme.Colors.Text)
+	x.AnchorPoint = Vector2.new(0.5, 0.5)
+	x.Position = UDim2.fromScale(0.5, 0.5)
+	x.ZIndex = 4
+	x.Parent = close
+	Theme.Pressable(close)
 	close.Activated:Connect(Shop.Close)
 	cardsFrame = Theme.Create("Frame", {
 		Name = "Cards",
@@ -397,18 +402,6 @@ local function build(parent: Instance)
 		Parent = plate,
 	})
 	Theme.List(cardsFrame, Enum.FillDirection.Horizontal, 10, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center)
-	Theme.Text({
-		Name = "Note",
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -70, 0, 18),
-		Size = UDim2.fromOffset(300, 24),
-		Text = "Everything here is optional.",
-		TextSize = Theme.TextSize.Small,
-		TextColor3 = Theme.Colors.TextDim,
-		TextXAlignment = Enum.TextXAlignment.Right,
-		ZIndex = 3,
-		Parent = plate,
-	})
 end
 
 ---------------------------------------------------------------- Demarrage
@@ -416,7 +409,7 @@ function Shop.Init(ctx)
 	Util, Theme, Components, Hud = ctx.Util, ctx.Theme, ctx.Components, ctx.Hud
 	Notifications, Config, Sfx = ctx.Notifications, ctx.Config, ctx.Sfx
 	build(ctx.Root)
-	Hud.SetAction("shop", { icon = "🛒", label = "Shop", color = Theme.Colors.Gold, order = 3, hotkey = "B", visible = false })
+	Hud.SetAction("shop", { icon = "shop", label = "Shop", color = Theme.Colors.Gold, order = 3, hotkey = "B", visible = false })
 end
 
 function Shop.Start(ctx)
@@ -431,23 +424,22 @@ function Shop.Start(ctx)
 		end,
 	})
 	local function refresh(state)
+		-- pas de boutique pendant l'intro (GDD §1 ter)
 		Hud.SetAction("shop", { visible = state.loaded and state.intro == "done" })
-		-- la politique a change pendant que le panneau est ouvert : on reconstruit
 		if isOpen then
-			buildCards()
+			buildCards() -- politique ou gamepasses changes pendant que le panneau est ouvert
 		end
 	end
 	Store.Changed:Connect(refresh)
 	refresh(Store.Get())
-	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(who, id, purchased)
-		if who == player and purchased then
-			owned[id] = true
-			builtFor = nil
-			if isOpen then
-				buildCards()
-			end
-			Sfx.Play("purchase")
+	Store.Notified:Connect(function(kind, data)
+		if kind ~= "purchase" then
+			return
 		end
+		-- achat accorde : un vrai moment, mais sobre
+		local what = if type(data.species) == "string" then Store.CreatureName(data.species) else tostring(data.product or "")
+		Notifications.Push({ text = "UNLOCKED  " .. string.upper(what), color = Theme.Colors.Gold, icon = "spark", priority = "reward" })
+		Sfx.Play("purchase")
 	end)
 end
 

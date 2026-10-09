@@ -1,60 +1,85 @@
--- StealHud : interface du vol entre lagons (GDD v2 §4.7). Forme du contrat PROVISOIRE (noms reserves par A) :
---   Notify "stolen" {thief (UserId), species, mutation, text}  -> on me vole : alerte + fleche vers le voleur
---   StealResult {stealId, thief, victim, species, mutation, success} -> fin du vol (des deux cotes)
---   RF StealAttempt(plot, slot) apres un maintien de 1 s sur une creature d'un lagon ouvert ; RF LockLagoon()
---   PlotN : attributs Open (barriere), LockedUntil, LockReadyAt (recharge du verrou) ; state.protection (bouclier)
--- Rien ne s'affiche tant que le serveur ne propose pas la fonction (Store.HasRemote).
+-- StealHud : interface du vol entre lagons (GDD v2 §4.7, contrat v2.1). Style console, textes courts.
+--   Victime : Notify stealStart (role victim) -> alerte + fleche au bord de l'ecran vers le voleur + surbrillance ;
+--             stolen / recovered -> fin. Etat : shield, protectedUntil, revenge, lockActive, lockReadyAt.
+--   Voleur  : invite STEAL sur les bassins des lagons ouverts -> RF StartSteal(plot, slot) -> (true, holdEndsAt) ;
+--             jauge jusqu'a holdEndsAt (le serveur tranche) ; state.carrying -> « RUN HOME » + fleche vers mon lagon ;
+--             stealWin / stealFail {reason, push} (recul joue ici).
+--   Verrou  : bouton LOCK (RF LockLagoon) avec sa recharge. Bouclier debutant : pastille + message a 3 min de la fin.
 local Players = game:GetService("Players")
-local ProximityPromptService = game:GetService("ProximityPromptService")
 local RunService = game:GetService("RunService")
 
 local StealHud = {}
 
 local PROMPT_TAG = "TR_StealPrompt"
-local HOLD_TIME = 1.0 -- GDD : maintien de 1,0 s
-local PROMPT_DISTANCE = 9
-local ALERT_TIME = 24 -- la fenetre de vol (alerte + vague)
+local PROMPT_DISTANCE = 8 -- Config.Steal.grabRange si present
+local ALERT_TIME = 24 -- fenetre de vol (alerte + vague)
 local REFRESH = 0.5 -- s : verrou, bouclier, invites
 local SHIELD_WARNING = 180 -- s avant la fin du bouclier : message unique (GDD §8)
 local EDGE_MARGIN = 56 -- px depuis le bord pour la fleche hors ecran
 
-local ERROR_TEXT = {
-	Locked = "This lagoon is locked!",
-	TooFar = "Get closer to steal!",
-	NotStealable = "This one can't be stolen.",
-	Cooldown = "Not now!",
-	WaveActive = "Wait for the wave!",
+-- Textes de 6 mots au plus (VISION_TON §5)
+local CODE_TEXT = {
+	Closed = "Lagoons closed",
+	Locked = "Lagoon locked",
+	Newbie = "Protected player",
+	LastCreature = "Last creature: protected",
+	Mounted = "Get off first",
+	Carrying = "Already carrying one",
+	TooFar = "Get closer",
+	NotStealable = "Can't steal this",
+	Busy = "Busy",
+	Cooldown = "Not ready yet",
+}
+local FAIL_TEXT = {
+	moved = "Hold still to steal",
+	touched = "Caught by the owner",
+	time = "Too slow: it swam home",
+	wave = "Lost to the wave",
+	died = "You dropped it",
+	ownerLeft = "Owner left",
+	invalid = "Steal failed",
 }
 
-local Util, Theme, Components, Store, Hud, Notifications, Sfx, Fx
+local Util, Theme, Components, Store, Hud, Notifications, Sfx, Fx, Config
 local player = Players.LocalPlayer
 local playerGui: Instance
 
--- poursuite du voleur (cote victime)
-local chase = nil -- {thief: Player, highlight, billboard, arrow}
--- revanche : {thief: UserId, plot, cycle}
-local revenge = nil
+local chase = nil -- poursuite du voleur (victime)
+local homeGuide = nil -- fleche vers mon lagon (voleur qui porte)
 local revengeBoard: BillboardGui? = nil
+local revengeFor: number? = nil
 local shieldWarned = false
+local holdBar = nil -- jauge du maintien serveur
+local holdToken = 0
 
 ---------------------------------------------------------------- Outils
-local function myPlot(): Instance?
-	local state = Store.Get()
-	if not state or state.plot <= 0 then
-		return nil
-	end
-	return Util.Find(workspace, "Map", "Plots", "Plot" .. state.plot)
-end
-
-local function plotOfPlayer(p: Player?): Instance?
-	local index = p and p:GetAttribute("Plot")
+local function plotByIndex(index: number?): Instance?
 	if type(index) ~= "number" or index <= 0 then
 		return nil
 	end
 	return Util.Find(workspace, "Map", "Plots", "Plot" .. index)
 end
 
-local function creatureLabel(species: any, mutation: any): string
+local function myPlot(): Instance?
+	local state = Store.Get()
+	return state and plotByIndex(state.plot)
+end
+
+local function plotOfUser(userId: number?): Instance?
+	local p = userId and Players:GetPlayerByUserId(userId)
+	return p and plotByIndex(p:GetAttribute("Plot"))
+end
+
+local function plotCenter(plot: Instance): Vector3?
+	local minX, maxX = plot:GetAttribute("MinX"), plot:GetAttribute("MaxX")
+	local minZ, maxZ = plot:GetAttribute("MinZ"), plot:GetAttribute("MaxZ")
+	if type(minX) ~= "number" or type(maxX) ~= "number" or type(minZ) ~= "number" or type(maxZ) ~= "number" then
+		return nil
+	end
+	return Vector3.new((minX + maxX) / 2, 2, (minZ + maxZ) / 2)
+end
+
+local function creatureName(species: any, mutation: any): string
 	local name = if type(species) == "string" then Store.CreatureName(species) else "creature"
 	if type(mutation) == "string" and mutation ~= "" then
 		return mutation .. " " .. name
@@ -62,90 +87,40 @@ local function creatureLabel(species: any, mutation: any): string
 	return name
 end
 
+local function toast(text: string, color: Color3, icon: string, priority: string?, key: string?)
+	Notifications.Push({ text = string.upper(text), color = color, icon = icon, priority = priority or "info", key = key })
+end
+
 local function stealWindowOpen(): boolean
 	local phase = Store.GetWave().phase
 	return phase == "warning" or phase == "wave"
 end
 
----------------------------------------------------------------- Poursuite du voleur (victime)
-local function buildThiefTag(): BillboardGui
-	local gui = Theme.Create("BillboardGui", {
-		Name = "TR_ThiefTag",
-		Size = UDim2.fromOffset(150, 40),
-		StudsOffsetWorldSpace = Vector3.new(0, 4.5, 0),
-		AlwaysOnTop = true,
-		LightInfluence = 0,
-		ResetOnSpawn = false,
-	})
-	local plate = Theme.Plate({ Name = "Plate", Size = UDim2.fromScale(1, 1), Accent = Theme.Colors.Danger, Parent = gui })
-	Theme.Text({
-		Name = "Text",
-		Size = UDim2.fromScale(1, 1),
-		Text = "🚨 THIEF",
-		TextSize = 18,
-		FontFace = Theme.Fonts.Title,
-		TextColor3 = Theme.Colors.Coral,
-		ZIndex = 3,
-		Parent = plate,
-	})
-	return gui
-end
-
--- Fleche au bord de l'ecran quand le voleur est hors champ (calque Fx, pixels reels)
-local function buildEdgeArrow(): TextLabel
-	local arrow = Theme.Text({
-		Name = "ThiefArrow",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Size = UDim2.fromOffset(56, 56),
-		Text = "➤",
-		TextSize = 48,
-		FontFace = Theme.Fonts.Title,
-		TextColor3 = Theme.Colors.Danger,
-		Visible = false,
-		ZIndex = 30,
-		Parent = Fx.GetLayer(),
-	})
+---------------------------------------------------------------- Fleche au bord de l'ecran
+-- Chevron dessine, pose dans le calque Fx (pixels reels), oriente vers une cible du monde
+local function newEdgeArrow(color: Color3)
+	local arrow = Theme.Icon("arrow", 44, color)
+	arrow.AnchorPoint = Vector2.new(0.5, 0.5)
+	arrow.Visible = false
+	arrow.ZIndex = 30
+	arrow.Parent = Fx.GetLayer()
 	return arrow
 end
 
-local function stopChase()
-	if not chase then
-		return
-	end
-	chase.conn:Disconnect()
-	chase.highlight:Destroy()
-	chase.tag:Destroy()
-	chase.arrow:Destroy()
-	chase = nil
-	Hud.HideAlert()
-end
-
-local function updateChase()
-	if not chase then
-		return
-	end
-	local character = chase.thief.Character
-	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-	if not chase.thief.Parent or not root then
-		chase.arrow.Visible = false
-		return
-	end
-	if chase.highlight.Adornee ~= character then
-		chase.highlight.Adornee = character
-		chase.tag.Adornee = root
-	end
+-- Place la fleche si la cible est hors champ ; renvoie true si la cible est visible
+local function updateEdgeArrow(arrow: GuiObject, target: Vector3): boolean
 	local cam = workspace.CurrentCamera
 	if not cam then
-		return
+		return false
 	end
 	local vp = cam.ViewportSize
-	local p, onScreen = cam:WorldToViewportPoint(root.Position)
+	local p, onScreen = cam:WorldToViewportPoint(target)
 	local inside = onScreen and p.X > 0 and p.X < vp.X and p.Y > 0 and p.Y < vp.Y
-	chase.arrow.Visible = not inside
+	arrow.Visible = not inside
 	if inside then
-		return
+		return true
 	end
-	-- direction vers le voleur dans le plan de l'ecran (inversee s'il est derriere la camera)
+	-- direction dans le plan de l'ecran (inversee si la cible est derriere la camera)
 	local center = vp / 2
 	local dir = Vector2.new(p.X, p.Y) - center
 	if p.Z < 0 then
@@ -156,129 +131,212 @@ local function updateChase()
 	end
 	dir = dir.Unit
 	local half = center - Vector2.new(EDGE_MARGIN, EDGE_MARGIN)
-	local k = math.min(math.abs(half.X / (if dir.X ~= 0 then dir.X else 1e-6)), math.abs(half.Y / (if dir.Y ~= 0 then dir.Y else 1e-6)))
-	local pos = Util.ViewportToLayer(Fx.GetLayer(), center + dir * k)
-	chase.arrow.Position = UDim2.fromOffset(pos.X, pos.Y)
-	chase.arrow.Rotation = math.deg(math.atan2(dir.Y, dir.X))
+	local kx = if math.abs(dir.X) > 1e-6 then math.abs(half.X / dir.X) else math.huge
+	local ky = if math.abs(dir.Y) > 1e-6 then math.abs(half.Y / dir.Y) else math.huge
+	local pos = Util.ViewportToLayer(Fx.GetLayer(), center + dir * math.min(kx, ky))
+	arrow.Position = UDim2.fromOffset(pos.X, pos.Y)
+	arrow.Rotation = math.deg(math.atan2(dir.Y, dir.X))
+	return false
 end
 
-local function startChase(thiefId: number, text: string)
-	local thief = Players:GetPlayerByUserId(thiefId)
+---------------------------------------------------------------- Poursuite du voleur (victime)
+local function stopChase()
+	if not chase then
+		return
+	end
+	chase.conn:Disconnect()
+	chase.highlight:Destroy()
+	chase.arrow:Destroy()
+	chase = nil
+	Hud.HideAlert()
+end
+
+local function startChase(thiefId: number?, text: string)
+	stopChase()
+	Hud.ShowAlert(text, { icon = "alert", color = Theme.Colors.Danger, duration = ALERT_TIME })
+	Sfx.Play("theftAlert")
+	local thief = thiefId and Players:GetPlayerByUserId(thiefId)
 	if not thief then
 		return
 	end
-	stopChase()
 	local highlight = Instance.new("Highlight")
 	highlight.Name = "TR_ThiefHighlight"
 	highlight.FillColor = Theme.Colors.Danger
-	highlight.FillTransparency = 0.75
+	highlight.FillTransparency = 0.8
 	highlight.OutlineColor = Theme.Colors.Danger
 	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 	highlight.Parent = Fx.GetWorldFolder() -- un Highlight doit etre dans le monde pour s'afficher
-	local tag = buildThiefTag()
-	tag.Parent = playerGui
-	chase = {
-		thief = thief,
-		highlight = highlight,
-		tag = tag,
-		arrow = buildEdgeArrow(),
-		conn = RunService.RenderStepped:Connect(updateChase),
-	}
-	Hud.ShowAlert(text, { icon = "🚨", duration = ALERT_TIME })
-	Sfx.Play("alarm")
-	-- securite : la poursuite s'arrete avec la fenetre de vol meme sans StealResult
-	local token = chase
-	task.delay(ALERT_TIME + 6, function()
+	local rec = { thief = thief, highlight = highlight, arrow = newEdgeArrow(Theme.Colors.Danger) }
+	rec.conn = RunService.RenderStepped:Connect(function()
+		local character = thief.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not thief.Parent or not root then
+			rec.arrow.Visible = false
+			return
+		end
+		if highlight.Adornee ~= character then
+			highlight.Adornee = character
+		end
+		updateEdgeArrow(rec.arrow, root.Position)
+	end)
+	chase = rec
+	local token = rec
+	task.delay(ALERT_TIME + 8, function()
 		if chase == token then
 			stopChase()
 		end
 	end)
 end
 
+---------------------------------------------------------------- Retour a la maison (voleur qui porte)
+local function stopHomeGuide()
+	if not homeGuide then
+		return
+	end
+	homeGuide.conn:Disconnect()
+	homeGuide.arrow:Destroy()
+	homeGuide = nil
+	Hud.HideAlert()
+end
+
+local function startHomeGuide(carrying)
+	if homeGuide then
+		return
+	end
+	Hud.ShowAlert("Run home  ·  " .. creatureName(carrying.species, carrying.mutation), {
+		icon = "arrow",
+		color = Theme.Colors.Lagoon,
+		duration = 60,
+	})
+	local rec = { arrow = newEdgeArrow(Theme.Colors.Lagoon) }
+	rec.conn = RunService.RenderStepped:Connect(function()
+		local plot = myPlot()
+		local target = plot and plotCenter(plot)
+		if target then
+			updateEdgeArrow(rec.arrow, target)
+		else
+			rec.arrow.Visible = false
+		end
+	end)
+	homeGuide = rec
+end
+
 ---------------------------------------------------------------- Revanche
-local function clearRevenge()
-	revenge = nil
-	Hud.SetStatus("revenge", nil)
+local function setRevenge(revenge)
+	local userId = if revenge then revenge.userId else nil
+	if userId == revengeFor then
+		return
+	end
+	revengeFor = userId
 	if revengeBoard then
 		revengeBoard:Destroy()
 		revengeBoard = nil
 	end
-end
-
-local function showRevenge(thiefId: number)
-	local thief = Players:GetPlayerByUserId(thiefId)
-	local plot = plotOfPlayer(thief)
-	if not thief or not plot then
+	if not revenge then
+		Hud.SetStatus("revenge", nil)
 		return
 	end
-	clearRevenge()
-	revenge = { thief = thiefId, plot = plot, cycle = Store.GetWave().cycle }
-	Hud.SetStatus("revenge", { icon = "⚔️", text = "Revenge on " .. thief.DisplayName, color = Theme.Colors.Sunset, order = 2 })
-	-- repere au-dessus de son lagon, visible de loin
-	local anchor = plot:FindFirstChild("SignAnchor", true) or plot:FindFirstChildWhichIsA("BasePart", true)
-	if anchor then
-		local gui = Theme.Create("BillboardGui", {
-			Name = "TR_Revenge",
-			Size = UDim2.fromOffset(170, 44),
-			StudsOffsetWorldSpace = Vector3.new(0, 14, 0),
-			AlwaysOnTop = true,
-			LightInfluence = 0,
-			MaxDistance = 2000,
-			ResetOnSpawn = false,
-			Adornee = anchor,
-		})
-		local plate = Theme.Plate({ Name = "Plate", Size = UDim2.fromScale(1, 1), Accent = Theme.Colors.Sunset, Parent = gui })
-		Theme.Text({
-			Name = "Text",
-			Size = UDim2.fromScale(1, 1),
-			Text = "⚔️ REVENGE",
-			TextSize = 20,
-			FontFace = Theme.Fonts.Title,
-			TextColor3 = Theme.Colors.Sunset,
-			ZIndex = 3,
-			Parent = plate,
-		})
-		gui.Parent = playerGui
-		revengeBoard = gui
+	Hud.SetStatus("revenge", { icon = "revenge", text = "Revenge: " .. revenge.name, color = Theme.Colors.Warning, order = 2 })
+	-- repere au-dessus du lagon du voleur, visible de loin
+	local plot = plotOfUser(userId)
+	local anchor = plot and (plot:FindFirstChild("SignAnchor", true) or plot:FindFirstChildWhichIsA("BasePart", true))
+	if not anchor then
+		return
 	end
+	local gui = Theme.Create("BillboardGui", {
+		Name = "TR_Revenge",
+		Size = UDim2.fromOffset(150, 36),
+		StudsOffsetWorldSpace = Vector3.new(0, 14, 0),
+		AlwaysOnTop = true,
+		LightInfluence = 0,
+		MaxDistance = 2000,
+		ResetOnSpawn = false,
+		Adornee = anchor,
+	})
+	local plate = Theme.Plate({ Name = "Plate", Size = UDim2.fromScale(1, 1), Accent = Theme.Colors.Warning, Strong = true, Parent = gui })
+	local icon = Theme.Icon("revenge", 18, Theme.Colors.Warning)
+	icon.AnchorPoint = Vector2.new(0, 0.5)
+	icon.Position = UDim2.new(0, 10, 0.5, 0)
+	icon.Parent = plate
+	Theme.Title({
+		Name = "Text",
+		Position = UDim2.fromOffset(34, 0),
+		Size = UDim2.new(1, -40, 1, 0),
+		Text = "Revenge",
+		TextSize = 18,
+		TextColor3 = Theme.Colors.Warning,
+		ZIndex = 3,
+		Parent = plate,
+	})
+	gui.Parent = playerGui
+	revengeBoard = gui
 end
 
----------------------------------------------------------------- Resultats
-local function onStolen(data)
-	local thief = tonumber(data.thief)
-	local text = if type(data.text) == "string" then data.text else "Someone is stealing your " .. creatureLabel(data.species, data.mutation) .. "!"
-	if thief then
-		startChase(thief, text)
+---------------------------------------------------------------- Jauge du maintien (le serveur tranche)
+local function buildHoldBar(parent: Instance)
+	local frame = Theme.Plate({
+		Name = "StealHold",
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0.62, 0),
+		Size = UDim2.fromOffset(220, 44),
+		Accent = Theme.Colors.Danger,
+		Strong = true,
+		Parent = parent,
+	})
+	frame.Visible = false
+	Theme.Title({
+		Name = "Text",
+		Position = UDim2.fromOffset(0, 4),
+		Size = UDim2.new(1, 0, 0, 22),
+		Text = "Stealing",
+		TextSize = Theme.TextSize.Small,
+		TextColor3 = Theme.Colors.Text,
+		ZIndex = 3,
+		Parent = frame,
+	})
+	local bar = Components.ProgressBar({
+		Name = "Gauge",
+		Position = UDim2.fromOffset(12, 30),
+		Size = UDim2.new(1, -24, 0, 5),
+		Color = Theme.Colors.Danger,
+		ZIndex = 3,
+		Parent = frame,
+	})
+	bar.Label.Visible = false
+	holdBar = { frame = frame, bar = bar }
+end
+
+local function stopHold(failed: boolean)
+	holdToken += 1
+	if not holdBar or not holdBar.frame.Visible then
+		return
+	end
+	if failed then
+		Theme.Shake(holdBar.frame)
+		task.delay(0.15, function()
+			holdBar.frame.Visible = false
+		end)
 	else
-		Hud.ShowAlert(text, { icon = "🚨", duration = ALERT_TIME })
+		holdBar.frame.Visible = false
 	end
 end
 
-local function onResult(result)
-	local me = player.UserId
-	local label = creatureLabel(result.species, result.mutation)
-	if tonumber(result.victim) == me then
-		stopChase()
-		if result.success == true then
-			Notifications.Push({ text = "Your " .. label .. " was stolen! Revenge is ready.", color = Theme.Colors.Danger, icon = "💔", priority = "wave", duration = 4 })
-			if tonumber(result.thief) then
-				showRevenge(tonumber(result.thief) :: number)
-			end
-		else
-			Notifications.Push({ text = "You got your " .. label .. " back!", color = Theme.Colors.Success, icon = "🛡️", priority = "wave" })
-			Sfx.Play("purchase")
+local function startHold(holdEndsAt: number)
+	holdToken += 1
+	local token = holdToken
+	local duration = math.max(0.05, holdEndsAt - Store.ServerClock())
+	holdBar.frame.Visible = true
+	holdBar.bar:Set(0, false)
+	-- progression lineaire : elle represente le temps, pas une animation decorative
+	Util.Tween(holdBar.bar.Fill, duration, { Size = UDim2.fromScale(1, 1) }, Enum.EasingStyle.Linear)
+	task.delay(duration + 1.5, function()
+		if holdToken == token then
+			stopHold(false) -- ni stealStart ni stealFail : on range la jauge
 		end
-	elseif tonumber(result.thief) == me then
-		if result.success == true then
-			Notifications.Push({ text = "Stolen: " .. label .. "!", color = Theme.Colors.Gold, icon = "😈", priority = "reward" })
-			Fx.Flash(Theme.Colors.Gold, 0.25, 0.4)
-		else
-			Notifications.Push({ text = label .. " went back home.", color = Theme.Colors.TextDim, icon = "↩️", priority = "info" })
-		end
-	end
+	end)
 end
 
----------------------------------------------------------------- Maintien pour voler (voleur)
+---------------------------------------------------------------- Invites STEAL (voleur)
 local prompts: { [Instance]: ProximityPrompt } = {}
 
 local function foreignPlotOf(model: Instance): (Instance?, number?)
@@ -294,6 +352,16 @@ local function foreignPlotOf(model: Instance): (Instance?, number?)
 	return plot, tonumber(plot:GetAttribute("Index")) or tonumber((plot.Name:match("%d+")))
 end
 
+local function onStealPressed(index: number, slot: number)
+	local ok, value = Store.StartSteal(index, slot)
+	if ok and type(value) == "number" then
+		startHold(value)
+	elseif not ok and value ~= "NoRemote" then
+		toast(CODE_TEXT[value] or "Can't steal now", Theme.Colors.Danger, "close", "info", "steal-err")
+		Sfx.Play("deny")
+	end
+end
+
 local function addPrompt(model: Instance)
 	if prompts[model] or not model:IsA("Model") then
 		return
@@ -305,26 +373,21 @@ local function addPrompt(model: Instance)
 		return
 	end
 	local species = model:GetAttribute("CreatureId")
+	local steal = (Config :: any).Steal
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "TR_Steal"
-	prompt.ActionText = "Steal"
-	prompt.ObjectText = if type(species) == "string" then Store.CreatureName(species) else ""
-	prompt.HoldDuration = HOLD_TIME
-	prompt.MaxActivationDistance = PROMPT_DISTANCE
+	prompt.ActionText = "STEAL"
+	prompt.ObjectText = if type(species) == "string" then string.upper(Store.CreatureName(species)) else ""
+	prompt.HoldDuration = 0 -- le maintien de 1 s est compte par le serveur (StartSteal)
+	prompt.MaxActivationDistance = if type(steal) == "table" and steal.grabRange then steal.grabRange else PROMPT_DISTANCE
 	prompt.RequiresLineOfSight = false
 	prompt.Style = Enum.ProximityPromptStyle.Custom
 	prompt.KeyboardKeyCode = Enum.KeyCode.E
 	prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
 	prompt.Enabled = false
-	prompt:SetAttribute("Plot", index)
-	prompt:SetAttribute("Slot", slot)
 	prompt:AddTag(PROMPT_TAG)
 	prompt.Triggered:Connect(function()
-		local ok, code = Store.StealAttempt(index, slot)
-		if not ok and code ~= "NoRemote" then
-			Notifications.Push({ text = ERROR_TEXT[code] or "Can't steal right now.", color = Theme.Colors.Danger, icon = "✖️", key = "steal-err" })
-			Sfx.Play("deny")
-		end
+		onStealPressed(index, slot)
 	end)
 	prompt.Parent = root
 	prompts[model] = prompt
@@ -338,16 +401,24 @@ local function removePrompt(model: Instance)
 	end
 end
 
+-- Le serveur verifie tout ; ici on n'affiche l'invite que quand elle a une chance d'aboutir
 local function refreshPrompts()
-	local can = Store.HasRemote("StealAttempt") and stealWindowOpen()
 	local state = Store.Get()
-	if state and (state.protection.active or state.mount ~= nil) then
-		can = false -- bouclier debutant (il ne peut pas voler non plus) ou monte : il faut descendre
-	end
+	local can = Store.HasRemote("StartSteal")
+		and stealWindowOpen()
+		and state.loaded
+		and not state.newbie
+		and state.mount == nil
+		and not state.carrying
+	local revengeOn = if state.revenge then state.revenge.userId else nil
 	for model, prompt in prompts do
 		local plot = foreignPlotOf(model)
-		local open = plot ~= nil and plot:GetAttribute("Open") ~= false -- attribut absent : le serveur tranchera
-		prompt.Enabled = can and open
+		local open = false
+		if plot then
+			open = plot:GetAttribute("Open") == true or (revengeOn ~= nil and plot:GetAttribute("Owner") == revengeOn)
+		end
+		local hidden = model:GetAttribute("Mounted") == true or model:GetAttribute("Carried") == true
+		prompt.Enabled = can and open and not hidden
 	end
 end
 
@@ -391,201 +462,163 @@ local function watchDisplays()
 	plots.ChildAdded:Connect(watchPlot)
 end
 
--- Rendu console de l'invite (Style Custom) : bouton a maintenir + jauge, utilisable au doigt
-local function buildPromptGui(prompt: ProximityPrompt, inputType: Enum.ProximityPromptInputType)
-	local gui = Theme.Create("BillboardGui", {
-		Name = "TR_StealPromptGui",
-		Size = UDim2.fromOffset(170, 64),
-		StudsOffsetWorldSpace = Vector3.new(0, 4, 0),
-		AlwaysOnTop = true,
-		LightInfluence = 0,
-		Active = true,
-		ResetOnSpawn = false,
-		Adornee = prompt.Parent,
-	})
-	local button = Theme.Create("TextButton", {
-		Name = "Hold",
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 1,
-		Text = "",
-		Parent = gui,
-	})
-	local plate = Theme.Plate({ Name = "Plate", Size = UDim2.fromScale(1, 1), Accent = Theme.Colors.Coral, Parent = button })
-	local key = if inputType == Enum.ProximityPromptInputType.Keyboard then "[E] " else ""
-	Theme.Text({
-		Name = "Text",
-		Position = UDim2.fromOffset(0, 6),
-		Size = UDim2.new(1, 0, 0, 30),
-		Text = key .. "HOLD TO STEAL",
-		TextSize = 18,
-		FontFace = Theme.Fonts.Title,
-		TextColor3 = Theme.Colors.Coral,
-		ZIndex = 3,
-		Parent = plate,
-	})
-	local bar = Components.ProgressBar({
-		Name = "Gauge",
-		Position = UDim2.fromOffset(12, 40),
-		Size = UDim2.new(1, -24, 0, 12),
-		Color = Theme.Colors.Coral,
-		ZIndex = 3,
-		Parent = plate,
-	})
-	bar.Label.Visible = false
-	bar:Set(0, false)
-	-- toucher : on pilote l'invite nous-memes
-	button.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-			prompt:InputHoldBegin()
-		end
-	end)
-	button.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-			prompt:InputHoldEnd()
-		end
-	end)
-	local holding = false
-	local conns = {}
-	table.insert(conns, prompt.PromptButtonHoldBegan:Connect(function()
-		holding = true
-		bar:Set(0, false)
-		Util.Tween(bar.Fill, prompt.HoldDuration, { Size = UDim2.fromScale(1, 1) }, Enum.EasingStyle.Linear)
-	end))
-	table.insert(conns, prompt.PromptButtonHoldEnded:Connect(function()
-		holding = false
-		bar:Set(0, true)
-	end))
-	-- GDD : le maintien s'interrompt si on bouge
-	table.insert(conns, RunService.Heartbeat:Connect(function()
-		if not holding then
-			return
-		end
-		local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-		if humanoid and humanoid.MoveDirection.Magnitude > 0.1 then
-			holding = false
-			prompt:InputHoldEnd()
-			prompt.Enabled = false
-			prompt.Enabled = true
-			bar:Set(0, true)
-			Theme.Shake(plate)
-		end
-	end))
-	gui.Parent = playerGui
-	return gui, conns
-end
-
 ---------------------------------------------------------------- Verrou et bouclier
-local function refreshLock()
-	local state = Store.Get()
+local function refreshLock(state)
 	local plot = myPlot()
-	local available = Store.HasRemote("LockLagoon") and plot ~= nil and state.loaded
+	-- un debutant ne peut pas etre vole : le verrou n'apparait qu'a la fin de sa protection
+	local available = Store.HasRemote("LockLagoon") and plot ~= nil and state.loaded and (not state.newbie or shieldWarned)
 	local lock = Hud.SetAction("lock", { visible = available })
-	if not available or not plot then
+	if not available then
 		return
 	end
-	local now = Store.Now()
-	local lockedUntil = tonumber(plot:GetAttribute("LockedUntil")) or 0
-	local readyAt = tonumber(plot:GetAttribute("LockReadyAt")) or 0
-	if now < lockedUntil then
-		Hud.SetAction("lock", { icon = "🔒", label = Util.FormatTime(lockedUntil - now), enabled = false })
-		lock.Label.TextColor3 = Theme.Colors.Success
-	elseif now < readyAt then
-		Hud.SetAction("lock", { icon = "⏳", label = Util.FormatTime(readyAt - now), enabled = false })
-		lock.Label.TextColor3 = Theme.Colors.TextDim
+	local now = Store.ServerClock()
+	if state.lockActive then
+		Hud.SetAction("lock", { icon = "lock", label = "Locked", color = Theme.Colors.Success, enabled = false })
+	elseif now < state.lockReadyAt then
+		Hud.SetAction("lock", { icon = "clock", label = Util.FormatTime(state.lockReadyAt - now), color = Theme.Colors.Disabled, enabled = false })
 	else
-		Hud.SetAction("lock", { icon = "🔓", label = "Lock", enabled = true })
-		lock.Label.TextColor3 = Theme.Colors.Text
+		Hud.SetAction("lock", { icon = "unlock", label = "Lock", color = Theme.Colors.Warning, enabled = true })
 	end
+	return lock
 end
 
-local function refreshShield()
-	local state = Store.Get()
-	local p = state and state.protection
-	if not p or not p.active then
+local function newbieLeft(state): number?
+	local steal = (Config :: any).Steal
+	local minutes = type(steal) == "table" and tonumber(steal.newbieMinutes) or nil
+	if not minutes then
+		return nil
+	end
+	return math.max(0, minutes * 60 - state.playTime)
+end
+
+local function refreshShield(state)
+	local shield = state.shield
+	if shield == "" or not state.loaded then
 		Hud.SetStatus("shield", nil)
 		return
 	end
-	local left = if p.endsAt then p.endsAt - Store.ServerClock() else nil
-	local text = if left and left > 0 then "Beginner shield " .. Util.FormatTime(left) else "Beginner shield"
-	Hud.SetStatus("shield", { icon = "🛡️", text = text, color = Theme.Colors.Lagoon, order = 1 })
-	-- GDD §8 : un seul message, 3 min avant la fin, avec le verrou mis en avant
-	if left and left <= SHIELD_WARNING and not shieldWarned then
-		shieldWarned = true
-		Notifications.Push({
-			text = "In 3 min, thieves can visit your lagoon during the wave. And you can steal too!",
-			color = Theme.Colors.Sunset,
-			icon = "🛡️",
-			priority = "wave",
-			duration = 6,
-		})
-		local lock = Hud.GetAction("lock")
-		if lock and lock.Instance.Visible then
-			Theme.Pop(lock.Button, 0.3)
+	local now = Store.ServerClock()
+	local text
+	if shield == "newbie" then
+		local left = newbieLeft(state)
+		text = if left then "Protected  " .. Util.FormatTime(left) else "Protected"
+		-- GDD §8 : un seul message, 3 min avant la fin, avec le verrou mis en avant
+		if left and left <= SHIELD_WARNING and not shieldWarned then
+			shieldWarned = true
+			toast("Shield ends in 3 min", Theme.Colors.Warning, "shield", "wave")
+			task.defer(function()
+				local lock = Hud.GetAction("lock")
+				if lock and lock.Instance.Visible then
+					Theme.Celebrate(lock.Button, 0.15)
+				end
+			end)
 		end
+	elseif shield == "stolen" then
+		local left = state.protectedUntil - now
+		text = if left > 0 then "Protected  " .. Util.FormatTime(left) else "Protected"
+	elseif shield == "cap" then
+		text = "Auto-locked"
+	else
+		text = "Lagoon locked"
 	end
+	Hud.SetStatus("shield", { icon = "shield", text = text, color = Theme.Colors.Lagoon, order = 1 })
 end
 
 local function onLockPressed()
 	local ok, code = Store.LockLagoon()
 	if ok then
-		Sfx.Play("purchase")
-		Notifications.Push({ text = "Lagoon locked for the next wave!", color = Theme.Colors.Success, icon = "🔒", key = "lock" })
+		Sfx.Play("barrierClose")
+		toast("Lagoon locked", Theme.Colors.Success, "lock", "info", "lock")
 	else
 		Sfx.Play("deny")
-		Notifications.Push({ text = ERROR_TEXT[code] or "Can't lock right now.", color = Theme.Colors.Danger, icon = "✖️", key = "lock" })
+		toast(CODE_TEXT[code] or "Can't lock now", Theme.Colors.Danger, "close", "info", "lock")
 	end
-	refreshLock()
+	refreshLock(Store.Get())
+end
+
+---------------------------------------------------------------- Messages du serveur
+local function knockback(push: any)
+	if typeof(push) ~= "Vector3" then
+		return
+	end
+	local root = Util.LocalRoot(player)
+	if root then
+		root.AssemblyLinearVelocity += push
+	end
+	Fx.Shake(0.25)
+end
+
+local function onNotify(kind: string, data)
+	if kind == "stealStart" then
+		stopHold(false)
+		if data.role == "victim" then
+			local thiefName = if type(data.thiefName) == "string" then data.thiefName else "Thief"
+			startChase(tonumber(data.thief), thiefName .. " has your " .. creatureName(data.species, data.mutation))
+		elseif data.role == "thief" then
+			Sfx.Play("steal")
+			Fx.Flash(Theme.Colors.Danger, 0.15, 0.2)
+		end
+	elseif kind == "stealWin" then
+		-- vrai moment : celebration
+		Sfx.Play("royalWin")
+		Notifications.Reward({ text = "STOLEN", sub = creatureName(data.species, data.mutation), color = Theme.Colors.Gold })
+		Fx.Confetti(workspace.CurrentCamera.ViewportSize / 2, 18)
+	elseif kind == "stolen" then
+		stopChase()
+		local thiefName = if type(data.thiefName) == "string" then data.thiefName else "A thief"
+		toast(thiefName .. " stole your " .. creatureName(data.species, data.mutation), Theme.Colors.Danger, "alert", "wave")
+	elseif kind == "stealFail" then
+		stopHold(true)
+		knockback(data.push)
+		toast(FAIL_TEXT[data.reason] or "Steal failed", Theme.Colors.Danger, "close", "wave", "steal-fail")
+	elseif kind == "recovered" then
+		stopChase()
+		toast(creatureName(data.species, data.mutation) .. " recovered", Theme.Colors.Success, "shield", "wave")
+		Sfx.Play("splash")
+	elseif kind == "revenge" then
+		local name = if type(data.thiefName) == "string" then data.thiefName else ""
+		toast("Revenge on " .. name, Theme.Colors.Warning, "revenge", "wave")
+	end
+end
+
+local function onState(state)
+	if not state.loaded then
+		return
+	end
+	if state.carrying then
+		startHomeGuide(state.carrying)
+	else
+		stopHomeGuide()
+	end
+	setRevenge(state.revenge or nil)
+	refreshShield(state)
+	refreshLock(state)
 end
 
 ---------------------------------------------------------------- Demarrage
 function StealHud.Init(ctx)
-	Util, Theme, Hud, Notifications = ctx.Util, ctx.Theme, ctx.Hud, ctx.Notifications
-	Sfx, Fx = ctx.Sfx, ctx.Fx
-	Components = ctx.Components
+	Util, Theme, Components, Hud, Notifications = ctx.Util, ctx.Theme, ctx.Components, ctx.Hud, ctx.Notifications
+	Sfx, Fx, Config = ctx.Sfx, ctx.Fx, ctx.Config
 	playerGui = player:WaitForChild("PlayerGui")
+	buildHoldBar(ctx.Root)
 end
 
 function StealHud.Start(ctx)
 	Store = ctx.Store
 	Hud.SetAction("lock", { onActivated = onLockPressed })
-	Store.Notified:Connect(function(kind, data)
-		if kind == "stolen" then
-			onStolen(data)
-		end
-	end)
-	Store.StealResult:Connect(onResult)
-	Store.WaveChanged:Connect(function(wave)
-		refreshPrompts()
-		-- la revanche vaut pour l'alerte suivante : on l'efface une fois cette vague passee
-		if revenge and wave.phase == "calm" and wave.cycle > revenge.cycle + 1 then
-			clearRevenge()
-		end
-	end)
-	-- invites personnalisees (Style Custom)
-	local shown: { [ProximityPrompt]: any } = {}
-	ProximityPromptService.PromptShown:Connect(function(prompt, inputType)
-		if not prompt:HasTag(PROMPT_TAG) or shown[prompt] then
-			return
-		end
-		local gui, conns = buildPromptGui(prompt, inputType)
-		shown[prompt] = { gui = gui, conns = conns }
-		prompt.PromptHidden:Once(function()
-			local rec = shown[prompt]
-			shown[prompt] = nil
-			if rec then
-				for _, c in rec.conns do
-					c:Disconnect()
-				end
-				rec.gui:Destroy()
-			end
-		end)
-	end)
+	Store.Notified:Connect(onNotify)
+	Store.Changed:Connect(onState)
+	Store.WaveChanged:Connect(refreshPrompts)
+	onState(Store.Get())
 	task.spawn(watchDisplays)
 	while true do
-		refreshLock()
-		refreshShield()
-		refreshPrompts()
 		task.wait(REFRESH)
+		local state = Store.Get()
+		if state.loaded then
+			refreshShield(state)
+			refreshLock(state)
+		end
+		refreshPrompts()
 	end
 end
 
