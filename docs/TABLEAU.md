@@ -13,6 +13,7 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
 | E | Tide Rush · E Concept | `claude/laughing-lovelace-8xixq7` |
 
 ## Décisions
+- **Moaad, 09/10** : titre du jeu = **« Ride the Tsunami »** (nom affiché proposé : « Ride the Tsunami 🌊 Steal & Ride »). À vérifier dans la recherche Roblox avant publication.
 - **Moaad, 09/10** : concept **Reef Keepers** (docs/DIRECTIONS.md §A, détaillé dans docs/GDD.md).
 - **Moaad, 09/10** : objectif **top 10 Roblox**. Tout est permis pour y arriver, y compris un changement total de concept. E audite Reef Keepers face au top 10 (docs/AUDIT_TOP10.md) avant toute implémentation.
 - **Moaad, 09/10** : « pour le jeu, oublie le halal / haram » (rappel fait une fois). Les règles halal sont levées pour Tide Rush : vol entre joueurs et tirages payants en Robux autorisés. Restent obligatoires : probabilités affichées, PolicyService (ArePaidRandomItemsRestricted), règles communautaires et de monétisation de Roblox, aucune propriété intellectuelle copiée.
@@ -67,5 +68,4 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 - [C 09/10] docs/DA_MONDE.md et docs/CREATURES_ART.md.
 
 ## Questions pour Moaad
-1. Titre du jeu : « Ride the Tsunami » (recommandé par E), « Steal a Sea Creature » (titre de travail, mais « Steal a Fish » existe déjà) ou « Catch, Steal & Ride » ? À vérifier dans la recherche Roblox avant publication.
 2. Prix des gamepasses : les valeurs de départ du GDD §9 restent jusqu'aux premiers tests.
