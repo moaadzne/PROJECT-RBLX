@@ -24,10 +24,10 @@ Statut : v2 complète et perfectible. Les chiffres sont des **valeurs de départ
 Limite : ma recherche web ne remplace pas la recherche Roblox. **Moaad doit taper les 3 titres dans la recherche Roblox avant de publier.**
 
 ### 3 miniatures à tester en A/B
-1. **Surf** : un avatar debout sur une raie géante dorée qui glisse sur la crête d'une vague énorme, bouche ouverte de joie. Ciel orange. Texte « RIDE IT! ».
+1. **Surf** : un avatar debout sur une raie manta Titan dorée qui glisse sur la crête d'une vague énorme, bouche ouverte de joie. Ciel orange. Texte « RIDE IT! ».
 2. **Vol** : un avatar qui court avec une créature arc-en-ciel dans les bras, un autre joueur qui le poursuit, la vague juste derrière. Texte « STEAL IT! ».
 3. **Rareté** : une tortue Titan arc-en-ciel au centre, brillante, entourée de petites créatures normales, un avatar choqué. Texte « RAINBOW GIANT? ».
-Règles : 3 éléments maximum, lisible sur un téléphone, couleurs saturées, aucune personne réelle ni personnage existant.
+Règles : 3 éléments maximum, lisible sur un téléphone, couleurs fortes mais naturelles, key art cinématique, aucune personne réelle ni personnage existant.
 
 ## 1. Univers et histoire courte
 
