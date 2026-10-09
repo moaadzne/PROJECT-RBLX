@@ -1,6 +1,8 @@
 # Audit top 10 Roblox : Reef Keepers peut-il y aller ? (E, 2026-10-09)
 
 ## Verdict en 3 lignes
+> **Mis à jour le 09/10 après la levée des règles halal par Moaad : voir §6.** Nouvelle recommandation : pivot léger vers « Steal a Sea Creature », avec le vol pendant la vague.
+
 - **Le top 10 se joue à environ 120 000 joueurs simultanés minimum** (seuil du n° 10 fin septembre 2026). Aucun design ne garantit ça : c'est du hook, de la viralité, de la vitesse et de la chance. Je ne promets rien.
 - **Reef Keepers tel quel : non.** Il est cozy et solide, mais il n'a ni échanges, ni tension entre joueurs, ni image virale. Il ressemble à une version douce de Grow a Garden, sortie un an après.
 - **On ne change pas de thème, on change de hook.** Les créatures et la vague restent, et on ajoute trois choses : tu **chevauches** tes créatures pour fuir la vague, tu les **échanges**, et tu te **mesures** aux autres. Ensuite on sort vite et on itère selon les données.
@@ -76,6 +78,46 @@ Repère : Brookhaven est parfois n° 1 en direct début octobre (environ 210 K l
 | Fin novembre | Décision franche : on double la mise si la rétention suit, sinon on ajuste le hook. |
 
 Indicateurs à regarder en premier : taux de clic de la miniature, % de joueurs qui dépassent 60 s, D1, durée de session. Ce sont nos mesures, pas des références d'autres jeux.
+
+---
+
+## 6. Mise à jour après la décision de Moaad (09/10) : halal levé
+
+Moaad a décidé que les règles halal ne s'appliquent plus à Tide Rush : **vol entre joueurs** et **tirages payants en Robux** sont autorisés. Restent obligatoires : probabilités affichées, `PolicyService:GetPolicyInfoForPlayerAsync().ArePaidRandomItemsRestricted` avec une alternative sans tirage pour les pays concernés, règles de la communauté et de monétisation de Roblox, aucune propriété intellectuelle copiée, et rien qui puisse faire sanctionner le jeu vu le public mineur.
+
+### 6.1 Les deux nouvelles options, évaluées comme le reste
+| Option | Impact top 10 | Effort | Risque |
+|---|---|---|---|
+| **Vol entre lagons** | Très fort : levier n° 1 du moment (Steal An Egg, Steal a Brainrot), crée le conflit, la revanche, les vidéos | M (A : portage, prise, alerte ; B : HUD de vol ; C : portes de lagon) | Frustration des plus jeunes ; on ressemble à un clone si le hook n'est pas à nous |
+| **Œufs payants en Robux (probas affichées)** | Fort sur le revenu, faible sur le classement (ça ne crée pas de joueurs) | S (l'achat d'œufs existe déjà en pièces) | Pays restreints → obligation d'un achat direct sans tirage ; plaintes parentales si c'est trop agressif |
+| Pièces vendues contre des Robux | Moyen sur le revenu, nul sur le classement | S | Casse l'économie si mal dosé |
+
+### 6.2 La combinaison recommandée pour viser le top 10
+**Pivot léger, même univers : « Steal a Sea Creature » (titre de travail, à vérifier : non pris et pas trop proche de « Steal a Brainrot »).**
+- **Hook 5 s** : la vague dépose des créatures rares sur la plage ; tu les attrapes, tu les élèves, et **pendant la vague tu peux voler celles des autres lagons**.
+- **La vague devient l'arbitre** : elle ouvre le vol. Pendant le calme, les lagons sont fermés (barrière de corail). Quand l'alerte sonne, les barrières tombent : tu as la durée de la vague pour entrer chez un voisin, prendre **une** créature, et rentrer chez toi sans te faire attraper par la vague **ni** toucher par le propriétaire (le toucher = il récupère sa créature). C'est notre twist par rapport aux clones : le vol est un sprint contre la vague.
+- **Défense jouable gratuitement** : rester chez soi pendant la vague, ou bien des pièges et une porte de corail achetables **en pièces**. Un verrou temporaire gratuit de 60 s après chaque vol subi, pour éviter qu'un joueur se fasse vider en boucle.
+- **Monture (changement 2) et créatures uniques par serveur (changement 4)** : on les garde. Voler une Giant arc-en-ciel sur le dos d'une raie, c'est la vidéo.
+- **Échanges (changement 3)** : on les garde, c'est ce qui fait durer l'économie.
+- **Ce qu'on garde du GDD** : créatures, croissance hors ligne, mutations de marée, Codex. Ce qu'on reporte : Léviathan et Tide Rank, en mises à jour.
+
+### 6.3 Monétisation révisée
+| Produit | Prix (R$) | Note |
+|---|---|---|
+| Œuf Robux (Coral, Abyss…), probabilités affichées dans l'interface d'achat | 49 / 149 / 399 | Si `ArePaidRandomItemsRestricted` = vrai : l'œuf Robux est caché et remplacé par un **achat direct** d'une créature précise à prix fixe |
+| Achat direct d'une créature précise | 99–499 | Disponible pour tous ; obligatoire pour les pays restreints |
+| Porte de corail renforcée (gamepass, prise plus lente pour les voleurs, pas une immunité) | 199 | Ne jamais vendre une immunité totale : le jeu deviendrait payer ou se faire vider |
+| Monture rapide, filet, sac, x2 croissance | 149–299 | Inchangé (GDD §9) |
+| Packs de pièces | 25 → 1 000 | Dosés pour représenter des heures de jeu, pas des semaines |
+| Cosmétiques, serveur privé | comme le GDD | — |
+
+Garde-fous **que je recommande** même sans le halal (pour éviter une sanction Roblox et des plaintes de parents, pas par morale) : probabilités visibles **avant** l'achat, pas de faux compte à rebours sur les offres, pas d'œuf payant présenté comme « gratuit », aucun achat qui protège à 100 % du vol.
+
+### 6.4 Notes révisées
+Avec vol + monture + échanges + titre neuf : hook 7, social 8, échanges 7, viralité 7, vitesse de sortie 5. **Moyenne ≈ 7/10** contre 5 avant. Cela ne garantit toujours rien, mais c'est une combinaison au niveau de ce que fait le haut du classement.
+
+### 6.5 Impact sur le calendrier
++3 à 4 jours pour le vol (A et B). Test public vers le **~29/10** au lieu du 26. Ordre de priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux avec PolicyService → échanges.
 
 ## Sources
 - [StudioKrew, top septembre 2026](https://studiokrew.com/blog/?p=2016), [rotrends (Steal An Egg)](https://rotrends.com/game/10563114921), [profitable.app (Steal An Egg)](https://profitable.app/roblox/games/steal-an-egg)
