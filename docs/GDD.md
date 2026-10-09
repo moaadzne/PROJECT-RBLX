@@ -472,6 +472,14 @@ Joueur régulier gratuit : environ **20–30 Pearls par semaine**, donc environ 
 - **Pity** : une Legendary garantie au plus tard à la **80e plongée** sans Legendary ; une Mythic garantie à la **400e**. Les compteurs sont visibles.
 - **Pas de doublons inutiles** : un doublon se convertit en **Shards**, et 10 Shards de la même espèce = +1 stade de croissance. Même un mauvais tirage sert.
 
+### L'entre-deux (réglage validé avec Moaad, 09/10)
+Principe : **tout le monde tire, les payeurs tirent plus et plus profond.**
+- **Shallow Dive gratuite, 1 par jour** pour tout le monde : même animation, pool plus modeste (Common 70 / Rare 25 / Epic 5 / Legendary 0 %). Chaque jour, chaque joueur a son petit moment de tirage, et une raison de revenir.
+- **Deep Dive** (payante en Pearls) : le seul accès aux Legendary et Mythic par tirage.
+- **Les plongées gratuites font avancer la pity** des Deep Dive à 50 % : un joueur gratuit fidèle progresse aussi vers sa Legendary.
+- **Le pouvoir reste gagnable en jouant** : les Legendary normales existent aussi sur l'île (anneau extérieur, futures îles), en Juvenile. Deep Dive fait gagner du **temps** (Adult directement) et donne l'**exclusif** (Abyssal). Un gratuit peut tout faire ; un payeur va plus vite et se montre.
+- **Indicateurs pour régler** : si D7 chute, +1 Shallow Dive le week-end ou plus de Pearls par défi ; si la conversion est trop basse, plus de visibilité sur l'Abyssal (en jeu, sur les autres joueurs), pas de pression.
+
 ### Règles avec le reste du jeu
 - Les créatures **Abyssal** et toutes celles obtenues par Deep Dive sont **liées** : on ne peut ni les voler ni les échanger. Un joueur qui paie ne se fait pas prendre ce qu'il a payé, et ça empêche la revente contre de l'argent réel.
 - Elles comptent dans le Codex et les classements.
