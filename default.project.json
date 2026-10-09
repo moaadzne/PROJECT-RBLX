@@ -8,7 +8,9 @@
         "$ignoreUnknownInstances": true
       },
       "Remotes": {
-        "$path": { "optional": "src/ReplicatedStorage/Remotes" },
+        "$path": {
+          "optional": "src/ReplicatedStorage/Remotes"
+        },
         "$ignoreUnknownInstances": true
       }
     },
@@ -20,14 +22,24 @@
       "StarterPlayerScripts": {
         "$path": "src/StarterPlayer/StarterPlayerScripts",
         "$ignoreUnknownInstances": true
+      },
+      "StarterCharacterScripts": {
+        "$path": {
+          "optional": "src/StarterPlayer/StarterCharacterScripts"
+        },
+        "$ignoreUnknownInstances": true
       }
     },
     "StarterGui": {
-      "$path": { "optional": "src/StarterGui" },
+      "$path": {
+        "optional": "src/StarterGui"
+      },
       "$ignoreUnknownInstances": true
     },
     "ReplicatedFirst": {
-      "$path": { "optional": "src/ReplicatedFirst" },
+      "$path": {
+        "optional": "src/ReplicatedFirst"
+      },
       "$ignoreUnknownInstances": true
     }
   }

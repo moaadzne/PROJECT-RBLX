@@ -106,6 +106,37 @@ Avant de montrer quoi que ce soit à Moaad : checklist §6 entièrement verte.
 - Les avatars des joueurs restent ceux de Roblox. Réglage possible (décision de D) : Game Settings → Avatar → R15 et des proportions plus réalistes. Les avatars restent quand même ceux des joueurs.
 - Le téléphone moyen fixe le plafond : peu de lumières dynamiques, des particules dosées, StreamingEnabled. Le « wow » vient de la lumière, de l'eau, du son et de la mise en scène, pas du nombre de polygones.
 
+## 8 bis. Remplacer les bases de Roblox (demande de Moaad : « faut tout changer, même les bases de Roblox, tout modifier »)
+Règle : **tout ce que Roblox permet de remplacer est remplacé.** Seul ce qui est imposé reste (tableau 2).
+
+**1. Ce qu'on remplace**
+| Élément Roblox par défaut | Remplacé par | Qui | Comment |
+|---|---|---|---|
+| Écran de chargement Roblox | Écran maison (image de la baie, barre fine) | B | `ReplicatedFirst` + `RemoveDefaultLoadingScreen()` |
+| Leaderboard, sac (Backpack), barre de vie, roue d'emotes | Masqués, remplacés par nos panneaux | B | `SetCoreGuiEnabled(…, false)` |
+| Nom et vie au-dessus des têtes | Étiquette maison (nom, rang, titre de la Marée Royale) | A + B | `Humanoid.DisplayDistanceType = None` (A) + BillboardGui (B) |
+| Chat (fenêtre et bulles) | Notre police, nos couleurs, notre position | B | `TextChatService` : ChatWindowConfiguration et BubbleChatConfiguration |
+| Caméra | Caméra maison : FOV dynamique, secousse de la vague, cinématique d'arrivée | B | Module caméra client, avec les contrôles standards gardés |
+| Joystick et bouton de saut sur mobile | Notre apparence, même comportement | B | Seulement si c'est sûr : des contrôles cassés = joueurs perdus |
+| Animations du personnage (marche, course, saut, nage) | Pack d'animations plus naturel, identique pour tous | Moaad + B | Game Settings → Avatar → Animation, ou script `Animate` dans StarterCharacterScripts |
+| Sons du personnage (pas, saut, « oof ») | Pas selon le sol (sable, bois, eau), éclaboussures | C + B | Remplacer `RbxCharacterSounds` dans StarterPlayerScripts |
+| Proportions des avatars | R15 obligatoire, proportions réalistes et identiques | Moaad + D | Game Settings → Avatar (type R15, plages d'échelle) |
+| Mort et réapparition | Jamais de mort : retour à la base, déjà prévu | A | Déjà dans le serveur |
+| Invites « Appuyer sur E » | Notre style | B | `ProximityPrompt.Style = Custom` |
+| Curseur (PC) | Curseur maison | B | Icône de souris personnalisée |
+| Ciel, lumière, eau | Déjà remplacés | C | DA_MONDE |
+
+**2. Ce que Roblox impose (impossible à retirer)**
+- Le bouton du menu Roblox en haut de l'écran et le menu Échap.
+- Les fenêtres d'achat en Robux.
+- Certains messages système : déconnexion, erreurs réseau.
+
+**Avis de F (à trancher par D avec Moaad)** : remplacer l'avatar de chaque joueur par un personnage unique imposé (StarterCharacter) est possible. Mais les joueurs perdent leur identité, et leur avatar est ce qu'ils montrent dans leurs vidéos et à leurs amis. Je recommande plutôt : avatar du joueur gardé, proportions réalistes identiques pour tous, nos animations, et une tenue « Reef Keeper » en cosmétique.
+
+À ajouter à la checklist §6 : aucun élément du tableau 1 n'apparaît sous sa forme Roblox par défaut.
+
+Pour Rojo : `src/StarterPlayer/StarterCharacterScripts` est maintenant mappé (chemin optionnel, protégé), pour le script `Animate` et les sons du personnage.
+
 ## 9. Application (proposée à D, qui décide et distribue)
 - **E** : noms des créatures et des stades, émotion de l'onboarding (§7), ton des textes de la boucle.
 - **B** : police des titres, style des panneaux et des icônes, cinématique d'arrivée et ressenti (§4, §5).
