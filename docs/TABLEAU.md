@@ -26,7 +26,14 @@ Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7`
   - **Exception validée** : en jeu seulement, le client (B) peut animer localement Lighting et Atmosphere pour les marées, avec les valeurs fournies par C. Jamais en mode édition.
   - Tant que les modèles de C manquent, les créatures utilisent les modèles des anciens trésors (via Config.LegacyItemToCreature).
 
-## Phase 1 — EN ATTENTE de l'audit top 10 (le périmètre peut changer)
+## Direction v2 (D, 09/10, d'après docs/AUDIT_TOP10.md et « fais ce qui attire le plus de joueurs »)
+- On garde le thème : créatures marines et vague. On change le hook : **titre verbe + objet**, **monture** (les Giant surfent la vague), **vol entre lagons** en version complète (verrou gratuit, récupération en touchant le voleur, protection des nouveaux joueurs, pas de protection payante au lancement), **Marée Royale** (classement à chaque marée spéciale), **échanges** en semaine 2.
+- Phase 1 v2 : 1 zone, 3 espèces (au moins une montable), monture, vol, Golden Tide, Marée Royale, sauvegarde. Boutique minimale.
+- Calendrier visé : Studio du 12 au 19/10 → test fermé du 20 au 23/10 → premier test public vers le 26/10 (A/B des miniatures, petit budget pub décidé par Moaad) → une mise à jour par semaine.
+- Modéliste de créatures : pas de dépense avant le test fermé ; prototype avec generate_mesh et le Creator Store.
+- E écrit le GDD v2. A, B et C démarrent le noyau commun (contrat v2, données, créatures, HUD, lagon).
+
+## Phase 1 — en cours (le détail suit le GDD v2)
 | # | Qui | Tâche | État |
 |---|---|---|---|
 | P1-01 | A | Contrat des remotes v2 (additif) dans review/review_context.md | à faire, prioritaire |
