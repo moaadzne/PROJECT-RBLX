@@ -48,11 +48,11 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-01 | A | Contrat des remotes v2 et v2.1 (GDD §11) | fait (73c5704) |
 | P1-02 | A | Config v2 (§13), schéma v2, migration vers legacy.v1 | fait (c9b95d2) ; reste le roster v3 et les stades renommés |
 | P1-03 | A | Intro : spawn au lagon, vague d'intro par joueur, 2e marée Golden | fait (c9b95d2) |
-| P1-04 | A | Ouverture des lagons par phase de vague (`PlotN.Barrier`, attribut `Open`, autorité serveur) | à faire |
-| P1-05 | A | StealService et toutes les protections du §4.7 | à faire |
-| P1-06 | A | MountService (les Giant surfent la vague) | à faire |
-| P1-07 | A | RoyalService (score, top 3, créature unique) | à faire |
-| P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | à faire |
+| P1-04 | A | Ouverture des lagons par phase de vague (`PlotN.Barrier`, attribut `Open`, autorité serveur) | fait (LagoonService) |
+| P1-05 | A | StealService et toutes les protections du §4.7 | fait |
+| P1-06 | A | MountService (les Titan surfent la vague) | fait ; à aligner sur les stades renommés |
+| P1-07 | A | RoyalService (score, top 3, créature unique) | fait |
+| P1-08 | A | Marketplace : 3 passes, Tide Egg 79 / Pick a Creature 149 selon PolicyService | en cours (ShopService) |
 | P1-09 | A | RF RedeemCode (codes promo) + événements AnalyticsService du funnel (docs/LANCEMENT.md) | à faire, après P1-08 |
 | P1-10 | B | Intro de 30 s sans HUD (caméra, flèche, fondu) | fait (Onboarding) |
 | P1-11 | B | HUD de vol (alerte, flèche, maintien, verrou, revanche, bouclier) | fait (a24dbc7) |
@@ -80,4 +80,5 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 - [C 09/10] docs/DA_MONDE.md et docs/CREATURES_ART.md.
 
 ## Questions pour Moaad
+1. Créer les gamepasses et produits développeur dans Creator Hub (après la publication privée), puis donner leurs ids à A. En attendant, les ids sont à 0 et la boutique est désactivée.
 2. Prix des gamepasses : les valeurs de départ du GDD §9 restent jusqu'aux premiers tests.
