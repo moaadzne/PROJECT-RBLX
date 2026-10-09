@@ -1,15 +1,22 @@
-# Tide Rush : Reef Keepers — contexte serveur et contrat des remotes v2
+# Ride the Tsunami (Reef Keepers) — contexte serveur et contrat des remotes v2.1
 
 Mis à jour par A le 2026-10-09. Le contrat v1 (trésors) est remplacé : le client v1 n'est pas compatible, B code contre la v2.
-Référence design : docs/GDD.md (§1 ter, §4, §5, §8, §12, §13) et docs/TABLEAU.md (décisions de D).
+- **v2.1** (GDD v2 « Steal & Ride ») : ouverture des lagons, vol, monture, Marée Royale et boutique sont en Phase 1. Elles remplacent les « emplacements réservés » de la v2.
+- Tout le reste de la v2 est inchangé.
+Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12, §13) et docs/TABLEAU.md (décisions de D).
 
 ## Code serveur
-- `src/ServerScriptService/Main.server.lua` (Script) ; `Services/*.lua` (ModuleScripts) : Net, Stats, DataService, PlotService, WaveService, CreatureService, CreatureFactory, IntroService, UpgradeService, PetService, DebugService, SelfTest.
+- `src/ServerScriptService/Main.server.lua` (Script) ; `Services/*.lua` (ModuleScripts) : Net, Stats, DataService, PlotService, WaveService, CreatureService, CreatureFactory, IntroService, LagoonService, StealService, MountService, RoyalService, ShopService, UpgradeService, PetService, DebugService, SelfTest.
 - Config partagée (lue aussi par le client, source unique des chiffres et des probabilités affichées) : `ReplicatedStorage.Shared.Config`.
 - 8 joueurs max par serveur, mobile d'abord. Serveur qui fait autorité : temps, stades, mutations et valeurs sont calculés côté serveur.
 
 ## Règles de jeu (Phase 1, GDD §12)
-- Zone ouverte : Shallows (zone 1). Les zones 2 à 5 sont dans Config mais `open = false`.
+- Zone ouverte : Shallows (zone 1) avec Pebble Crab, Sand Star et Reef Hatchling (10 %, montable). Les zones 2 à 5 sont dans Config mais `open = false`.
+- **Phases et lagons** (GDD §2) :
+  - calme : les lagons sont **fermés** ;
+  - alerte et vague : ils sont **ouverts**, c'est la fenêtre de vol, sauf lagon verrouillé ou protégé ;
+  - reflux : ils se referment.
+  Le propriétaire entre toujours chez lui.
 - **Marée** : chaque cycle de vague a un type (`Normal` ou `Golden` en Phase 1). Calendrier déterministe à partir du numéro de cycle (Config.TideSchedule).
 - **Créatures sur la plage** : au début du calme, la plage se remplit ; pendant le calme, elle se recharge. La **mutation est tirée à l'apparition**, avec les chances de la marée en cours (Config.Tides). La vague emporte les créatures de la plage au passage de son front.
 - **Capture** : au contact (rayon Config.PickupRadius, vérifié 10 fois/s par le serveur), sac limité (Bag).
@@ -26,6 +33,32 @@ Référence design : docs/GDD.md (§1 ter, §4, §5, §8, §12, §13) et docs/TA
   - **vague d'intro personnelle** 18 s après le chargement : elle ne peut pas attraper le joueur, mais elle emporte ses créatures personnelles restées sur le sable ;
   - au premier calme global qui suit, **marée Golden personnelle** : sa WaveState indique `tide = "Golden"` et 5 créatures personnelles sont tirées avec les chances Golden, dont au moins une Golden ;
   - ensuite, le calendrier normal.
+- **Vol** (GDD §4.7) :
+  - pendant la fenêtre, on entre dans un lagon ouvert et on maintient 1 s près d'un bassin (`StartSteal`) ;
+  - on porte 1 créature à la fois, vitesse ×0,8, impossible de monter ;
+  - il faut rentrer chez soi avant la fin du reflux, sinon la créature retourne chez son propriétaire ;
+  - elle retourne aussi chez lui s'il touche le voleur, si le voleur est pris par la vague ou meurt, ou si l'un des deux part.
+  - Protections, toutes vérifiées par le serveur :
+    - jamais la dernière créature, jamais une créature montée ;
+    - débutant : moins de 15 min de jeu cumulé ou moins de 4 créatures. Il ne peut ni voler ni être volé ;
+    - après un vol subi : 2 vagues de protection, plus un marqueur Revanche contre le voleur (son lagon s'ouvre pour toi à l'alerte suivante, même verrouillé) ;
+    - plus de 3 vols subis en 10 min : verrou automatique ;
+    - verrou gratuit (`LockLagoon`) : 1 vague, puis 4 cycles de recharge.
+  - Un joueur hors ligne n'a pas de lagon : il ne peut pas être volé.
+- **Monture** (GDD §4.6) :
+  - espèces de Config.Mount, à partir du stade Adult, une seule à la fois ;
+  - vitesse : Adult ×1,3, Giant ×1,6 ;
+  - une Giant n'est jamais prise par la vague, elle la surfe, et le joueur garde son sac ;
+  - une créature montée rapporte toujours son revenu et ne peut pas être volée ;
+  - la vitesse passe uniquement par WalkSpeed, fixé par le serveur, qui vérifie aussi la vitesse réelle.
+- **Marée Royale** (GDD §4.8), à chaque marée spéciale :
+  - le score est la valeur (revenu/s) des créatures attrapées et volées pendant le cycle ;
+  - à la fin du reflux, le top 3 reçoit une couronne et des pièces (5 / 3 / 2 min de son revenu) ;
+  - une **créature royale** unique apparaît au bout de la zone, toujours Golden.
+- **Boutique** (GDD §9) :
+  - 3 gamepasses : FastGrowth (croissance ×2), BigNet (rayon de capture ×1,5), VIPRider (+10 % pièces, +10 % vitesse de monture) ;
+  - Tide Egg (aléatoire, probabilités affichées) **ou** Pick a Creature (choix direct), selon `ArePaidRandomItemsRestricted` ;
+  - ProcessReceipt idempotent ; les ids Roblox sont dans Config.Shop (0 = produit désactivé).
 - Mort ou reset = sac perdu (Notify `bagLost`). Bouton Home refusé hors du calme (`WaveActive`) et pendant le cooldown (`Cooldown`).
 - Données : DataStore, 3 essais, verrou de session, autosave 90 s, sauvegarde au départ et dans BindToClose. Si le chargement échoue, la session ne sauvegarde jamais (Notify `saveOff`). Schéma v2 ; une donnée v1 est rangée dans `legacy.v1`, rien n'est effacé.
 - Le serveur dépend seulement des NOMS et des ATTRIBUTS de la carte : `Plots/PlotN` (Index, MinX, MaxX, MinZ, MaxZ, SpawnPos), `Pedestals/PedestalN` (Slot, LockGui, hauteur Size.X ; un bassin = un PedestalN), `Towers/TowerN` (Center).
@@ -57,6 +90,18 @@ state = {
   lagoonTier,               -- 1..5
   walkSpeed, homeReadyAt,
   intro,                    -- "intro" | "golden" | "done"
+  newbie,                   -- true pendant la protection débutant (ni voler ni être volé)
+  playTime,                 -- secondes de jeu cumulées
+  mount,                    -- uid de la créature montée, "" sinon
+  carrying,                 -- false, ou {species, mutation, victim (UserId), victimName} : créature volée portée
+  lockActive,               -- true si le verrou couvre la fenêtre en cours ou la prochaine
+  lockReadyAt,              -- heure où LockLagoon redevient possible (0 = prêt)
+  shield,                   -- "" | "newbie" | "stolen" | "cap" | "lock" : pourquoi ton lagon reste fermé
+  protectedUntil,           -- heure de fin de la protection après un vol subi (0 sinon)
+  revenge,                  -- false, ou {userId, name} : la barrière de ce voleur s'ouvre pour toi à la prochaine fenêtre
+  crown,                    -- 0 | 1 | 2 | 3 (Marée Royale)
+  passes = {FastGrowth, BigNet, VIPRider},   -- booléens
+  shop = {randomAllowed},   -- false : montrer Pick a Creature à la place du Tide Egg
   codex = { [species] = { [variant] = true } }, codexCount, codexTotal,
   pets = {{uid, id}}, equipped = {uid...},
   stats = {pickups, deposited, released, caught, wavesSurvived, eggsHatched, upgradesBought, coinsEarned, mutationsFound, offlineCoins},
@@ -69,6 +114,9 @@ creature = {
   stage,                    -- 1..4 (index dans Config.Stages)
   nextStageAt,              -- heure du prochain stade, 0 si Giant
   income,                   -- revenu/s de cette créature (stade et mutation), sans bonus
+  royal,                    -- true pour la créature royale
+  mounted,                  -- true si c'est la monture active (le bassin s'affiche vide)
+  carried,                  -- true si un voleur la porte en ce moment (le bassin s'affiche vide)
 }
 ```
 Le client peut afficher la progression entre deux snapshots grâce à `born`, `nextStageAt` et `serverNow`. Le serveur reste la référence : au changement de stade, il envoie un `grown` et un nouveau snapshot.
@@ -82,6 +130,7 @@ wave = {
   nextSpecial = { tide, cycle },   -- prochaine marée spéciale du calendrier global
   intro,                    -- true seulement pour la vague d'intro personnelle
   startZ, speed,            -- présents seulement si différents de Config.Wave (vague d'intro)
+  royal,                    -- {active = true, endsAt} pendant un cycle de Marée Royale, sinon absent
 }
 ```
 - `startTime` = départ de la vague, en cours ou à venir.
@@ -92,6 +141,15 @@ wave = {
 | kind | data |
 |---|---|
 | welcome | `{text, isNew}` |
+| stealStart | `{role = "victim"|"thief", thief, thiefName, victim, victimName, species, mutation, slot}` : la créature vient d'être prise (alerte du propriétaire) |
+| stealWin | `{victim, victimName, species, mutation, slot}` : le voleur est rentré, la créature est à lui |
+| stolen | `{thief, thiefName, species, mutation, protectedUntil}` : au volé, quand le vol réussit |
+| stealFail | `{reason, push?}`, reason = "moved" \| "touched" \| "time" \| "wave" \| "died" \| "ownerLeft" \| "invalid" ; push = Vector3 (recul à jouer côté client si touché) |
+| recovered | `{species, mutation, slot, reason}` : au propriétaire, sa créature est revenue |
+| revenge | `{thief, thiefName}` : marqueur Revanche gagné |
+| lock | `{active, readyAt}` |
+| royal | `{phase = "start"|"end", top = {{userId, name, score}}, rank?, coins?}` |
+| purchase | `{product, species?, mutation?}` : achat accordé |
 | saveOff | `{text}` |
 | capture | `{species, mutation, rarity, position (Vector3), bagCount, bagMax, isNew}` (isNew = nouvelle case du Codex) |
 | bagFull | `{bagMax}` (au plus une fois toutes les 3 s) |
@@ -113,24 +171,17 @@ wave = {
 - `GoHome() -> (true) | (false, code)` : refusé hors du calme de la vague du joueur, et pendant le cooldown.
 - `HatchEgg(eggId) -> (true, petId, uid) | (false, code)` : œufs en pièces (Phase 2 pour l'interface, le serveur répond déjà).
 - `EquipPet(uid, equip bool) -> (true) | (false, code)` ; `EquipPet("best", true)` équipe les meilleurs.
+- `LockLagoon() -> (true, readyAt) | (false, code)` : verrou gratuit ; couvre la fenêtre en cours (alerte/vague) ou la prochaine (calme/reflux).
+- `StartSteal(plot, slot) -> (true, holdEndsAt) | (false, code)` :
+  - démarre le maintien de 1 s ; le serveur prend la créature à `holdEndsAt` si le voleur n'a pas bougé (Notify `stealStart`), sinon `stealFail {reason = "moved"}` ;
+  - à appeler debout dans le lagon visé, à moins de Config.Steal.grabRange studs du bassin.
+- `Mount(uid | nil) -> (true) | (false, code)` : nil = descendre.
+- `ChoosePick(species) -> (true) | (false, code)` : choix pour Pick a Creature, à appeler juste avant d'ouvrir l'achat. Sans choix, le serveur donne l'espèce de plus grande valeur.
 - Codes : BadRequest, RateLimited, NotLoaded, NotEnoughCoins, MaxLevel, Cooldown, WaveActive, NoPlot, InventoryFull, UnknownPet, EquipFull, ServerError.
+- Codes v2.1 : Closed (hors fenêtre), Locked (lagon verrouillé ou protégé), Newbie, LastCreature, Mounted, Carrying, TooFar, NotStealable, NotMountable, TooYoung, Busy.
 
-### Emplacements réservés (Phase 2, NON implémentés, forme provisoire jusqu'au GDD v2)
-Ces noms sont réservés : personne ne les utilise pour autre chose. Le serveur ne les crée pas encore.
-- **Vol entre lagons** :
-  - RF `StealAttempt(plot, slot) -> (true, stealId) | (false, code)` ;
-  - RE S→C `StealResult(result)`, avec `result = {stealId, thief, victim, species, mutation, success}` ;
-  - attribut `LockedUntil` (heure) sur PlotN = verrou de lagon ;
-  - Notify `stolen` ;
-  - codes prévus : `Locked`, `TooFar`, `NotStealable`.
-- **Monture** :
-  - RF `Mount(mountId) -> (true) | (false, code)` et `Dismount() -> (true)` ;
-  - attribut joueur `Mount` ;
-  - `state.mounts`, `state.mount`.
-- **Marée Royale** (compétition de marée) :
-  - `wave.royal = {active, endsAt}` ;
-  - RE S→C `RoyalBoard(board)`, avec `board = {{userId, name, score}}` ;
-  - Notify `royalResult {rank, reward}`.
+### RemoteEvent RoyalBoard (S→C)
+`(board)` avec `board = {cycle, endsAt, top = {{userId, name, score}}}`, trié, tous les joueurs du serveur. Il est envoyé au début de la manche, puis au plus une fois par seconde quand les scores changent.
 
 ### Objets et attributs à l'exécution
 - `workspace.Creatures` : créatures de la plage.
@@ -139,8 +190,14 @@ Ces noms sont réservés : personne ne les utilise pour autre chose. Le serveur 
   - `Owner` (UserId) seulement sur une créature personnelle de l'intro : le client la cache aux autres joueurs, et seul ce joueur peut l'attraper.
 - `Map.Plots.PlotN.Display` : une créature par bassin, avec les mêmes attributs + Slot, Uid, Born, Stage (1..4), Zone = 0. Le client applique l'échelle du stade (Config.Stages[stage].scale) et le look de mutation (CreatureLook, côté C/B).
 - PlotN : attributs `Owner` (UserId), `OwnerName` (DisplayName), `LagoonTier` (1..5). Owner et OwnerName sont retirés quand la base est libre.
+- PlotN : `Open` (bool, barrière baissée pour tous), `Locked` (bool), `Shield` ("" | "newbie" | "stolen" | "cap" | "lock").
+- `PlotN.Barrier` (Model de C) : attribut `Open`, écrit par le serveur. Le serveur règle `CanCollide` de ses parts. Les groupes de collision `TR_BarrierN` / `TR_CharN` laissent passer le propriétaire, et le joueur qui a la Revanche. B anime le visuel à partir de `Open`.
+- Un joueur trouvé sans droit dans un lagon fermé est ramené devant la barrière (vérification serveur 10 fois/s).
 - Joueur : attributs `Plot`, `Loaded`, `Pets` ("CrabBuddy,Turtle"), `Bag` ("PebbleCrab:Golden,SandStar:" pour afficher la pile sur la tête).
+- Joueur : `Carrying` ("ReefHatchling:Golden" ou ""), `Mount` (espèce ou ""), `MountStage` (3 ou 4), `Surfing` (bool, Giant pendant la vague), `Crown` (0..3), `Newbie` (bool), `VIP` (bool).
+- Monture : le serveur soude au HumanoidRootPart un clone de la créature, à l'échelle de son stade. C fournit l'Attachment `Saddle` dans `Root`. Le serveur relève `Humanoid.HipHeight`. L'animation assise et le surf sont côté client.
+- Créature royale : attribut `Royal = true` sur son modèle, sur la plage comme dans un bassin.
 - leaderstats : `Coins` et `Income` (StringValue).
 
 ## Debug (Studio seulement) : ServerStorage.TR_Debug (BindableFunction)
-Commandes : help, state, addCoins, give, level, forceWave, tide, grow, intro, home, creatures, save, selftest.
+Commandes : help, state, addCoins, give, level, forceWave, tide, grow, intro, home, creatures, save, selftest, playtime (sortir de la protection débutant), steal (vol forcé pour tester).
