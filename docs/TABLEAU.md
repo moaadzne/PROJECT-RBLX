@@ -80,7 +80,8 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | fait (c9b95d2, créées au démarrage) |
 | P1-41 | E | Appliquer DIRECTION_V2 au GDD : roster de vraies espèces, noms, ton des textes, onboarding, miniatures cinématiques | fait (GDD v3, LagoonTiers) |
 | P1-23 | C | Appliquer DIRECTION_V2 : DA du monde, fiches et prompts des créatures réalistes, vague à grande échelle, sons | fait (1a0bd8f) |
-| P1-15 | B | **CRITIQUE avant lundi** : aligner le client sur le contrat v2.1 de A (StartSteal + Notify, Mount(nil), ChoosePick, shop.randomAllowed, newbie/shield, stades Juvenile…Titan, ids v3 dans la démo) ; sinon le vol, la monture et la boutique ne marchent pas | à faire |
+| P1-16 | B | **CRITIQUE** : rendu client de la vague sur son axe N/E/S/W (Config.WaveFrontD, wave.dir), houle d'alerte, ombre et sons de C. Aucun module ne l'affiche ; la version de test utilise un rendu provisoire (testbuild/TestWaveRenderer.client.lua) | à faire à la reprise |
+| P1-15 | B | fait (a6f2ddc) : : aligner le client sur le contrat v2.1 de A (StartSteal + Notify, Mount(nil), ChoosePick, shop.randomAllowed, newbie/shield, stades Juvenile…Titan, ids v3 dans la démo) ; sinon le vol, la monture et la boutique ne marchent pas | à faire |
 | P1-14 | B | Appliquer DIRECTION_V2 : système visuel console (police condensée, panneaux sombres, sans emojis), textes d'action | à faire, prioritaire |
 | P1-34 | F | Passe de cohérence face à DIRECTION_V2 | fait : VISION_TON §7 envoyé à A, B, C et E ; défauts Roblox (§6) distribués |
 | P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | fait (docs/LANCEMENT.md) |

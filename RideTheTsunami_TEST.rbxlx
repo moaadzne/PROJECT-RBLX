@@ -350,6 +350,21 @@ Config.WaveTravel = {
 	W = Vector3.new(1, 0, 0),
 }
 
+-- Maree extreme (GDD 6 bis, P1-37) : environ 1 fois par heure, pendant le calme d'un cycle, la mer se retire
+-- plus loin et revele le recif (Map.Reef, attributs Center + Radius, construit par C ; sinon `reef` ci-dessous).
+-- Des creatures rares y apparaissent pendant revealTime secondes, puis la mer revient et les reprend.
+-- Annoncee seulement par un signe (cote client, d'apres wave.extreme). Chiffres de depart [a caler par E].
+Config.ExtremeTide = {
+	everyCycles = 58, -- un cycle dure environ 1 min : 58 cycles, environ 1 h
+	offset = 29, -- cycle % everyCycles == offset (jamais en meme temps qu'une maree speciale tous les 8)
+	revealDelay = 5, -- s apres le debut du calme : la mer se retire
+	revealTime = 25, -- s pendant lesquelles le recif est decouvert (fini avant l'alerte)
+	count = 6,
+	creatures = { { "HawksbillTurtle", 70 }, { "Lionfish", 30 } },
+	mutationTide = "Golden", -- chances de mutation des creatures du recif
+	reef = { center = Vector3.new(0, 0, 335), radius = 30 }, -- repli : recif au sud (+Z)
+}
+
 -- Anneaux de rarete autour de la crique (distance horizontale au centre). La plage se remplit au debut
 -- du calme, puis se recharge toutes les spawnEvery secondes pendant le calme ; la vague emporte tout.
 -- maxItems et spawnEvery : premiers reglages selon la surface de chaque anneau [a caler par E].
@@ -457,6 +472,11 @@ function Config.TideFor(cycle: number): string
 		return schedule.rotation[(n - 1) % #schedule.rotation + 1]
 	end
 	return "Normal"
+end
+
+function Config.IsExtremeCycle(cycle: number): boolean
+	local e = Config.ExtremeTide
+	return cycle > 0 and cycle % e.everyCycles == e.offset
 end
 
 -- Prochaine maree speciale apres le cycle donne : { tide, cycle }
@@ -834,7 +854,7 @@ local LEGENDARY_ORDER = 5
 
 local rng = Random.new()
 local folder = nil
-local active = {} -- [model] = { species, mutation, zone (anneau), pos, owner (UserId) ?, royal ? }
+local active = {} -- [model] = { species, mutation, zone (anneau), pos, owner (UserId) ?, royal ?, reef ? }
 local captureHooks = {}
 local zoneCounts = {} -- [anneau] = creatures partagees seulement
 local towerCenters = {}
@@ -842,6 +862,10 @@ local lastBagFull = {}
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 rayParams.IgnoreWater = false
+-- recif de la maree extreme : il est sous l'eau cote serveur (le retrait de la mer est joue par le client)
+local reefRayParams = RaycastParams.new()
+reefRayParams.FilterType = Enum.RaycastFilterType.Exclude
+reefRayParams.IgnoreWater = true
 
 local spawnMaterials = {}
 for _, name in ipairs(Config.Island.spawnMaterials) do
@@ -902,7 +926,7 @@ function CreatureService.FindSpot(ringIndex)
 	return nil
 end
 
-local function place(species, mutation, ground, zoneIndex, owner, royal)
+local function place(species, mutation, ground, zoneIndex, owner, royal, reef)
 	local basePos = ground + Vector3.new(0, CreatureFactory.RestOffset(species) + GROUND_BOB + GROUND_GAP, 0)
 	local model = CreatureFactory.Create(species, basePos, {
 		mutation = mutation,
@@ -917,7 +941,10 @@ local function place(species, mutation, ground, zoneIndex, owner, royal)
 		return nil
 	end
 	model.Parent = folder
-	active[model] = { species = species, mutation = mutation, zone = zoneIndex, pos = basePos, owner = owner, royal = royal }
+	active[model] = { species = species, mutation = mutation, zone = zoneIndex, pos = basePos, owner = owner, royal = royal, reef = reef }
+	if reef then
+		model:SetAttribute("Reef", true)
+	end
 	return model
 end
 
@@ -937,7 +964,7 @@ end
 
 local function remove(model, info)
 	active[model] = nil
-	if not info.owner and not info.royal then
+	if not info.owner and not info.royal and not info.reef then
 		zoneCounts[info.zone] -= 1
 	end
 	model:Destroy()
@@ -1178,6 +1205,39 @@ local function spawnLoop()
 	end
 end
 
+-- Maree extreme : creatures rares sur le recif decouvert (n'importe quel sol sous l'eau, dans le disque du recif)
+function CreatureService.SpawnReef(center, radius, tide)
+	local e = Config.ExtremeTide
+	local count = 0
+	for _ = 1, e.count * SPAWN_TRIES do
+		if count >= e.count then
+			break
+		end
+		local angle = rng:NextNumber(0, 2 * math.pi)
+		local r = math.sqrt(rng:NextNumber(0, radius * radius))
+		local x, z = center.X + r * math.cos(angle), center.Z + r * math.sin(angle)
+		if not nearCreature(x, z) then
+			local hit = workspace:Raycast(Vector3.new(x, RAY_HEIGHT, z), Vector3.new(0, -RAY_LENGTH, 0), reefRayParams)
+			if hit then
+				local species = Stats.PickWeighted(e.creatures, rng)
+				if place(species, Stats.RollMutation(tide or e.mutationTide, rng), hit.Position, Config.RingAt(hit.Position), nil, nil, true) then
+					count += 1
+				end
+			end
+		end
+	end
+	return count
+end
+
+-- La mer revient : les creatures du recif encore la repartent
+function CreatureService.ClearReef()
+	for model, info in pairs(active) do
+		if info.reef then
+			remove(model, info)
+		end
+	end
+end
+
 -- callback(player, species, mutation, value) a chaque capture (Maree Royale)
 function CreatureService.OnCapture(callback)
 	table.insert(captureHooks, callback)
@@ -1215,17 +1275,20 @@ function CreatureService.SpawnRoyal(mutation)
 end
 
 function CreatureService.Counts()
-	local personal, royal = 0, 0
+	local personal, royal, reef = 0, 0, 0
 	for _, info in pairs(active) do
 		if info.owner then
 			personal += 1
 		elseif info.royal then
 			royal += 1
+		elseif info.reef then
+			reef += 1
 		end
 	end
 	local counts = table.clone(zoneCounts)
 	counts.personal = personal
 	counts.royal = royal
+	counts.reef = reef
 	return counts
 end
 
@@ -1286,6 +1349,20 @@ function CreatureService.Start()
 	-- maree basse : la plage se couvre ; la vague emporte tout au passage de son front
 	WaveService.OnCalm(function(_, tide)
 		CreatureService.FillAll(tide)
+		local extreme = WaveService.Get().extreme
+		if extreme then
+			-- maree extreme : la mer se retire, le recif se couvre de creatures rares, puis la mer les reprend
+			local clock = workspace:GetServerTimeNow()
+			task.delay(math.max(0, extreme.revealAt - clock), function()
+				local count = CreatureService.SpawnReef(extreme.center, extreme.radius)
+				Net.NotifyAll("extreme", {
+					endsAt = extreme.endsAt,
+					count = count,
+					text = "The sea pulls back... something surfaces on the reef!",
+				})
+			end)
+			task.delay(math.max(0, extreme.endsAt - clock), CreatureService.ClearReef)
+		end
 	end)
 	WaveService.OnFront(function(_, front)
 		CreatureService.WashAway(WaveService.Get(), front, nil)
@@ -2180,6 +2257,7 @@ local HELP = table.concat({
 	"forceWave                  -> pendant le calme, l'alerte demarre tout de suite",
 	"tide Normal|Golden         -> maree du prochain cycle",
 	"direction N|E|S|W          -> direction de la vague du prochain cycle",
+	"extreme                    -> maree extreme au prochain cycle",
 	"grow minutes [joueur]      -> vieillit les creatures des bassins",
 	"intro [joueur]             -> rejoue l'intro",
 	"playtime minutes [joueur]  -> temps de jeu cumule (protection debutant)",
@@ -2241,6 +2319,10 @@ end
 function commands.give(species, count, mutation, name)
 	local player = findPlayer(name)
 	return player and CreatureService.GiveToBag(player, species, count, mutation) and "ok" or "echec"
+end
+
+function commands.extreme()
+	return WaveService.ForceExtreme() and "ok : prochain cycle"
 end
 
 function commands.direction(direction)
@@ -4373,6 +4455,19 @@ end
 
 local function checkTides(check)
 	check(Config.TideFor(1) == "Normal", "cycle 1 normal")
+	local extremes, clash = 0, 0
+	for cycle = 1, 600 do
+		if Config.IsExtremeCycle(cycle) then
+			extremes += 1
+			clash += Config.TideFor(cycle) ~= "Normal" and 1 or 0
+		end
+	end
+	check(extremes >= 9 and extremes <= 11, ("maree extreme : %d en 600 cycles (environ 1 par heure)"):format(extremes))
+	check(clash == 0, "jamais maree extreme et maree speciale en meme temps")
+	check(Config.Tides[Config.ExtremeTide.mutationTide] ~= nil, "maree de mutation du recif")
+	for _, entry in ipairs(Config.ExtremeTide.creatures) do
+		check(Config.Creatures[entry[1]] ~= nil, "recif : " .. tostring(entry[1]))
+	end
 	local every = Config.TideSchedule.every
 	check(Config.TideFor(every) == Config.TideSchedule.rotation[1], "premiere speciale")
 	local next = Config.NextSpecial(1)
@@ -4538,7 +4633,7 @@ local function checkCreatures(check)
 		end
 	end
 	local models = folder:GetChildren()
-	local expected = total + counts.personal + counts.royal
+	local expected = total + counts.personal + counts.royal + counts.reef
 	check(#models == expected, ("%d modeles pour %d comptes"):format(#models, expected))
 	check(counts.royal <= 1, "une seule creature royale")
 	for index, model in ipairs(models) do
@@ -4552,12 +4647,13 @@ local function checkCreatures(check)
 			and type(model:GetAttribute("BaseYaw")) == "number" and type(model:GetAttribute("SpinSpeed")) == "number"
 			and type(model:GetAttribute("Bob")) == "number" and model:GetAttribute("Rarity") == (def and def.rarity),
 			"attributs " .. model.Name)
-		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil and not model:GetAttribute("Royal") then
+		if typeof(pos) == "Vector3" and model:GetAttribute("Owner") == nil and not model:GetAttribute("Royal")
+			and not model:GetAttribute("Reef") then
 			check(model:GetAttribute("Zone") == Config.RingAt(pos) and not Config.InCove(pos), "anneau " .. model.Name)
 			for other = index + 1, #models do
 				local otherPos = models[other]:GetAttribute("BasePos")
 				if typeof(otherPos) == "Vector3" and models[other]:GetAttribute("Owner") == nil
-					and not models[other]:GetAttribute("Royal") then
+					and not models[other]:GetAttribute("Royal") and not models[other]:GetAttribute("Reef") then
 					local gap = Vector2.new(pos.X - otherPos.X, pos.Z - otherPos.Z).Magnitude
 					check(gap >= MIN_SPACING, ("ecart %.1f studs"):format(gap))
 				end
@@ -5746,6 +5842,8 @@ local skipCalm = false
 local forcedTide = nil -- debug : maree du prochain cycle
 local cycleTide = "Normal"
 local forcedDirection = nil -- debug : direction du prochain cycle
+local forcedExtreme = false -- debug : maree extreme au prochain cycle
+local cycleExtreme = false
 local cycleDirection = nil
 local nextDirection = nil
 local rng = Random.new()
@@ -5788,6 +5886,17 @@ local function publish(phase, phaseStart, phaseEnd, startTime)
 	}
 	if Config.Royal.onSpecialTides and cycleTide ~= "Normal" then
 		wave.royal = { active = true, endsAt = startTime + TRAVEL_TIME + W.recedeTime }
+	end
+	if cycleExtreme and phase == "calm" then
+		local e = Config.ExtremeTide
+		local center, radius = WaveService.Reef()
+		wave.extreme = {
+			active = true,
+			revealAt = phaseStart + e.revealDelay,
+			endsAt = math.min(phaseEnd, phaseStart + e.revealDelay + e.revealTime),
+			center = center,
+			radius = radius,
+		}
 	end
 	Net.SetWave(wave)
 	for _, hook in ipairs(phaseHooks) do
@@ -5896,6 +6005,8 @@ local function runCycle()
 	skipCalm = false
 	cycleTide = forcedTide or Config.TideFor(cycle)
 	forcedTide = nil
+	cycleExtreme = forcedExtreme or Config.IsExtremeCycle(cycle)
+	forcedExtreme = false
 	cycleDirection = forcedDirection or nextDirection or rollDirection(cycleDirection)
 	forcedDirection = nil
 	nextDirection = rollDirection(cycleDirection)
@@ -5947,6 +6058,24 @@ function WaveService.ForceTide(tide)
 		return false
 	end
 	forcedTide = tide
+	return true
+end
+
+-- Recif de la maree extreme : Map.Reef (Center + Radius) construit par C, sinon le repli de Config
+function WaveService.Reef()
+	local map = workspace:FindFirstChild("Map")
+	local reef = map and map:FindFirstChild("Reef")
+	local center = reef and reef:GetAttribute("Center")
+	local radius = reef and reef:GetAttribute("Radius")
+	if typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
+		return center, radius
+	end
+	return Config.ExtremeTide.reef.center, Config.ExtremeTide.reef.radius
+end
+
+-- Debug : maree extreme au prochain cycle
+function WaveService.ForceExtreme()
+	forcedExtreme = true
 	return true
 end
 
@@ -6198,6 +6327,68 @@ return TestWorld
       </Properties>
       <Item class="LocalScript" referent="28">
         <Properties>
+          <string name="Name">TestWaveRenderer</string>
+          <string name="Source"><![CDATA[-- VERSION DE TEST : rendu simple de la vague sur son axe (N/E/S/W), en attendant le vrai rendu de B (P1-16)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("WaveState")
+
+local h, t = Config.Wave.height, Config.Wave.thickness or 40
+local width = Config.Island.size + 300
+local model = Instance.new("Model")
+model.Name = "TestWave"
+local function mk(name, size, color, transparency, material)
+	local p = Instance.new("Part")
+	p.Name = name
+	p.Anchored = true
+	p.CanCollide = false
+	p.CanQuery = false
+	p.CanTouch = false
+	p.CastShadow = false
+	p.Size = size
+	p.Color = color
+	p.Transparency = transparency
+	p.Material = material
+	p.Parent = model
+	return p
+end
+local body = mk("Body", Vector3.new(width, h, t), Color3.fromRGB(25, 120, 150), 0.2, Enum.Material.Glass)
+local crest = mk("Crest", Vector3.new(width, 4, t * 0.6), Color3.fromRGB(245, 250, 255), 0, Enum.Material.SmoothPlastic)
+model.Parent = workspace
+local hidden = CFrame.new(0, -500, 0)
+
+local wave = nil
+remote.OnClientEvent:Connect(function(w)
+	if type(w) == "table" then
+		wave = w
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	local w = wave
+	if not w or typeof(w.dir) ~= "Vector3" or (w.phase ~= "wave" and w.phase ~= "recede") then
+		body.CFrame = hidden
+		crest.CFrame = hidden
+		return
+	end
+	local now = workspace:GetServerTimeNow()
+	local d = Config.WaveFrontD(w, now)
+	if w.phase == "recede" then
+		local k = math.clamp((now - (w.phaseStart or now)) / (Config.Wave.recedeTime or 2.5), 0, 1)
+		local reach = Config.Island.size / 2 + Config.Island.seaMargin
+		d = d - (d + reach) * k
+	end
+	local pos = Config.Island.center + w.dir * (d - t / 2) + Vector3.new(0, h / 2 - 2, 0)
+	local cf = CFrame.lookAt(pos, pos + w.dir)
+	body.CFrame = cf
+	crest.CFrame = cf * CFrame.new(0, h / 2, -t * 0.3)
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="LocalScript" referent="29">
+        <Properties>
           <string name="Name">TideClient</string>
           <string name="Source"><![CDATA[-- TideClient : point d'entree client (LocalScript dans StarterPlayerScripts).
 -- Cree les ScreenGuis, charge les modules enfants dans l'ordre, puis Init() et Start() de chacun.
@@ -6361,7 +6552,7 @@ startAll(FOUNDATION)
 startAll(SCREENS)
 ]]></string>
         </Properties>
-        <Item class="ModuleScript" referent="29">
+        <Item class="ModuleScript" referent="30">
           <Properties>
             <string name="Name">Ambience</string>
             <string name="Source"><![CDATA[-- Ambience : ambiance des marées et barrieres des lagons, cote client.
@@ -6620,7 +6811,7 @@ return Ambience
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="30">
+        <Item class="ModuleScript" referent="31">
           <Properties>
             <string name="Name">ChatStyle</string>
             <string name="Source"><![CDATA[-- ChatStyle : chat Roblox (TextChatService) a nos couleurs, police et position (VISION_TON §6.1).
@@ -6689,7 +6880,7 @@ return ChatStyle
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="31">
+        <Item class="ModuleScript" referent="32">
           <Properties>
             <string name="Name">Components</string>
             <string name="Source"><![CDATA[-- Components : briques d'interface generiques, style « jeu console » (DIRECTION_V2) : panneaux sombres
@@ -7121,7 +7312,7 @@ return Components
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="32">
+        <Item class="ModuleScript" referent="33">
           <Properties>
             <string name="Name">Feel</string>
             <string name="Source"><![CDATA[-- Feel : ressenti et camera maison (VISION_TON §3 « Ressenti et camera », §6.1), controles standards gardes.
@@ -7261,7 +7452,7 @@ return Feel
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="33">
+        <Item class="ModuleScript" referent="34">
           <Properties>
             <string name="Name">Fx</string>
             <string name="Source"><![CDATA[-- Fx : effets visuels cote client (particules, secousse camera, flash, fondu, lueur des bords,
@@ -7566,7 +7757,7 @@ return Fx
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="34">
+        <Item class="ModuleScript" referent="35">
           <Properties>
             <string name="Name">Hud</string>
             <string name="Source"><![CDATA[-- Hud : HUD « jeu console » (DIRECTION_V2). Porte-monnaie (pieces + revenu), bandeau de marée (type,
@@ -8340,7 +8531,7 @@ return Hud
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="35">
+        <Item class="ModuleScript" referent="36">
           <Properties>
             <string name="Name">MountButton</string>
             <string name="Source"><![CDATA[-- MountButton : bouton RIDE / GET OFF (GDD v2 §4.6, contrat v2.1).
@@ -8415,7 +8606,7 @@ return MountButton
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="36">
+        <Item class="ModuleScript" referent="37">
           <Properties>
             <string name="Name">NameTags</string>
             <string name="Source"><![CDATA[-- NameTags : etiquette maison au-dessus des autres joueurs (VISION_TON §6.1 ; A met DisplayDistanceType = None).
@@ -8606,7 +8797,7 @@ return NameTags
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="37">
+        <Item class="ModuleScript" referent="38">
           <Properties>
             <string name="Name">Notifications</string>
             <string name="Source"><![CDATA[-- Notifications : toasts empiles a droite (3 max, 2,5 s, priorite vague > recompenses > infos)
@@ -9010,7 +9201,7 @@ return Notifications
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="38">
+        <Item class="ModuleScript" referent="39">
           <Properties>
             <string name="Name">Onboarding</string>
             <string name="Source"><![CDATA[-- Onboarding (GDD §1 ter et §8) :
@@ -9429,7 +9620,7 @@ return Onboarding
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="39">
+        <Item class="ModuleScript" referent="40">
           <Properties>
             <string name="Name">PoolBillboards</string>
             <string name="Source"><![CDATA[-- PoolBillboards : etiquette au-dessus de chaque bassin occupe du lagon du joueur
@@ -9711,7 +9902,7 @@ return PoolBillboards
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="40">
+        <Item class="ModuleScript" referent="41">
           <Properties>
             <string name="Name">Prompts</string>
             <string name="Source"><![CDATA[-- Prompts : interface maison de toutes les invites ProximityPrompt en Style Custom (VISION_TON §6.1 ;
@@ -9896,7 +10087,7 @@ return Prompts
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="41">
+        <Item class="ModuleScript" referent="42">
           <Properties>
             <string name="Name">RoyalHud</string>
             <string name="Source"><![CDATA[-- RoyalHud : Maree Royale (GDD v2 §4.8, contrat v2.1).
@@ -10018,7 +10209,7 @@ return RoyalHud
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="42">
+        <Item class="ModuleScript" referent="43">
           <Properties>
             <string name="Name">Settings</string>
             <string name="Source"><![CDATA[-- Settings : reglages du joueur (graphismes, volume, reduire les animations, taille de l'interface).
@@ -10089,7 +10280,7 @@ return Settings
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="43">
+        <Item class="ModuleScript" referent="44">
           <Properties>
             <string name="Name">Sfx</string>
             <string name="Source"><![CDATA[-- Sfx : sons cote client. Cherche ReplicatedStorage.Assets.Sounds.<nom> (fournis par C, T-012).
@@ -10227,7 +10418,7 @@ return Sfx
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="44">
+        <Item class="ModuleScript" referent="45">
           <Properties>
             <string name="Name">Shop</string>
             <string name="Source"><![CDATA[-- Shop : boutique de lancement (GDD v2 §9, contrat v2.1). Style console. S'ouvre seulement sur demande
@@ -10679,7 +10870,7 @@ return Shop
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="45">
+        <Item class="ModuleScript" referent="46">
           <Properties>
             <string name="Name">StealHud</string>
             <string name="Source"><![CDATA[-- StealHud : interface du vol entre lagons (GDD v2 §4.7, contrat v2.1). Style console, textes courts.
@@ -11310,7 +11501,7 @@ return StealHud
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="46">
+        <Item class="ModuleScript" referent="47">
           <Properties>
             <string name="Name">Store</string>
             <string name="Source"><![CDATA[-- Store : etat client (snapshot serveur + vague du joueur) et appels reseau (contrat des remotes v2 de A,
@@ -12199,7 +12390,7 @@ return Store
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="47">
+        <Item class="ModuleScript" referent="48">
           <Properties>
             <string name="Name">Theme</string>
             <string name="Source"><![CDATA[-- Theme : systeme visuel « jeu console » (docs/DIRECTION_V2.md, prime sur la bible) :
@@ -12919,7 +13110,7 @@ return Theme
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="48">
+        <Item class="ModuleScript" referent="49">
           <Properties>
             <string name="Name">Util</string>
             <string name="Source"><![CDATA[-- Util : outils partages cote client (signal, nettoyage, tweens, ressort, formats, coordonnees ecran).
@@ -13138,7 +13329,7 @@ return Util
 ]]></string>
           </Properties>
         </Item>
-        <Item class="ModuleScript" referent="49">
+        <Item class="ModuleScript" referent="50">
           <Properties>
             <string name="Name">World</string>
             <string name="Source"><![CDATA[-- World : rendu client des creatures (le serveur ne les bouge jamais, contrat v2).
@@ -13413,7 +13604,7 @@ return World
       </Item>
     </Item>
   </Item>
-  <Item class="Workspace" referent="50">
+  <Item class="Workspace" referent="51">
     <Properties>
       <string name="Name">Workspace</string>
       <bool name="NeedsPivotMigration">false</bool>
