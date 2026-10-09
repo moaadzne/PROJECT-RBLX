@@ -9,6 +9,7 @@ local CreatureService = require(Services.CreatureService)
 local IntroService = require(Services.IntroService)
 local LagoonService = require(Services.LagoonService)
 local StealService = require(Services.StealService)
+local MountService = require(Services.MountService)
 local WaveService = require(Services.WaveService)
 local UpgradeService = require(Services.UpgradeService)
 local PetService = require(Services.PetService)
@@ -16,7 +17,7 @@ local DebugService = require(Services.DebugService)
 
 -- WaveService en dernier : ses crochets (OnCalm, OnFront) sont branches avant le premier cycle
 for _, service in ipairs({
-	DataService, PlotService, CreatureService, IntroService, LagoonService, StealService,
+	DataService, PlotService, CreatureService, IntroService, LagoonService, StealService, MountService,
 	UpgradeService, PetService, WaveService, DebugService,
 }) do
 	service.Start()
@@ -26,6 +27,7 @@ local function onPlayerAdded(player)
 	DataService.Track(player) -- profil cree tout de suite, donnees chargees en fond
 	PlotService.Assign(player)
 	LagoonService.Track(player)
+	MountService.Track(player)
 	Net.SendWave(player)
 end
 
@@ -34,6 +36,7 @@ local function onPlayerRemoving(player)
 	PlotService.Release(player)
 	CreatureService.Forget(player)
 	IntroService.Forget(player)
+	MountService.Forget(player)
 	WaveService.Forget(player)
 	Net.Forget(player)
 	DataService.Release(player) -- derniere sauvegarde : attend le DataStore, donc en dernier

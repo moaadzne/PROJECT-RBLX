@@ -139,7 +139,7 @@ Config.Shop = {
 }
 
 -- Verification serveur de la vitesse reelle (anti speed hack) : distance horizontale sur `window` s
-Config.SpeedGuard = { window = 1.0, tolerance = 1.35, slack = 6, surfSpeed = 60 }
+Config.SpeedGuard = { window = 1.0, tolerance = 1.35, slack = 10, surfSpeed = 60 }
 
 -- Anciens tresors : gardes seulement pour les modeles de repli (Assets.Items) et l'ancien client
 Config.Items = {

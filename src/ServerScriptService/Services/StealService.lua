@@ -169,6 +169,7 @@ local function giveBack(thief, reason, push)
 	end
 	profile.carrying = nil
 	profile.carryMult = 1
+	profile.movedByServerAt = os.clock() -- le recul joue par le client ne compte pas comme un exces de vitesse
 	if thief.Parent then
 		setCarryAttribute(thief, nil)
 		PlotService.ApplySpeed(thief)
