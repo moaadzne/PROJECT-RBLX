@@ -1,27 +1,28 @@
--- Hud : HUD de la Phase 1 (style console). Porte-monnaie (pieces + revenu), bandeau de marée (type,
--- compte a rebours, prochaine marée speciale). Places reservees, logique au GDD v2 : alerte de vol,
--- boutons d'action (monture, verrou du lagon), classement de la Marée Royale.
+-- Hud : HUD « jeu console » (DIRECTION_V2). Porte-monnaie (pieces + revenu), bandeau de marée (type,
+-- compte a rebours, prochaine marée speciale), alerte, colonne d'etats, boutons d'action (verrou,
+-- monture, boutique), classement de la Marée Royale. Aucun emoji : icones de Theme.Icon.
 -- Cache tant que l'etat n'est pas charge ; Onboarding peut le retenir jusqu'a la fin de la 1re vague.
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Hud = {}
 
-local FADE_TIME = 0.5
+local FADE_TIME = 0.25
 local TICK = 0.1 -- rafraichissement du minuteur et de la barre (s)
-local SIREN_AT = 3 -- s avant la vague : sirene + pulsation rouge
+local SIREN_AT = 3 -- s avant la vague : corne de brume + pulsation rouge
 local PULSE_HZ = 1.5 -- sous la limite de 3 clignotements par seconde (bible §5)
 local BIG_GAIN = 0.05 -- un gain > 5 % des pieces fait rebondir la piece
 local ALERT_TIME = 4
 local LEADERBOARD_ROWS = 3 -- top 3 de la Maree Royale (+ ma ligne si je suis plus bas)
-local MEDALS = { Color3.fromRGB(255, 204, 64), Color3.fromRGB(205, 215, 230), Color3.fromRGB(215, 140, 80) }
+local MEDALS = { Color3.fromRGB(240, 190, 70), Color3.fromRGB(200, 208, 220), Color3.fromRGB(200, 130, 75) }
 local HOLD_MAX = 150 -- s : meme retenu par l'onboarding, le HUD finit par apparaitre
 
+-- Textes d'action courts (DIRECTION_V2) ; l'alerte et la vague = fenetre de vol : les lagons sont ouverts
 local PHASE_TEXT = {
-	calm = "Next wave in",
-	warning = "Wave incoming!",
-	wave = "Get to high ground!",
-	recede = "Safe!",
+	calm = "Wave in",
+	warning = "Lagoons open",
+	wave = "Survive",
+	recede = "Lagoons closing",
 }
 
 local Util, Theme, Components, Store, Fx, Sfx, Config, Settings
@@ -41,7 +42,7 @@ local lastCoins: number? = nil
 local tidePlate: Frame
 local tideStroke: UIStroke
 local tideAccent: Frame
-local tideIcon: TextLabel
+local tideIcon: GuiObject? = nil
 local tideName: TextLabel
 local phaseLabel: TextLabel
 local timerLabel: TextLabel
@@ -54,7 +55,8 @@ local sirenCycle = -1
 -- places reservees
 local alertGroup: CanvasGroup
 local alertText: TextLabel
-local alertIcon: TextLabel
+local alertIcon: GuiObject? = nil
+local alertPlate: Frame
 local alertToken = 0
 local actionBar: Frame
 local actions: { [string]: any } = {}
@@ -63,6 +65,7 @@ local boardTitle: TextLabel
 local boardRows: { Frame } = {}
 local leftColumn: Frame
 local statuses: { [string]: Frame } = {}
+local setTideIcon, setAlertIcon
 
 ---------------------------------------------------------------- Construction
 local function canvas(props: { [string]: any }): CanvasGroup
@@ -80,6 +83,31 @@ local function canvas(props: { [string]: any }): CanvasGroup
 	return group
 end
 
+-- Icones dessinees : on remplace l'instance (une icone n'est pas un texte)
+function setTideIcon(name: string, color: Color3)
+	if tideIcon then
+		tideIcon:Destroy()
+	end
+	local icon = Theme.Icon(name, 28, color)
+	icon.AnchorPoint = Vector2.new(0, 0.5)
+	icon.Position = UDim2.new(0, 14, 0.5, 0)
+	icon.ZIndex = 3
+	icon.Parent = tidePlate
+	tideIcon = icon
+end
+
+function setAlertIcon(name: string)
+	if alertIcon then
+		alertIcon:Destroy()
+	end
+	local icon = Theme.Icon(name, 30, Theme.Colors.Text)
+	icon.AnchorPoint = Vector2.new(0, 0.5)
+	icon.Position = UDim2.new(0, 12, 0.5, 0)
+	icon.ZIndex = 3
+	icon.Parent = alertPlate
+	alertIcon = icon
+end
+
 -- Colonne gauche sous le porte-monnaie : pastilles d'etat (bouclier, revanche...) puis classement
 local function buildLeftColumn()
 	leftColumn = Theme.Create("Frame", {
@@ -93,37 +121,34 @@ local function buildLeftColumn()
 end
 
 local function buildWallet()
-	local group = canvas({ Name = "Wallet", Position = UDim2.fromOffset(12, 66), Size = UDim2.fromOffset(240, 104) })
+	local group = canvas({ Name = "Wallet", Position = UDim2.fromOffset(12, 66), Size = UDim2.fromOffset(240, 100) })
 	table.insert(fadeGroups, group)
 	local plate = Theme.Plate({
 		Name = "CoinsPlate",
-		Position = UDim2.fromOffset(8, 8),
-		Size = UDim2.fromOffset(212, 56),
-		Rotation = -2,
-		Accent = Theme.Colors.Gold,
+		Position = UDim2.fromOffset(4, 4),
+		Size = UDim2.fromOffset(212, 52),
 		Parent = group,
 	})
-	coinIcon = Theme.CoinIcon(46)
+	coinIcon = Theme.CoinIcon(28)
 	coinIcon.AnchorPoint = Vector2.new(0, 0.5)
-	coinIcon.Position = UDim2.new(0, -6, 0.5, 0)
+	coinIcon.Position = UDim2.new(0, 12, 0.5, 0)
 	coinIcon.ZIndex = 3
 	coinIcon.Parent = plate
 	coinCounter = Components.Counter({
 		Name = "Coins",
-		Position = UDim2.fromOffset(48, 4),
-		Size = UDim2.new(1, -56, 1, -4),
+		Position = UDim2.fromOffset(50, 0),
+		Size = UDim2.new(1, -60, 1, 0),
 		TextSize = Theme.TextSize.Huge,
-		Font = Theme.Fonts.Title,
-		Color = Theme.Colors.Gold,
+		Font = Theme.Fonts.Number,
+		Color = Theme.Colors.Text,
 		PopOnRise = false,
 		ZIndex = 3,
 		Parent = plate,
 	})
 	local incomePlate = Theme.Plate({
 		Name = "IncomePlate",
-		Position = UDim2.fromOffset(20, 68),
-		Size = UDim2.fromOffset(132, 30),
-		Radius = 10,
+		Position = UDim2.fromOffset(4, 60),
+		Size = UDim2.fromOffset(120, 30),
 		Parent = group,
 	})
 	incomeLabel = Theme.Text({
@@ -131,8 +156,8 @@ local function buildWallet()
 		Size = UDim2.fromScale(1, 1),
 		Text = "+0/s",
 		TextSize = Theme.TextSize.Large,
-		FontFace = Theme.Fonts.Title,
-		TextColor3 = Theme.Colors.Success,
+		FontFace = Theme.Fonts.Number,
+		TextColor3 = Theme.Colors.Gold,
 		ZIndex = 2,
 		Parent = incomePlate,
 	})
@@ -155,23 +180,12 @@ local function buildTide()
 	})
 	tideStroke = tidePlate:FindFirstChildOfClass("UIStroke") :: UIStroke
 	tideAccent = tidePlate:FindFirstChild("Accent") :: Frame
-	tideIcon = Theme.Create("TextLabel", {
-		Name = "Icon",
-		BackgroundTransparency = 1,
-		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(0, 10, 0.5, 2),
-		Size = UDim2.fromOffset(38, 38),
-		Text = Theme.Tides.Normal.icon,
-		TextScaled = true,
-		FontFace = Theme.Fonts.Bold,
-		ZIndex = 3,
-		Parent = tidePlate,
-	})
+	setTideIcon("wave", Theme.Tides.Normal.color)
 	tideName = Theme.Text({
 		Name = "TideName",
-		Position = UDim2.fromOffset(56, 9),
+		Position = UDim2.fromOffset(52, 9),
 		Size = UDim2.new(1, -160, 0, 26),
-		Text = Theme.Tides.Normal.label,
+		Text = Theme.Caps(Theme.Tides.Normal.label),
 		TextSize = Theme.TextSize.Large,
 		FontFace = Theme.Fonts.Title,
 		TextColor3 = Theme.Tides.Normal.color,
@@ -181,10 +195,11 @@ local function buildTide()
 	})
 	phaseLabel = Theme.Text({
 		Name = "Phase",
-		Position = UDim2.fromOffset(56, 35),
+		Position = UDim2.fromOffset(52, 35),
 		Size = UDim2.new(1, -160, 0, 22),
-		Text = PHASE_TEXT.calm,
+		Text = Theme.Caps(PHASE_TEXT.calm),
 		TextSize = Theme.TextSize.Small,
+		FontFace = Theme.Fonts.Title,
 		TextColor3 = Theme.Colors.TextDim,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 3,
@@ -197,7 +212,7 @@ local function buildTide()
 		Size = UDim2.fromOffset(96, 44),
 		Text = "",
 		TextSize = Theme.TextSize.Huge,
-		FontFace = Theme.Fonts.Title,
+		FontFace = Theme.Fonts.Number,
 		TextXAlignment = Enum.TextXAlignment.Right,
 		ZIndex = 3,
 		Parent = tidePlate,
@@ -206,7 +221,7 @@ local function buildTide()
 		Name = "TideBar",
 		AnchorPoint = Vector2.new(0.5, 0),
 		Position = UDim2.new(0.5, 0, 0, 74),
-		Size = UDim2.fromOffset(270, 10),
+		Size = UDim2.fromOffset(296, 4),
 		Color = Theme.Tides.Normal.color,
 		Parent = group,
 	})
@@ -214,9 +229,8 @@ local function buildTide()
 	specialChip = Theme.Plate({
 		Name = "NextSpecial",
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 88),
+		Position = UDim2.new(0.5, 0, 0, 84),
 		Size = UDim2.fromOffset(250, 28),
-		Radius = 10,
 		Parent = group,
 	})
 	specialChip.Visible = false
@@ -225,6 +239,7 @@ local function buildTide()
 		Size = UDim2.fromScale(1, 1),
 		Text = "",
 		TextSize = Theme.TextSize.Small,
+		FontFace = Theme.Fonts.Title,
 		RichText = true,
 		ZIndex = 2,
 		Parent = specialChip,
@@ -247,23 +262,9 @@ local function buildAlert()
 		Accent = Theme.Colors.Danger,
 		Parent = alertGroup,
 	})
-	Theme.Gradient(plate, Theme.Colors.Danger, Theme.Colors.Danger:Lerp(Theme.Colors.Black, 0.45), 90).Name = "AlertFill"
-	local fill = plate:FindFirstChild("PlateFill")
-	if fill then
-		fill:Destroy()
-	end
-	alertIcon = Theme.Create("TextLabel", {
-		Name = "Icon",
-		BackgroundTransparency = 1,
-		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(0, 10, 0.5, 0),
-		Size = UDim2.fromOffset(34, 34),
-		Text = "⚠️",
-		TextScaled = true,
-		FontFace = Theme.Fonts.Bold,
-		ZIndex = 3,
-		Parent = plate,
-	})
+	plate.BackgroundColor3 = Theme.Colors.Danger:Lerp(Theme.Colors.Black, 0.55)
+	alertPlate = plate
+	setAlertIcon("alert")
 	alertText = Theme.Text({
 		Name = "Text",
 		Position = UDim2.fromOffset(52, 0),
@@ -311,11 +312,15 @@ local function buildLeaderboard()
 		Accent = Theme.Colors.Gold,
 		Parent = boardGroup,
 	})
+	local crown = Theme.Icon("crown", 20, Theme.Colors.Gold)
+	crown.Position = UDim2.fromOffset(12, 13)
+	crown.ZIndex = 3
+	crown.Parent = plate
 	boardTitle = Theme.Text({
 		Name = "Title",
-		Position = UDim2.fromOffset(12, 10),
-		Size = UDim2.new(1, -24, 0, 26),
-		Text = "👑 Royal Tide",
+		Position = UDim2.fromOffset(40, 10),
+		Size = UDim2.new(1, -52, 0, 26),
+		Text = Theme.Caps("Royal Tide"),
 		TextSize = Theme.TextSize.Large,
 		FontFace = Theme.Fonts.Title,
 		TextColor3 = Theme.Colors.Gold,
@@ -335,7 +340,7 @@ local function buildLeaderboard()
 			ZIndex = 3,
 			Parent = plate,
 		})
-		Theme.Corner(row, 8)
+		Theme.Corner(row, 6)
 		Theme.Text({
 			Name = "Rank",
 			Size = UDim2.new(0, 28, 1, 0),
@@ -378,19 +383,19 @@ local function onState(state, prev)
 	local instant = lastCoins == nil or not shown
 	coinCounter:Set(state.coins, instant)
 	if lastCoins and state.coins - lastCoins > math.max(10, lastCoins * BIG_GAIN) then
-		Theme.Pop(coinIcon, 0.18)
+		Theme.Pop(coinIcon, 0.08)
 	end
 	lastCoins = state.coins
 	incomeLabel.Text = "+" .. Config.Format(state.income) .. "/s"
 	if prev and state.income > prev.income and prev.loaded then
-		Theme.Pop(incomeLabel, 0.12)
+		Theme.Pop(incomeLabel, 0.06)
 	end
 end
 
 local function applyTide(wave)
 	local style = Theme.TideStyle(wave.tide)
-	tideIcon.Text = style.icon
-	tideName.Text = style.label
+	setTideIcon(style.icon, style.color)
+	tideName.Text = Theme.Caps(style.label)
 	tideName.TextColor3 = style.color
 	tideAccent.BackgroundColor3 = style.color
 	tideBar:SetColor(style.color)
@@ -400,8 +405,8 @@ local function applyTide(wave)
 	if ns and cycles and cycles >= 1 and not (wave.tide == ns.tide and wave.tide ~= "Normal") then
 		local nsStyle = Theme.TideStyle(ns.tide)
 		local hex = nsStyle.color:ToHex()
-		local waves = if cycles == 1 then "next wave" else ("in %d waves"):format(cycles)
-		specialText.Text = ('%s <font color="#%s">%s</font> %s'):format(nsStyle.icon, hex, nsStyle.label, waves)
+		local waves = if cycles == 1 then "NEXT WAVE" else ("IN %d WAVES"):format(cycles)
+		specialText.Text = ('<font color="#%s">%s</font>  %s'):format(hex, string.upper(nsStyle.label), waves)
 		specialChip.Visible = true
 	else
 		specialChip.Visible = false
@@ -410,11 +415,12 @@ end
 
 local function onWave(wave, prev)
 	applyTide(wave)
-	phaseLabel.Text = PHASE_TEXT[wave.phase] or ""
-	phaseLabel.TextColor3 = if wave.phase == "warning" or wave.phase == "wave" then Theme.Colors.Coral else Theme.Colors.TextDim
+	phaseLabel.Text = Theme.Caps(PHASE_TEXT[wave.phase] or "")
+	phaseLabel.TextColor3 = if wave.phase == "warning" or wave.phase == "wave" then Theme.Colors.Danger else Theme.Colors.TextDim
 	shownSecond = -1
 	if wave.phase == "warning" and (not prev or prev.phase ~= "warning") then
-		Theme.Pop(tidePlate, 0.08)
+		Theme.Pop(tidePlate, 0.05)
+		Sfx.Play("rumble") -- grondement : la vague arrive dans 7 s
 	end
 	if wave.phase ~= "warning" then
 		tideStroke.Color = Theme.Colors.Outline
@@ -441,7 +447,7 @@ local function onHeartbeat(dt: number)
 	if wave.phase == "warning" and left <= SIREN_AT then
 		if sirenCycle ~= wave.cycle then
 			sirenCycle = wave.cycle
-			Sfx.Play("siren")
+			Sfx.Play("horn") -- corne de brume a -3 s (son de C)
 		end
 		local pulse = if Settings.Get("reducedMotion") then 0.5 else 0.5 + 0.5 * math.sin(os.clock() * PULSE_HZ * 2 * math.pi)
 		tideStroke.Color = Theme.Colors.Outline:Lerp(Theme.Colors.Danger, pulse)
@@ -456,7 +462,7 @@ local function onHeartbeat(dt: number)
 	if second ~= shownSecond then
 		shownSecond = second
 		timerLabel.Text = if wave.phase == "recede" then "" else Util.FormatTime(left)
-		timerLabel.TextColor3 = if wave.phase == "warning" or wave.phase == "wave" then Theme.Colors.Coral else Theme.Colors.Text
+		timerLabel.TextColor3 = if wave.phase == "warning" or wave.phase == "wave" then Theme.Colors.Danger else Theme.Colors.Text
 	end
 	if wave.phase == "calm" or wave.phase == "warning" then
 		local cfg = Config.Wave
@@ -519,17 +525,22 @@ function Hud.Hold()
 	held = true
 end
 
--- Alerte en haut de l'ecran. opts : icon, color, duration (s)
+-- Alerte en haut de l'ecran. opts : icon (nom Theme.Icon), color (fond), duration (s)
 function Hud.ShowAlert(text: string, opts: { icon: string?, color: Color3?, duration: number? }?)
 	local o = opts or {}
 	alertToken += 1
 	local token = alertToken
-	alertText.Text = text
-	alertIcon.Text = o.icon or "⚠️"
+	alertText.Text = string.upper(text)
+	setAlertIcon(o.icon or "alert")
+	alertPlate.BackgroundColor3 = (o.color or Theme.Colors.Danger):Lerp(Theme.Colors.Black, 0.55)
+	local accent = alertPlate:FindFirstChild("Accent") :: Frame?
+	if accent then
+		accent.BackgroundColor3 = o.color or Theme.Colors.Danger
+	end
 	alertGroup.Visible = true
 	alertGroup.GroupTransparency = 1
-	Util.Tween(alertGroup, 0.2, { GroupTransparency = 0 }, Enum.EasingStyle.Quad)
-	Theme.Pop(alertGroup, 0.15)
+	Util.Tween(alertGroup, Theme.Time.Fast, { GroupTransparency = 0 }, Enum.EasingStyle.Quad)
+	Theme.Pop(alertGroup, 0.05)
 	Theme.Shake(alertGroup)
 	task.delay(o.duration or ALERT_TIME, function()
 		if alertToken == token then
@@ -541,8 +552,8 @@ end
 function Hud.HideAlert()
 	alertToken += 1
 	local token = alertToken
-	Util.Tween(alertGroup, 0.25, { GroupTransparency = 1 }, Enum.EasingStyle.Quad)
-	task.delay(0.26, function()
+	Util.Tween(alertGroup, Theme.Time.Normal, { GroupTransparency = 1 }, Enum.EasingStyle.Quad)
+	task.delay(Theme.Time.Normal + 0.02, function()
 		if alertToken == token then
 			alertGroup.Visible = false
 		end
@@ -550,13 +561,13 @@ function Hud.HideAlert()
 end
 
 -- Bouton d'action (cree au premier appel). id : "mount", "lock"...
--- opts : visible, icon, label, color, enabled, order, hotkey, onActivated (fonction)
+-- opts : visible, icon (nom Theme.Icon), label, color (accent), enabled, order, hotkey, onActivated (fonction)
 function Hud.SetAction(id: string, opts: { [string]: any })
 	local action = actions[id]
 	if not action then
 		action = Components.IconButton({
 			Name = id,
-			Icon = opts.icon or "?",
+			Icon = opts.icon or "dot",
 			Label = opts.label or id,
 			Color = opts.color,
 			Hotkey = opts.hotkey,
@@ -580,7 +591,7 @@ function Hud.SetAction(id: string, opts: { [string]: any })
 		if keyCode then
 			UserInputService.InputBegan:Connect(function(input, processed)
 				if not processed and input.KeyCode == keyCode and shown and action.Instance.Visible then
-					Theme.Pop(action.Button, 0.08)
+					Theme.Pop(action.Button, 0.05)
 					activate()
 				end
 			end)
@@ -588,13 +599,13 @@ function Hud.SetAction(id: string, opts: { [string]: any })
 		actions[id] = action
 	end
 	if opts.icon then
-		local icon = action.Button:FindFirstChild("Icon") :: TextLabel?
-		if icon then
-			icon.Text = opts.icon
-		end
+		action:SetIcon(opts.icon)
 	end
 	if opts.label then
-		action.Label.Text = opts.label
+		action:SetLabel(opts.label)
+	end
+	if opts.color then
+		action:SetAccent(opts.color)
 	end
 	if opts.enabled ~= nil then
 		action:SetEnabled(opts.enabled)
@@ -605,14 +616,14 @@ function Hud.SetAction(id: string, opts: { [string]: any })
 	if opts.visible ~= nil and action.Instance.Visible ~= opts.visible then
 		action.Instance.Visible = opts.visible
 		if opts.visible then
-			Theme.Pop(action.Button, 0.2)
+			Theme.Pop(action.Button, 0.06)
 		end
 	end
 	return action
 end
 
 -- Pastille d'etat dans la colonne gauche (bouclier debutant, revanche...). opts = nil pour l'enlever.
--- opts : icon, text, color (couleur du texte et du liseré), order
+-- opts : icon (nom Theme.Icon), text, color (couleur du texte et du trait), order
 function Hud.SetStatus(id: string, opts: { icon: string?, text: string, color: Color3?, order: number? }?)
 	local chip = statuses[id]
 	if not opts then
@@ -627,14 +638,13 @@ function Hud.SetStatus(id: string, opts: { icon: string?, text: string, color: C
 		chip = Theme.Plate({
 			Name = "Status_" .. id,
 			Size = UDim2.fromOffset(220, 32),
-			Radius = 10,
 			Accent = color,
 		})
 		chip.LayoutOrder = opts.order or 10
 		Theme.Text({
 			Name = "Text",
-			Position = UDim2.fromOffset(10, 2),
-			Size = UDim2.new(1, -20, 1, -2),
+			Position = UDim2.fromOffset(34, 2),
+			Size = UDim2.new(1, -42, 1, -2),
 			TextSize = Theme.TextSize.Small,
 			FontFace = Theme.Fonts.Title,
 			TextXAlignment = Enum.TextXAlignment.Left,
@@ -644,10 +654,24 @@ function Hud.SetStatus(id: string, opts: { icon: string?, text: string, color: C
 		})
 		chip.Parent = leftColumn
 		statuses[id] = chip
-		Theme.Pop(chip, 0.12)
+		Theme.Pop(chip, 0.05)
+	end
+	-- icone (recreee si le nom ou la couleur change)
+	local iconKey = (opts.icon or "dot") .. color:ToHex()
+	if chip:GetAttribute("IconKey") ~= iconKey then
+		chip:SetAttribute("IconKey", iconKey)
+		local old = chip:FindFirstChild("Icon")
+		if old then
+			old:Destroy()
+		end
+		local icon = Theme.Icon(opts.icon or "dot", 18, color)
+		icon.AnchorPoint = Vector2.new(0, 0.5)
+		icon.Position = UDim2.new(0, 10, 0.5, 1)
+		icon.ZIndex = 3
+		icon.Parent = chip
 	end
 	local label = chip:FindFirstChild("Text") :: TextLabel
-	label.Text = (if opts.icon then opts.icon .. " " else "") .. opts.text
+	label.Text = string.upper(opts.text)
 	label.TextColor3 = color
 	local accent = chip:FindFirstChild("Accent") :: Frame?
 	if accent then
@@ -666,7 +690,7 @@ function Hud.SetLeaderboard(rows: { { name: string, score: number, isMe: boolean
 		boardGroup.Visible = false
 		return
 	end
-	boardTitle.Text = title or "👑 Royal Tide"
+	boardTitle.Text = Theme.Caps(title or "Royal Tide")
 	local me = nil
 	for i, r in rows do
 		if r.isMe then
@@ -715,9 +739,9 @@ function Hud.Init(ctx)
 	buildActions()
 	buildLeftColumn()
 	buildLeaderboard()
-	-- places reservees (GDD v2) : creees cachees pour figer la disposition
-	Hud.SetAction("mount", { icon = "🐢", label = "Ride", color = Theme.Colors.Lagoon, order = 2, hotkey = "R", visible = false })
-	Hud.SetAction("lock", { icon = "🔒", label = "Lock", color = Theme.Colors.Sunset, order = 1, hotkey = "L", visible = false })
+	-- boutons d'action, crees caches (StealHud, MountButton, Shop les pilotent)
+	Hud.SetAction("mount", { icon = "ride", label = "Ride", color = Theme.Colors.Lagoon, order = 2, hotkey = "R", visible = false })
+	Hud.SetAction("lock", { icon = "lock", label = "Lock", color = Theme.Colors.Warning, order = 1, hotkey = "L", visible = false })
 end
 
 function Hud.Start(ctx)

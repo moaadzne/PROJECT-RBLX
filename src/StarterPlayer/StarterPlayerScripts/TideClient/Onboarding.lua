@@ -1,5 +1,6 @@
 -- Onboarding (GDD §1 ter et §8) :
---   1. arrivee : la camera descend du ciel sur le lagon du joueur (vue large tant que ca charge, tap = passer) ;
+--   1. arrivee : la camera glisse au ras de l'eau vers le lagon du joueur, puis se pose derriere lui
+--      (VISION_TON §4 ; vue d'attente tant que ca charge, toucher = passer) ;
 --   2. nouveau joueur : aucun HUD jusqu'a la fin de sa 1re vague, puis fondu ; sinon HUD apres la descente ;
 --   3. pendant la 1re vague : fleche lumineuse au sol vers le lagon (pas de texte) ;
 --   4. apres : une ligne de texte, puis la fleche montre la tour la plus proche.
@@ -10,8 +11,8 @@ local UserInputService = game:GetService("UserInputService")
 
 local Onboarding = {}
 
-local INTRO_HEIGHT = 110 -- studs au-dessus du lagon
-local INTRO_BACK = 70 -- recul cote terre (+Z) : on voit le lagon, la plage et la mer
+local INTRO_HEIGHT = 7 -- studs : au ras de l'eau
+local INTRO_BACK = 170 -- recul cote mer (-Z) : on arrive de la mer vers la plage et le lagon
 local INTRO_TIME = 2.4
 local INTRO_WAIT_MAX = 8 -- s en vue large au plus (chargement, streaming)
 local LOADED_WAIT = 20
@@ -99,8 +100,9 @@ local function nearestTower(from: Vector3): Vector3?
 end
 
 ---------------------------------------------------------------- Camera d'arrivee
+-- Plan d'ouverture : bas, cote mer, regard vers le lagon (les bases sont du cote +Z de la plage)
 local function wideShot(center: Vector3): CFrame
-	return CFrame.lookAt(center + Vector3.new(0, INTRO_HEIGHT, INTRO_BACK), center)
+	return CFrame.lookAt(center + Vector3.new(0, INTRO_HEIGHT, -INTRO_BACK), center + Vector3.new(0, 4, 0))
 end
 
 local function runIntro()
@@ -250,20 +252,20 @@ local captionToken = 0
 local function caption(text: string, duration: number)
 	captionToken += 1
 	local token = captionToken
-	captionLabel.Text = text
+	captionLabel.Text = Theme.Caps(text)
 	captionLabel.Visible = true
 	captionLabel.TextTransparency = 1
 	captionStroke.Transparency = 1
-	Util.Tween(captionLabel, 0.4, { TextTransparency = 0 }, Enum.EasingStyle.Quad)
-	Util.Tween(captionStroke, 0.4, { Transparency = 0 }, Enum.EasingStyle.Quad)
-	Theme.Pop(captionLabel, 0.12)
+	Util.Tween(captionLabel, Theme.Time.Normal, { TextTransparency = 0 }, Enum.EasingStyle.Quad)
+	Util.Tween(captionStroke, Theme.Time.Normal, { Transparency = 0.4 }, Enum.EasingStyle.Quad)
+	Theme.Pop(captionLabel, 0.05)
 	task.delay(duration, function()
 		if captionToken ~= token then
 			return
 		end
-		Util.Tween(captionLabel, 0.4, { TextTransparency = 1 }, Enum.EasingStyle.Quad)
-		Util.Tween(captionStroke, 0.4, { Transparency = 1 }, Enum.EasingStyle.Quad)
-		task.delay(0.42, function()
+		Util.Tween(captionLabel, Theme.Time.Normal, { TextTransparency = 1 }, Enum.EasingStyle.Quad)
+		Util.Tween(captionStroke, Theme.Time.Normal, { Transparency = 1 }, Enum.EasingStyle.Quad)
+		task.delay(Theme.Time.Normal + 0.02, function()
 			if captionToken == token then
 				captionLabel.Visible = false
 			end
@@ -306,9 +308,9 @@ local function finishFirstWave(promiseGolden: boolean)
 	end
 	task.wait(0.6)
 	-- la promesse doree n'est affichee que si le serveur l'annonce vraiment
-	caption(if promiseGolden then "They grow. The next tide is GOLDEN!" else "They grow while you play!", CAPTION_TIME)
+	caption(if promiseGolden then "They grow. Next tide: Golden" else "They grow while you play", CAPTION_TIME)
 	task.wait(CAPTION_TIME + 0.8)
-	caption("Towers keep you safe too.", CAPTION_TIME)
+	caption("Towers keep you safe", CAPTION_TIME)
 	startArrow(function(from)
 		local wave = Store.GetWave()
 		if wave.phase ~= "calm" then
@@ -380,7 +382,7 @@ function Onboarding.Init(ctx)
 		Parent = ctx.Root,
 	})
 	captionStroke = captionLabel:FindFirstChildOfClass("UIStroke") :: UIStroke
-	captionStroke.Thickness = 3
+	captionStroke.Thickness = 1.5
 end
 
 function Onboarding.Start(ctx)
