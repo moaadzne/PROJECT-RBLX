@@ -1,6 +1,6 @@
 # Plan de lancement : premier test public (~29/10/2026)
 
-Auteur : E, le 2026-10-09. Titre de travail : « Steal a Sea Creature » ; recommandé : « Ride the Tsunami » (GDD §0). Moaad choisit.
+Auteur : E, le 2026-10-09. Titre choisi par Moaad : **« Ride the Tsunami 🌊 Steal & Ride »**.
 Règle : rien d'inventé. Quand je n'ai pas de source, je l'écris.
 
 ## Verdict
@@ -9,7 +9,7 @@ Règle : rien d'inventé. Quand je n'ai pas de source, je l'écris.
 - **5 vidéos courtes prêtes le jour J**, tournées en jeu, puis une vidéo par jour pendant 2 semaines.
 
 ## 1. La page du jeu
-- **Titre** : selon le choix de Moaad. Exemple avec la recommandation : `Ride the Tsunami 🌊 Steal & Ride`.
+- **Titre** : `Ride the Tsunami 🌊 Steal & Ride` (choix de Moaad, 09/10). Nom court pour les vidéos et les codes : « Ride the Tsunami ».
 - **Description courte (anglais)** :
   > Catch sea creatures before the tsunami takes them. Grow them in your lagoon — even while you're offline. When the wave hits, every lagoon opens: steal the best creature on the server, outrun the tide, and ride your Giant over the wave!
   > 🌊 Golden Tides bring golden mutations  👑 Win the Royal Tide for a crown  🛡️ New players are protected for 15 minutes
@@ -21,7 +21,7 @@ Règle : rien d'inventé. Quand je n'ai pas de source, je l'écris.
 **Le moins cher et le plus rapide** : faire les images **dans Roblox Studio** (poser les avatars et les créatures, régler la lumière, capture en haute résolution), puis ajouter le texte dans un éditeur gratuit (Canva gratuit ou Photopea). Avantages : c'est fidèle au jeu (Roblox interdit les miniatures trompeuses), ça ne coûte rien et c'est refaisable en 20 min après chaque mise à jour. Un graphiste Roblox peut venir ensuite ; je n'ai pas de prix fiable à donner.
 
 Format : 16:9, lisible en tout petit sur un téléphone. Maximum 3 éléments, couleurs saturées, texte en 2 mots.
-1. **SURF** : avatar debout sur une Reef Hatchling Giant dorée, sur la crête d'une vague immense, vue légèrement en contre-plongée. Ciel orange. Texte « RIDE IT! ».
+1. **SURF** : avatar debout sur une Reef Hatchling Giant dorée, sur la crête d'une vague immense, vue légèrement en contre-plongée. Ciel orange. Texte « RIDE IT! » (c'est la miniature qui colle le mieux au titre : à mettre en principale).
 2. **STEAL** : avatar qui court vers la caméra avec une créature dorée dans les bras ; derrière, le propriétaire qui le poursuit, et la vague. Texte « STEAL IT! ».
 3. **GIANT** : une Giant dorée énorme au centre, avec un faisceau de lumière, de petites créatures normales autour et un avatar à la bouche ouverte. Texte « GOLDEN GIANT? ».
 **Icône** (carrée) : la tête de la Reef Hatchling dorée, de face, sur un fond de vague bleue, sans texte.
@@ -35,12 +35,12 @@ Format : 16:9, lisible en tout petit sur un téléphone. Maximum 3 éléments, c
 
 ## 4. Viralité
 ### 5 vidéos de 15 s (format vertical, tournées en jeu)
-1. **« I surfed the tsunami »** : 0–3 s, la vague géante arrive (son fort) ; 3–10 s, saut sur la Giant, surf sur la crête ; 10–15 s, arrivée au lagon. Texte : « POV: your pet can surf ».
+1. **« I surfed the tsunami »** : 0–3 s, la vague géante arrive (son fort) ; 3–10 s, saut sur la Giant, surf sur la crête ; 10–15 s, arrivée au lagon. Texte : « POV: your pet can surf » + « Ride the Tsunami » en fin de vidéo.
 2. **« Stole it at the last second »** : 0–3 s, alerte, lagons ouverts ; 3–12 s, course avec la créature dorée, poursuivant derrière, la vague qui monte ; 12–15 s, on rentre au dernier moment, puis « STOLEN! ». Fin ouverte : « would you steal it back? »
 3. **« Revenge »** : on se fait voler, on suit la flèche, on touche le voleur à 1 s de son lagon, puis « RECOVERED ». Texte : « never steal from me ».
 4. **« Baby → Giant timelapse »** : un bébé qui grandit en 4 stades (accéléré), puis passe doré. Texte : « I waited 1 hour for this ».
 5. **« Royal Tide crown »** : le classement en direct, la course pour la créature royale, la couronne qui apparaît. Texte : « 1 crown per server… ».
-Règle : les 2 premières secondes doivent montrer la vague ou une créature dorée. Pas de musique sous copyright : sons du jeu ou bibliothèque libre de TikTok / YouTube.
+Règle : chaque vidéo finit sur le nom « Ride the Tsunami » (1 s, logo). Les 2 premières secondes doivent montrer la vague ou une créature dorée. Pas de musique sous copyright : sons du jeu ou bibliothèque libre de TikTok / YouTube.
 
 ### Petits YouTubers Roblox
 - Cibler des chaînes de **1 000 à 50 000 abonnés** qui font déjà des vidéos « Steal a … » ou tsunami (recherche YouTube par mots-clés).
