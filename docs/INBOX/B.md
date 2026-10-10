@@ -2,6 +2,18 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:55
+FAIT     : Lecture directive double plateforme. Plan B pour Interface mobile + PC :
+- **Touch-first mobile** : Theme.Button 58 design px (≥44/48), joystick natif Roblox, tap-only.
+- **PC** : WASD/Flèches + Shift sprint, clic droit caméra, raccourcis 1-5/Q/E/R/F → mappés sur boutons UI existants (pas de feature PC-only).
+- **HUD responsive** : bas mobile (icônes 48px, grille) / latéral PC (tooltips hover + raccourcis affichés). Branche par `UserInputService.TouchEnabled` + `KeyboardEnabled` + `GamepadEnabled` dans Hud.Start().
+- **Trading/Vol** : Tap cible mobile / Clic droit + menu contextuel PC → même action, UI adaptée.
+- **Boutique** : grille scroll vertical mobile / grille compacte + filtres PC (Theme.List direction).
+- **Codex** : carrousel swipe mobile / grille + recherche clavier PC.
+- **Zéro feature exclusive** : raccourcis clavier = boutons UI visibles ; pas de "Appuyez sur F" texte seul.
+VÉRIFIÉ  : Theme.lua, Hud.lua, Glyph.lua relus ; aucun emoji ; 19 icônes Font Awesome + dessin.
+BESOIN   : [D] — valider Hud.Start() detection TouchEnabled/KeyboardEnabled/GamepadEnabled ; [L] — Onboarding texte plateforme (WASD vs Tap) ; [H] — Font Awesome asset ID confirme ; [I] — Codex UI carrousel vs grille spec.
+
 ## 2026-10-10 15:45
 FAIT     : P1-14 pousse (`8d0ec39`). Font Awesome 6 Free Solid (Creator Store, Asset 12187624912, SIL OFL) integre dans Glyph.lua : charge via InsertService, 19 cles mappees, resolution C image > Font Awesome > dessin > rien. Theme.Icon et Theme.SetIconColor gerent les TextLabel FA. Merge e-gdd-reef fait. RobotoCondensed deja en place.
 VÉRIFIÉ  : lecture seule, rien testé en jeu. Les 19 cles UI (alert, arrow, bolt, clock, close, coin, crown, dot, down, info, lock, moon, net, revenge, ride, shield, shop, spark, unlock, wave) ont toutes un codepoint FA.
