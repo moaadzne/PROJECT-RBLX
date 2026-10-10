@@ -1,3 +1,15 @@
+-- ============================================================================
+-- ⚠️ FICHIER PÉRIMÉ — NE PAS UTILISER. Suppression en attente par son auteur.
+--
+-- Ceci est la configuration de la v1 (les « trésors », les zones alignées sur Z).
+-- Le code livré ne l'importe pas : la source unique est
+-- `src/ReplicatedStorage/Shared/Config.lua`, qui suit `review/review_context.md`
+-- (contrat v2.1). Ici, `Config.Zones`, `Config.Beach` et `Config.BaseLineZ`
+-- ont été supprimés par le contrat, et le nom du jeu n'est plus « Tide Rush ».
+-- Il est conservé uniquement pour l'historique (AGENTS.md §6 : ne pas supprimer
+-- ce qu'on n'a pas créé).
+-- ============================================================================
+
 -- Tide Rush : configuration partagee (serveur + client)
 -- Tout l'equilibrage du jeu est ici : objets, zones, vague, ameliorations, compagnons.
 
