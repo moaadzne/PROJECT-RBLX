@@ -1,5 +1,10 @@
 # File de S — Cinematics & Presentation
 
+## 2026-10-10 17:05
+FAIT     : C1.1 spec moteur — docs/CINEMATIC_ENGINE.md (138 l.) : 3 couches Cinema/Timeline/CameraPath, keyframes fixed/target/follow, dialogue+choix branchement (repond au contrat intro 3 min demande par O), letterbox 2.39:1, triggers serveur/monde/joueur, config Config.Cinematics{}, plan boss intros 30s, events sync (Eveil Leviathan), replay (Phase 3, export video a trancher). Base sur CameraIntro.lua de L (680 l.) qui devient le clip intro30 sans reecriture tant qu'il n'est pas teste.
+VÉRIFIÉ  : Lu CameraIntro.lua + LORE_ARCHIPEL/PNJ/EVENTS de O + ARCHIPELAGO_SPECS de T. Design only, rien teste en jeu (Studio lundi 21h).
+BESOIN   : [A] Notify.cinematic + CinematicChoice (contrat v3) + Config.Cinematics{} ; [B] DialogueUI/Hud.SetVisible/letterbox ; [C/T] ancres Map.CinematicTriggers + leviathanHeart + empreinte epave ; [D] trancher intro 3 min complete vs montage 30s+actes ; [V] sync 200-500j. Ecriture Cinema.lua lundi en Studio.
+
 ## 2026-10-10 16:35
 FAIT     : Cycles infinis D recus (1 moteur / 2 sequences / 3 presentation / 4 tech). Aucune tache active en attente : Phase 1 = rien a livrer, Studio lundi 12/10 21h. Les cycles demarrent au kickoff Semaine 1-2.
 VÉRIFIÉ  : Rien teste en jeu (pas de Studio)
