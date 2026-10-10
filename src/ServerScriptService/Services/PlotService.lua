@@ -425,7 +425,8 @@ local function incomeLoop()
 				profile.data.playTime += dt
 				local income = Stats.Income(profile.data, unixNow)
 				if income > 0 then
-					DataService.AddCoins(player, income * dt)
+					-- le contrat verse le revenu chaque seconde ; VIPRider majore les pieces, pas le revenu
+					DataService.AddCoins(player, income * dt * Stats.CoinBonus(profile.data))
 				end
 				local ok, err = pcall(checkGrowth, player, profile, unixNow)
 				if not ok then

@@ -55,15 +55,19 @@ local function updateFov(dt: number)
 end
 
 -- Grondement : plus le front est proche du joueur, plus la camera tremble (Fx coupe tout en reduit)
+-- Distance sur l'axe de la vague (N/E/S/O), pas sur Z.
 local function updateWave()
-	local frontZ = Store.WaveFrontZ()
 	local root = Util.LocalRoot(player)
-	if not frontZ or not root then
+	if not root then
+		Fx.SetRumble(0)
+		return
+	end
+	local distance = Store.WaveDistanceTo(root.Position)
+	if distance == nil then
 		Fx.SetRumble(0)
 		return
 	end
 	local wave = Store.GetWave()
-	local distance = math.abs(root.Position.Z - frontZ)
 	if wave.phase == "wave" then
 		Fx.SetRumble(0.55 * math.clamp(1 - distance / RUMBLE_RANGE, 0, 1))
 	else
@@ -76,14 +80,13 @@ local function onWave(wave, prev)
 	if wave.phase == "recede" and prev and prev.phase == "wave" and impactCycle ~= wave.cycle then
 		impactCycle = wave.cycle
 		local root = Util.LocalRoot(player)
-		local endZ = (Store.WaveFrontZ() or 0)
 		if root then
-			local distance = math.abs(root.Position.Z - endZ)
+			local distance = Store.WaveDistanceTo(root.Position) or math.huge
 			local k = math.clamp(1 - distance / IMPACT_RANGE, 0, 1)
 			if k > 0 then
 				Fx.Shake(0.7 * k)
 			end
-			Sfx.Play("waveImpact", { position = Vector3.new(root.Position.X, 4, endZ) })
+			Sfx.Play("waveImpact", { position = Store.WaveFrontPoint(4) or root.Position })
 		end
 	end
 	if wave.phase ~= "wave" then

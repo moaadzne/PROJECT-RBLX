@@ -617,7 +617,7 @@ local function payOffline(profile)
 	if seconds < Config.Offline.minSeconds then
 		return
 	end
-	local coins = math.floor(Stats.IncomeBetween(d, d.lastSeen, d.lastSeen + seconds) * Config.Offline.incomeRate)
+	local coins = math.floor(Stats.IncomeBetween(d, d.lastSeen, d.lastSeen + seconds) * Config.Offline.incomeRate * Stats.CoinBonus(d))
 	d.lastSeen = now
 	if coins <= 0 then
 		return
