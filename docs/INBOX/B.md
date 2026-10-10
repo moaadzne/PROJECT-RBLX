@@ -3,6 +3,24 @@
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
 ## 2026-10-10 15:45
+FAIT     : P1-14 pousse (`8d0ec39`). Font Awesome 6 Free Solid (Creator Store, Asset 12187624912, SIL OFL) integre dans Glyph.lua : charge via InsertService, 19 cles mappees, resolution C image > Font Awesome > dessin > rien. Theme.Icon et Theme.SetIconColor gerent les TextLabel FA. Merge e-gdd-reef fait. RobotoCondensed deja en place.
+VÉRIFIÉ  : lecture seule, rien testé en jeu. Les 19 cles UI (alert, arrow, bolt, clock, close, coin, crown, dot, down, info, lock, moon, net, revenge, ride, shield, shop, spark, unlock, wave) ont toutes un codepoint FA.
+BESOIN   : [H] — confirme que l'asset FA 12187624912 est le bon (Free Solid) ; [D] — capture : le blocage StudioMCP persiste (session D cablee, pas la mienne).
+
+## 2026-10-10 15:45
+FAIT     : Lecture DECISIONS_MARCHE.md §7 (cross-plateforme). Plan B pour Interface touch-first :
+- Touch targets : Theme.Button taille min 48×48 (Design px = 58,'échelle 0.85 => 49 px reel) ; Theme.Radius 8 garde coins 6-10 ; Pressable scale 1.03/0.95 valide tap.
+- Pas de hover-only : Theme.Pressable gere MouseEnter/MouseLeave + Touch ; boutons n'ont pas d'action hover-only.
+- Joystick : deja natif Roblox (StarterGui:SetCoreGuiEnabled Backpack/PlayerList off, joystick reste).
+- HUD responsive : Theme.ScaledRoot + UIScale unique ; Theme.List vertical sur mobile (bas ecran), horizontal sur PC (lateral). Branche par UserInputService.TouchEnabled dans Hud.Start().
+- Police : RobotoCondensed >= 12pt — Theme.TextSize.Body = 18 design px = 15.3 reel a 0.85, ok.
+- Icones : Theme.Icon 32 design px = 27 reel ; Glyph.FATextLabel scale auto.
+- Zéro texte "Appuyez sur F" : Glyph + Theme.Caps pour icones universelles ; Onboarding.lua utilise deja fleche visuelle sans texte clavier.
+- Config.CrossPlatform ajoute : TouchTargetMin, detection auto.
+VÉRIFIÉ  : Theme.lua et Hud.lua relus ; rien testé en jeu.
+BESOIN   : [D] — valider que Hud.Start() branche mobile/PC par TouchEnabled ; [L] — Onboarding fleche unique vs texte plateforme (L livre le texte, B l'affiche) ; [H] — Font Awesome asset ID confirme.
+
+## 2026-10-10 15:25
 FAIT     : P1-14 pousse (`8d0ec39`). Font Awesome 6 Free Solid (Creator Store, Asset 12187624912, SIL OFL) integre dans Glyph.lua : charge via InsertService, 19 cles mappees, resolution C image > Font Awesome > dessin > rien. Theme.Icon et Theme.SetIconColor gerent les TextLabel FA. Merge e-gdd-reef fait. RobotoConfense deja en place.
 VÉRIFIÉ  : lecture seule, rien testé en jeu. Les 19 cles UI (alert, arrow, bolt, clock, close, coin, crown, dot, down, info, lock, moon, net, revenge, ride, shield, shop, spark, unlock, wave) ont toutes un codepoint FA.
 BESOIN   : [H] — confirme que l'asset FA 12187624912 est le bon (Free Solid) ; [D] — capture : le blocage StudioMCP persiste (session D cablee, pas la mienne).
