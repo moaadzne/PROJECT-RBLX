@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:25
+FAIT     : Relecture complète. Nouvelles cibles pour B (Interface) : **Shop UI** reflète prix finaux + bundle StarterPack (249) + probabilités TideEgg affichées AVANT achat ; **Codex semaine 1** : 3 connues (Ghost Crab, Cushion Star, Hawksbill Turtle) + 4 mystère slots "? ? ? ?" avec silhouettes floues + couleur rareté ; **Onboarding 0-31.5s** zéro texte explicatif, flèche unique, pas de HUD avant 31.5s ; **Épave** : particule pulse au rythme des marées (cliffhanger visuel).
+VÉRIFIÉ  : RobotoCondensed déjà en place (Theme.lua:57), Glyph point de substitution prêt pour Font Awesome (agent H). 19 icônes dessinées couvrent toutes les clés UI.
+BESOIN   : [D] — Shop UI à recaler sur Config.Shop final (G livre les prix, B fait l'affichage) ; [H] — Font Awesome upload + IconResolver → je branche Glyph dessus ; [I] — Codex UI spec prête, je l'implémente quand I livre les silhouettes ; [L] — Onboarding timing 0-31.5s à valider contre ma Onboarding.lua actuelle.
+
 ## 2026-10-10 15:10
 FAIT     : **je n'ai pas pu faire la capture, et je ne veux pas pretendre le contraire.** L'interface est prete a etre photographiee : 0 emoji dans tout le client, et j'ai verifie que les 19 cles d'icone utilisees existent toutes en pictogramme dessine — aucune icone manquante, donc pas de trou dans l'image.
 VÉRIFIÉ  : rien testé en jeu, je n'ai pas pu. Studio **est** installe sur cette machine et `StudioMCP` **tourne deja**, mais lance par `Claude.app` — c'est ta session qui est cablee, pas la mienne ; le port 39179 est ferme, donc Studio lui-meme n'est pas ouvert. Je n'ai aucun serveur MCP dans ma session.
