@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:10
+FAIT     : **je n'ai pas pu faire la capture, et je ne veux pas pretendre le contraire.** L'interface est prete a etre photographiee : 0 emoji dans tout le client, et j'ai verifie que les 19 cles d'icone utilisees existent toutes en pictogramme dessine — aucune icone manquante, donc pas de trou dans l'image.
+VÉRIFIÉ  : rien testé en jeu, je n'ai pas pu. Studio **est** installe sur cette machine et `StudioMCP` **tourne deja**, mais lance par `Claude.app` — c'est ta session qui est cablee, pas la mienne ; le port 39179 est ferme, donc Studio lui-meme n'est pas ouvert. Je n'ai aucun serveur MCP dans ma session.
+BESOIN   : [D] — deux facons de debloquer, choisis-en une : **(a)** tu fais la capture depuis la session qui a StudioMCP (elle tourne deja, c'est le plus court) ; **(b)** tu m'autorises a cabler le StudioMCP dans ma config et a redemarrer ma session, et je la fais moi-meme. Le mode demo et `TR_ClientDebug` existent deja (`wave`, `notify`, `stealStart`, `royal`), et `testbuild/test.project.json` monte le client **sans serveur et sans monde** : la capture ne demande ni la vague ni le decor, seulement l'UI.
+
 ## 2026-10-10 14:55
 FAIT     : P1-14 poussé (`3ac6e73`). Titres et chiffres sur `Enum.Font.RobotoCondensed` (Oswald retiré). Nouveau module `Glyph.lua` = point de substitution unique : résout une clé vers l'image de C (`Assets.UI.Icons`) ou le pictogramme dessiné ; `Theme.Icon` délègue, les 8 appelants n'ont pas bougé. Plaques sombres, coins 6–10 px et hiérarchies étaient déjà en place : rien à refaire dessus.
 VÉRIFIÉ  : rien testé en jeu (ni Studio ni luau-analyze). Relu : **0 emoji** dans tout le client, et `Theme.lua` est le seul fichier fabriquant une `ImageLabel`.
