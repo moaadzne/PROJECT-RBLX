@@ -175,3 +175,80 @@ BESOIN    : Moaad — Ne JAMAIS faire Cmd+S si rollback déclenché ; D — Disp
 FAIT      : **docs/INBOX/A.md CRÉÉ** — Tâches infinies A (Serveur) : 4 cycles, 21 tâches priorisées P0/P1/P2 (Cycle 1 = Core Stability, 2 = Systèmes Profonds, 3 = Endgame & PvP, 4 = Économie & Polish). A démarre Cycle 1 immédiatement.
 VÉRIFIÉ   : 3 entrées précédentes M complètes (Checklist 20 pts + Cross-platform + Rollback 6 scénarios). A.md suit protocole AGENTS.md §3 (3 lignes FAIT/VÉRIFIÉ/BESOIN en bas).
 BESOIN    : D — Donner le feu vert à A pour démarrer Cycle 1 ; M — Rester en mode QA Infrastructure, prêt à tester chaque livraison de A (checklist 20 pts + cross-platform 10 points à chaque sync)
+
+---
+
+## TÂCHES INFINIES — M (LAUNCH/QA) — TU NE T'ARRÊTES JAMAIS
+
+### RÈGLE : Cycle 1 → 2 → 3 → 4 → 1 amélioré. JAMAIS d'arrêt.
+
+---
+
+## CYCLE 1 — CHECKLIST 20 POINTS (maintenant)
+
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 1 | **Wave front** visible et saisit joueurs (client P0 corrigé `base * CFrame` ligne 404) | P0 | ⬜ |
+| 2 | **StartSteal, ChoosePick, WaveFrontD** remotes conformes contrat v2.1 | P0 | ⬜ |
+| 3 | **DataStore** save/load sans perte, migration auto, backup horaire | P0 | ⬜ |
+| 4 | **Marée Royale** : score, top 3, créature unique, reset horaire | P0 | ⬜ |
+| 5 | **Codex** : 3 connues + 4 mystère, progression, onglet cosmétiques | P0 | ⬜ |
+
+---
+
+## CYCLE 2 — TESTS CROSS-PLATEFORME (semaine 1)
+
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 6 | **Mobile iOS** : iPhone/iPad, specs low/mid/high, touch, gyro | P1 | ⬜ |
+| 7 | **Mobile Android** : gamme étendue, touch, permissions, stockage | P1 | ⬜ |
+| 8 | **PC Windows** : Win10/11, clavier/souris, gamepad, graphismes | P1 | ⬜ |
+| 9 | **PC macOS** : M1/M2/M3, clavier/souris, trackpad, graphismes | P1 | ⬜ |
+| 10 | **Sync mobile↔PC** : même économie, même sauvegarde, même progression | P1 | ⬜ |
+
+---
+
+## CYCLE 3 — MONÉTISATION (semaine 2)
+
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 11 | **Achat complet mobile+PC** : tous les pass, produits, probabilités affichées avant achat | P1 | ⬜ |
+| 12 | **PolicyService** appelé avant chaque achat | P0 | ⬜ |
+| 13 | **Pity** fonctionne, duplicatas convertis en Essence | P1 | ⬜ |
+| 14 | **Rewarded ads** opt-in, cooldown 24 h respecté | P2 | ⬜ |
+| 15 | **Zéro erreur** console, zéro exception, zéro warning | P0 | ⬜ |
+
+---
+
+## CYCLE 4 — OPTIMISATION & MONITORING (continu)
+
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 16 | **Performance** : 60 FPS mobile/PC, < 500 Mo RAM mobile, < 1 Go PC | P1 | ⬜ |
+| 17 | **Chargement** : < 5 s cold start, < 2 s warm, streaming fluide | P1 | ⬜ |
+| 18 | **Monitoring** : crashlytics, error rates, alertes seuils | P2 | ⬜ |
+| 19 | **Rollback plan** : git tags, déploiement, restauration < 5 min | P1 | ⬜ |
+| 20 | **Documentation** : runbooks, rollback, escalade, post-mortem | P2 | ⬜ |
+
+---
+
+## Documentation QA existante (déjà en place)
+
+- [x] `docs/QA/README.md` — infrastructure, test framework, CI/CD, quality gates
+- [x] `docs/QA/CROSS_PLATFORM.md` — 10 points, devices iPhone 12 / Android mid-2021 / GTX 1060
+- [x] `docs/QA/ROLLBACK.md` — 6 scénarios + sauvegarde triple
+- [x] `docs/QA/PERFORMANCE.md` — baselines, Config.CrossPlatform, outils mesure
+- [x] `docs/QA/verify_launch.luau` — vérification mécanique remotes / Config.Shop / services
+- [x] `docs/QA/TEST_PLANS/PHASE_1_FONDATION.md` — plan de test Phase 1
+
+---
+
+## 2026-10-10 21:30
+FAIT      : **TÂCHES INFINIES M ENREGISTRÉES** — 4 cycles, 20 tâches (Cycle 1 = Checklist 20 points, 2 = Cross-platform, 3 = Monétisation, 4 = Optimisation & Monitoring). Infra QA déjà créée : docs/QA/ (README, CROSS_PLATFORM, ROLLBACK, PERFORMANCE, verify_launch.luau, TEST_PLANS/Phase 1).
+VÉRIFIÉ   : Cycle 1 couvre les P0 déjà écrits (Wave.lua, remotes v2.1, DataStore, Marée Royale, Codex). Cycle 3 inclut PolicyService avant achat + Pity + Essence + zero erreur.
+BESOIN    : A — Livraison Cycle 1 Core Stability pour que M lance Cycle 1 checklist ; B — Shop.lua probabilités/pity/Vault/Battle Pass pour Cycle 3 ; G — Ids Creator Hub pour achat réel (en attente Moaad)
+
+## 2026-10-10 22:10
+FAIT      : **INFRASTRUCTURE QA COMPLÈTE CONSTRUITE** (support Cycles 1-4) — Ajoutés : TEST_PLANS/MONETISATION.md (prix, probabilités, PolicyService, Pity, Essence, Rewarded Ads, audit ZÉRO P2W), PHASE_2_MONDE_HISTOIRE.md, PHASE_3_PROGRESSION_BOSS.md (classes, talents, gear, 50+ créatures, World Boss/Donjon/Raid), PHASE_4_PVP_ECONOMIE.md (arènes, guilde, hôtel ventes 5 %, anti-RMT), PHASE_5_ENDGAME_POLISH.md (stress 500 joueurs, go/no-go, métriques) ; CROSS_PLATFORM_MATRIX.md (iOS iPhone 12/iPad, Android low/mid/high, Win i3/GTX 1060, macOS M1/M2/M3) ; RUNBOOKS/INCIDENTS.md (P0/P1/SLA, restauration DataStore, économie, postmortem) ; load_test.luau (harness stress 500 bots).
+VÉRIFIÉ   : 14 fichiers docs/QA/ au total. Chaque phase 1→5 a son plan avec cases binaires. Cycle 3 couvre les 5 tâches exactes du brief D (achat mobile+PC, PolicyService avant chaque achat, Pity + duplicatas→Essence, Rewarded ads cooldown 24 h, zéro erreur console). Cycle 1 = P0 (Wave front visible, remotes v2.1, DataStore, Marée Royale, Codex).
+BESOIN    : A — Livraisons Cycle 1 pour lancement effectif des tests ; B — Shop.lua pour Cycle 3 ; G — ids Creator Hub (attente Moaad) ; V — feature flags + hot-reload specs pour déploiement progressif

@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# PONT STUDIO - wrapper simple
+# Usage:
+#   ./tools/studio lua '<code>'     executer du Lua
+#   ./tools/studio tree [path]      arbre du jeu
+#   ./tools/studio grep <mot>       chercher dans les scripts
+#   ./tools/studio read <chemin>    lire un script
+#   ./tools/studio play [seconds]   playtest
+#   ./tools/studio console          sortie console
+#   ./tools/studio state            etat Studio
+#   ./tools/studio capture          screenshot
+#   ./tools/studio tools            liste des outils
+#   ./tools/studio call <tool> <json>  appel brut
+
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+BRIDGE="python3 tools/studio_bridge.py"
+
+# Recupérer le studio_id (premier de la liste)
+STUDIO_ID=$(python3 tools/studio_bridge.py call list_roblox_studios '{}' 2>/dev/null \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(json.loads(d['content'][0]['text'])['studios'][0]['id'])" 2>/dev/null || true)
+
+if [[ -z "${STUDIO_ID:-}" ]]; then
+  echo "ERREUR: aucun Studio connecte. Ouvre Roblox Studio avec un place et le MCP active." >&2
+  exit 1
+fi
+
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+  lua|exec)
+    CODE="${1:?code lua manquant}"
+    $BRIDGE call execute_luau "$(python3 -c "import json,sys; print(json.dumps({'code': sys.argv[1], 'studio_id': sys.argv[2]}))" "$CODE" "$STUDIO_ID")"
+    ;;
+  tree)
+    PATH_ARG="${1:-}"
+    ARGS="{\"datamodel_type\":\"Edit\",\"studio_id\":\"$STUDIO_ID\"}"
+    [[ -n "$PATH_ARG" ]] && ARGS="{\"datamodel_type\":\"Edit\",\"studio_id\":\"$STUDIO_ID\",\"path\":\"$PATH_ARG\",\"max_depth\":5}"
+    $BRIDGE call search_game_tree "$ARGS"
+    ;;
+  grep)
+    $BRIDGE call script_grep "$(python3 -c "import json,sys; print(json.dumps({'pattern': sys.argv[1], 'studio_id': sys.argv[2]}))" "$1" "$STUDIO_ID")"
+    ;;
+  read)
+    $BRIDGE call script_read "$(python3 -c "import json,sys; print(json.dumps({'path': sys.argv[1], 'studio_id': sys.argv[2]}))" "$1" "$STUDIO_ID")"
+    ;;
+  play)
+    SECS="${1:-10}"
+    $BRIDGE call start_stop_play "$(python3 -c "import json,sys; print(json.dumps({'mode':'play','studio_id': sys.argv[2], 'duration': int(sys.argv[1])}))" "$SECS" "$STUDIO_ID")"
+    ;;
+  console)
+    $BRIDGE call get_console_output "{\"studio_id\":\"$STUDIO_ID\"}"
+    ;;
+  state)
+    $BRIDGE call get_studio_state "{\"studio_id\":\"$STUDIO_ID\"}"
+    ;;
+  capture)
+    $BRIDGE call screen_capture "{\"studio_id\":\"$STUDIO_ID\"}"
+    ;;
+  tools|list)
+    $BRIDGE list 2>/dev/null | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+for t in d['tools']: print('%-28s %s' % (t['name'], t.get('annotations',{}).get('title','')))
+"
+    ;;
+  call)
+    TOOL="${1:?nom outil manquant}"
+    JSON="${2:-{}}"
+    ARGS=$(python3 -c "import json,sys; d=json.loads(sys.argv[1]); d['studio_id']=sys.argv[2]; print(json.dumps(d))" "$JSON" "$STUDIO_ID")
+    $BRIDGE call "$TOOL" "$ARGS"
+    ;;
+  *)
+    cat <<'EOF'
+PONT STUDIO - Tide Rush
+  ./tools/studio lua '<code>'     executer du Lua dans Studio
+  ./tools/studio tree [path]      arbre du jeu
+  ./tools/studio grep <mot>       chercher dans les scripts
+  ./tools/studio read <chemin>    lire un script
+  ./tools/studio play [secs]      playtest
+  ./tools/studio console          sortie console
+  ./tools/studio state            etat Studio
+  ./tools/studio capture          screenshot
+  ./tools/studio tools            liste des 29 outils
+  ./tools/studio call <tool> <json>  appel brut
+EOF
+    ;;
+esac

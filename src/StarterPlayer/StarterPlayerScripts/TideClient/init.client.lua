@@ -9,7 +9,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 
 -- Ordre de chargement : les briques d'abord, les ecrans ensuite (un module absent est saute)
 -- Glyph et IconResolver avant Theme : Theme.Init attend ctx.IconResolver
-local FOUNDATION = { "Glyph", "IconResolver", "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components", "CosmeticIcons" }
+local FOUNDATION = { "Glyph", "IconResolver", "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components", "CosmeticIcons", "CreatureData" }
 local SCREENS = {
 	"Notifications",
 	"Hud",
@@ -28,6 +28,7 @@ local SCREENS = {
 	"Shop",
 	"Codex", -- Reef Codex collection
 	"Onboarding", -- apres Hud (Hud.Hold)
+	"ContextualHint", -- tutoriel invisible (apres Onboarding, jamais bloquant)
 }
 
 -- Echelle de l'interface : 1 = ecran de design 900 x 480 (telephone paysage 844 x 390 -> 0,85)

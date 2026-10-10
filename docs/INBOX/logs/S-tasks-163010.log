@@ -1,0 +1,36 @@
+[0m
+> build · step-5-preview-free
+[0m← [0mEdit docs/INBOX/S.md
+Index: docs/INBOX/S.md
+===================================================================
+--- docs/INBOX/S.md
++++ docs/INBOX/S.md
+@@ -1,6 +1,11 @@
+ # File de S — Cinematics & Presentation
+ 
++## 2026-10-10 16:35
++FAIT     : Cycles infinis D recus (1 moteur / 2 sequences / 3 presentation / 4 tech). Aucune tache active en attente : Phase 1 = rien a livrer, Studio lundi 12/10 21h. Les cycles demarrent au kickoff Semaine 1-2.
++VÉRIFIÉ  : Rien teste en jeu (pas de Studio)
++BESOIN   : lundi : feu vert sequence pour moteur cinematique (C1.1) + O pour scripts intro 3 min (C1.2)
++
+ ## 2026-10-10 16:20
+ FAIT     : Phase 1 = RIEN à livrer (CameraIntro.lua 30s déjà faite par L, appelée par init.client.lua). Confirmé avec D.
+ VÉRIFIÉ  : Rien testé en jeu (pas de Studio avant lundi 12/10 21h)
+ BESOIN   : Attendre semaine 2 pour scope cinématique complet.
+
+> build · step-5-preview-free
+> build · step-5-preview-free
+[0m$ [0mgit add docs/INBOX/S.md && git commit -m "S Cinematics : cycles infinis D recus, aucune tache active avant kickoff lundi"
+[claude/r-economy-pvp d6b3838] S Cinematics : cycles infinis D recus, aucune tache active avant kickoff lundi
+ 1 file changed, 5 insertions(+)
+> build · step-5-preview-free
+Fait. Entrée ajoutée + commit `d6b3838`.
+
+**Compte-rendu S (3 lignes)** :
+```
+FAIT     : Cycles infinis D reçus (C1 moteur / C2 séquences / C3 présentation / C4 tech) notés dans INBOX/S.md (d6b3838)
+VÉRIFIÉ  : Rien testé en jeu (pas de Studio avant lundi)
+BESOIN   : Lundi 21h : séquence pour C1.1 moteur cinématique + O pour scripts intro 3 min (C1.2)
+```
+
+Aucune tâche active maintenant — Phase 1 est vide pour S. Les 20 tâches cycliques démarrent au kickoff lundi 12/10 21h en Studio.

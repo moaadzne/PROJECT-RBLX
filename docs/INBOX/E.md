@@ -9,6 +9,21 @@ FAIT     : Contrôle cohérence croisée des 5 docs (§1-14 du GDD_REEF + les 3 
 VÉRIFIÉ  : Incohérences trouvées et corrigées, pas seulement repérées. Aucun chiffre présenté comme un fait qui serait un choix de design. Rien testé en jeu.
 BESOIN   : **[D]** valider que les marées Royal/Abyssal passent en Phase 2/3 et pas en Phase 1 (c'est mon arbitrage, je le signale).
 
+## 2026-10-10 22:05
+FAIT     : Cycle 1 (Lore & Narrative) : 3/5 livrés — lore bible, campagne, cadres quêtes + PNJ. Points 3 (100 quêtes détaillées) et 4 (50 PNJ complets en dialogue) sont **volontairement cadrés, pas écrits en volume** : c'est le livrable de l'agent O, et les dupliquer coûterait du budget pour un résultat refait ensuite. Cycles 2, 3 et 4 prêts à démarrer sur ton feu vert.
+VÉRIFIÉ  : Tous les livrants écrits et commités sur claude/e-gdd-reef (poussés). Budget borne respecte : aucun test lourd, aucune capture, aucun luau-analyze. Rien testé en jeu.
+BESOIN   : **[D]** feu vert pour (a) valider la repartition E-cadre / O-volume, (b) lancer Cycle 2 (progression, classes, talents, items, creatures) qui est celui dont les agents P et K ont besoin maintenant.
+
+## 2026-10-10 21:55
+FAIT     : CYCLE 1 points 3-4 livrés — `QUETES_FRAMEWORK.md` (architecture + gabarits + un lot réel écrit) et `PNJ_BIBLE.md` (noyau 12 PNJ détaillés + les 38 autres classés par fonction et mécanique). Le calendrier d'événements et les gravures sont dans LORE_BIBLE_v2.md §7-8.
+VÉRIFIÉ  : Relecture faite, 1 faute attrapée et corrigée dans CAMPAGNE ("badnes" → "badges"). Aucun PNJ décoratif : chacun a une mécanique OU un secret, jamais les deux vides.
+BESOIN   : **[D]** le détail dialogue des 50 PNJ et les 100 quêtes complètes sont du ressort de l'agent **O**, pas d'E — je livre le cadre et le noyau, O écrit le volume en Phase 2. Me confirmer que tu veux bien cette répartition, sinon je le fais.
+
+## 2026-10-10 21:40
+FAIT     : CYCLE 1 livré sur les 3 premiers points — `LORE_BIBLE_v2.md` (Archipel, Ancien Roi, Malédiction, 4 factions = 4 classes, timeline 5 ères, calendrier événements yearly→daily, 5 gravures, règles d'interdiction) et `CAMPAGNE_10_CHAPITRES.md` (10 chapitres outline détaillé : beats, choix, conséquences par classe, 3 fins non-hiérarchisées, coût réel 8-10h).
+VÉRIFIÉ  : Cohérent avec GDD_REEF §1/§14, DECISIONS_MARCHE §9, SECRET_EPAVE. Le Léviathan est visible dès les 30 premières secondes (la vague) sans que personne le sache — c'est le point fort du lore. Rien testé en jeu.
+BESOIN   : **[D] un arbitrage de production** — les chapitres 6 à 9 existent en **4 versions** (une par classe). Ma reco : ossature partagée, seul le dialogue + 1 quête diffèrent. Sinon le cycle 2 double. Et arbitrage ch. 8 : Maren disparaît (dur) ou part volontairement (doux) — je recommande la version dure.
+
 ## 2026-10-10 21:05
 FAIT     : GDD_REEF.md complet §1-14 aligné MMORPG — 10 espèces (FR/EN, rareté, J/A/E/T, monture Elder+, mutations), 5 marées (Normal/Golden/Extreme/Royal/Abyssal), 5 zones/tiers, bassins/réserve/Codex/mutations Phase 2, économie §9.6, monétisation §9.7 (Shop prix finaux, RewardedAd, BattlePass). PREMIERE_HEURE.md, SEMAINE_2.md, SECRET_EPAVE.md alignés sur D (Codex 7 slots, gravure exacte, Config.Shop prix). AUDIT_TOP10_v2.md rédigé + validation DIRECTION_V2.md.
 VÉRIFIÉ  : GDD_REEF complet, les 3 doc alignés, AUDIT_TOP10_v2 (Phase 1 ≈ 6,4/10, 8,5/10 après Phase 5), DIRECTION_V2 validée (RobotoCondensed approuvé, Font Awesome + fallback). Rien testé en jeu.

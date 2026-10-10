@@ -201,6 +201,12 @@ function Onboarding.Start(ctx)
 		if CameraIntro and CameraIntro.Play then
 			CameraIntro.Play(function()
 				introDone = true
+				-- 31.5s passees : le HUD est la, on pose le seul repere utile, jamais bloquant
+				local ContextualHint = ctx.ContextualHint
+				if ContextualHint then
+					task.wait(0.5)
+					ContextualHint.Show("lagoonEntry")
+				end
 			end)
 		else
 			warn("[Onboarding] CameraIntro manquant, fallback immédiat")

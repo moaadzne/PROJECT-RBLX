@@ -52,6 +52,21 @@ function IconResolver.ForcePrimitiveMode()
 	faFontFace = nil
 end
 
+-- Enregistre une primitive externe (icônes créatures, etc.)
+function IconResolver.RegisterPrimitive(name: string, draw: (Instance, Color3, number) -> ())
+	PRIMITIVES[string.lower(name)] = draw
+end
+
+-- Enregistre un alias externe
+function IconResolver.RegisterAlias(from: string, to: string)
+	ALIAS[string.lower(from)] = to
+end
+
+-- Marque une icône comme "toujours primitive" (silhouettes créatures : FA n'a pas ces formes)
+function IconResolver.RegisterPriority(name: string)
+	PRIORITY[string.lower(name)] = true
+end
+
 -- Mapping icône logique -> nom FA6 (alias vers Glyph.Codes)
 local ALIAS = {
 	chest = "chest",
@@ -256,13 +271,16 @@ local DOT = function(p, c)
 	makeBar(p, 0.5, 0.5, 0.5, 0.5, 45, c)
 end
 
+-- Icônes qui ignorent Font Awesome (silhouettes créatures : FA6 n'a pas ces formes)
+local PRIORITY: { [string]: boolean } = {}
+
 function IconResolver.Resolve(name: string?, size: number, color: Color3?): GuiObject
 	local c = color or (Theme and Theme.Colors and Theme.Colors.Text) or Color3.new(1, 1, 1)
 	local key = string.lower(name or "dot")
 	local thickness = math.max(1.5, size * 0.09)
 
-	-- 1. Font Awesome si disponible
-	if ensureFontAwesome() then
+	-- 1. Font Awesome si disponible (sauf icônes marquées "primitive only")
+	if not PRIORITY[key] and ensureFontAwesome() then
 		local glyph = getGlyph()
 		local faName = ALIAS[key] or key
 		local code = glyph and glyph.Code(faName)

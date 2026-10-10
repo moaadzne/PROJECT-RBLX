@@ -3,6 +3,11 @@ FAIT     : 4 specs docs Phase 1 livrées et poussées — POI_SPECS_P1.md, EXTRE
 VÉRIFIÉ  : Contenu vérifié identique dans HEAD (origin/claude/r-economy-pvp d6b3838) — malgré un reset parallèle qui avait orpheliné mon commit 4c75982, les fichiers ont été absorbés par le lot E et sont intacts sur le remote
 BESOIN   : D merge mes 4 specs dans claude/e-gdd-reef avant lundi — e-gdd-reef n'a que mon plan (153b86c), pas les specs
 
+## 2026-10-10 20:45
+FAIT     : Cycle 1 ARCHIPELAGO livré — docs/ARCHIPELAGO_SPECS.md : 10 îles/biomes/règles vague/secrets, crique hub + orientation naturelle, 8 tours Y=34, terrain sculpté, streaming chunks 200×200 + LOD (mobile suppr >200)
+VÉRIFIÉ  : Aligné brief D (600×600 P1, pas 800×800/jungle/grotte), contrat v2.1 (towerRadius, coveRadius=110), DA_MONDE, DECISIONS_MARCHE
+BESOIN   : C implémente terrain + 8 tours lundi ; V config StreamingEnabled + chunks ; Cycles 2-4 notés NON LANCÉS (quota, reset 12/10 21h)
+
 ## 2026-10-10 20:30
 FAIT     : 3 docs specs livrés — POI_SPECS_P1.md (Belvédère/Épave/Récif), EXTREME_TIDE_P1.md (timeline 25s, signs sans texte), STREAMING_SPECS_P1.md (chunks 100×100, LOD 3 niveaux, budgets mobile/PC)
 VÉRIFIÉ  : Aligné DA_MONDE §0-5, DECISIONS_MARCHE §3, contrat v2.1, Config.ExtremeTide

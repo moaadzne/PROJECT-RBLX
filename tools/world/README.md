@@ -14,11 +14,13 @@ Règles communes :
 | 1 | `inspect_world.luau` | inventaire : _DecorLib (tailles, scripts), Plot1 et ses socles, Map, îlots hors plage (position de l'îlot du phare), Lighting | non |
 | 2 | `build_lagoon.luau` | lagon palier 1 : socles et Deck masqués (collisions gardées), sable terrain, 1 cuvette de roche volcanique par PedestalN (fond, eau claire, corail vivant), barrière corail + roche `PlotN.Barrier`, abri, palmier, ponton. Option `SUNK_POOLS` (lagon creusé) **à valider par D et A** | oui |
 | 3 | `build_wave.luau` | `Assets.Wave` v2 (mêmes noms : Body, Foam, Crest/Spray ; en plus Inner, ShadowBand, Mist, FootSplash) + `Assets.WaveSwell` (houle de 55 studs pour l'alerte). L'ancienne vague va dans `C_Backup.Wave_v1` | oui |
-| 3 bis | `build_hero_shot.luau` | décor de plage autour de Plot1 (`Map.HeroDecor`), houle de la vague posée à l'arrêt, phare sur l'îlot, lumière, caméra | oui |
-| 4 | `capture_mode.luau` | masque Gates et Towers pour la capture ; `HIDE = false` restaure | oui |
-| 5 | `build_mutation_fx.luau` | `Assets.FX.Mutations.Golden/Night/Storm/Rainbow` + `Assets.FX.TidePresets.Normal/Golden/Night/Storm` (à lancer après le réglage de la lumière) | oui |
-| 6 | `build_royal_fx.luau` | `Assets.FX.Crowns.Gold/Silver/Bronze` (Accessory) + `Assets.FX.Royal` (faisceau, lumière, étincelles, mini-couronne). Importer d'abord la couronne dans _DecorLib | oui |
-| 7 | `build_sounds.luau` | SoundGroups Master > SFX, Ambient, UI, Music + `Assets.Sounds.<nom>` (sons réalistes et musique APM, docs/SOURCING_C.md §4) | oui |
+| 3 bis | `build_lighting.luau` | **N** : lumière et eau FINALES du jeu (Technology Future à la main par Moaad ; Atmosphere Density 0.3 / Haze 2 / Glare 1, Bloom 0.5, SunRays 0.3, ColorCorrection Sat 1.1 / Contrast 0.1 ; Terrain eau #1a7aa6, Transp 0.4, WaveSize 0.8, WaveSpeed 8). À lancer AVANT `build_mutation_fx.luau`, dont les presets de marée partent de ces valeurs | oui |
+| 3 ter | `build_zone_palettes.luau` | **N** : les 5 zones (Crique, Dunes, Récif, Falaise, Épave) : couleurs des matériaux (MaterialService), ambiances par zone et voiles d'eau teints. Écrit `Map.ZonePalettes` (source unique lue par B et K). Positions des voiles à confirmer avec `inspect_world.luau` | oui |
+| 4 | `build_hero_shot.luau` | décor de plage autour de Plot1 (`Map.HeroDecor`), houle de la vague posée à l'arrêt, phare sur l'îlot, lumière de capture, caméra | oui |
+| 5 | `capture_mode.luau` | masque Gates et Towers pour la capture ; `HIDE = false` restaure | oui |
+| 6 | `build_mutation_fx.luau` | `Assets.FX.Mutations.Golden/Night/Storm/Rainbow` + `Assets.FX.TidePresets.Normal/Golden/Night/Storm` (à lancer après le réglage de la lumière) | oui |
+| 7 | `build_royal_fx.luau` | `Assets.FX.Crowns.Gold/Silver/Bronze` (Accessory) + `Assets.FX.Royal` (faisceau, lumière, étincelles, mini-couronne). Importer d'abord la couronne dans _DecorLib | oui |
+| 8 | `build_sounds.luau` | SoundGroups Master > SFX, Ambient, UI, Music + `Assets.Sounds.<nom>` (sons réalistes et musique APM, docs/SOURCING_C.md §4) | oui |
 
 Après l'étape 1 : corriger les tables `FIND` (noms des assets), `ISLET_POS` (îlot du phare) et, si besoin, les positions de `DECOR` et de `CAMERA`.
 Pour la hero shot : `build_lagoon.luau` avec `PLOTS = { 1, 2, 3, 4, 5, 6, 7, 8 }`, parce que les bases voisines sont dans le cadre.

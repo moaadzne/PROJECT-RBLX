@@ -14,7 +14,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 
 local Codex = {}
-local Components, Theme, Util, Sfx, Store
+local Components, Theme, Util, Sfx, Store, CreatureData
 
 -- Constantes d'affichage
 local VISIBLE_SPECIES = { "GhostCrab", "CushionStar", "HawksbillTurtle" }

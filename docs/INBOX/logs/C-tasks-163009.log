@@ -1,0 +1,14 @@
+[0m
+> build · step-5-preview-free
+> build · step-5-preview-free
+Je restaure d'abord mon INBOX écrasé par R, puis j'attaque le Cycle 1.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git show 27e4b1a:docs/INBOX/C.md > /tmp/mien.md && wc -l /tmp/mien.md && echo "--- body sans l'en-tete (4 premieres lignes) ---" && tail -n +5 /tmp/mien.md | head -3
+211 /tmp/mien.md
+--- body sans l'en-tete (4 premieres lignes) ---
+## 2026-10-10 — TÂCHE C (D) : PLAN EXECUTION STUDIO — 6 ÉTAPES SÉQUENTIELLES
+FAIT     : **Plan d'exécution Studio écrit** (ci-dessous, 6 étapes). Tous les scripts Luau sont prêts dans `tools/world/`, alignés Config (coveRadius=110, SUNK_POOLS=true, CrossPlatform, Streaming). **AUCUN script n'a été lancé** — je n'ai pas Studio. Seule Moaad/D peut exécuter dans Studio via `execute_luau` ou barre de commandes.
+VÉRIFIÉ  : Scripts syntaxe OK, alignés Config (coveRadius=110, SUNK_POOLS, CrossPlatform, Streaming), budgets respectés. **Rien testé en jeu** : pas Studio, pas playtest.
+> build · step-5-preview-free
+[0m← [0mWrite /tmp/entete.txt
+Created file successfully: /tmp/entete.txt
+> build · step-5-preview-free
