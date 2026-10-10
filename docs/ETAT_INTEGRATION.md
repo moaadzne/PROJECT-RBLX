@@ -140,3 +140,35 @@ préparés dans `docs/INBOX/D_PROPOSITION.md`.
 - `waveBoom` / `ambientBeach` : les **ids** sont bien définis par C, mais personne n'a
   **écouté** les sons. Un id douteux ne casse rien (le client ignore un son absent), mais
   la qualité sonore est à vérifier à l'oreille lundi.
+---
+
+## 7. SYNCHRO FINALE — dimanche matin (décidé par D le 10/10 au soir)
+
+Constat du 10/10 : les agents travaillent **en direct sur `claude/r-economy-pvp`**, pas sur
+`e-gdd-reef`. La fusion faite le 10/10 au soir (`153b86c..4d23d37`) a déjà été dépassée :
+commit `1ec1d21` (P, cycle 1 passe 2) et des fichiers non committés sont arrivés après.
+
+**Dimanche matin, refaire la même séquence.** Rien à improviser :
+
+```bash
+WT=/private/var/folders/x8/bz8tzhd92d17d891z2lgl9hm0000gn/T/opencode/synchro-dimanche
+git worktree add -q --detach "$WT" origin/claude/e-gdd-reef
+cd "$WT" && git checkout -q -b synchro-dimanche origin/claude/e-gdd-reef
+git merge --no-edit claude/r-economy-pvp        # conflits = uniquement des INBOX : garder les 2 camps
+git push origin HEAD:claude/e-gdd-reef
+cd - && git worktree remove --force "$WT"
+```
+
+**Avant de merger**, sécuriser ce qui traîne dans l'arbre partagé (les agents committent
+sans arrêt, il y aura du non commité) : `git add -A && git commit` sur `r-economy-pvp`.
+C'est la seule opération autorisée dans l'arbre partagé — jamais de checkout/switch/reset.
+
+**À vérifier après la fusion** (les 4 points qui cassent le jeu) :
+1. `Wave.lua:404` = `base * CFrame.new(0, sink, -front)` — le P0.
+2. `Store.lua` : `WaveFrontD` / `StartSteal` / `ChoosePick` — contrat v2.1.
+3. Aucun `testbuild/` mappé par Rojo.
+4. `src/StarterGui` absent du repo → l'ancienne UI à emojis reste en jeu, à masquer.
+
+**Rappel de calendrier** : quota Moaad réinitialisé 12/10 à 21 h. Le sync Rojo se fait
+ce soir-là, sur `claude/e-gdd-reef`. Si la synchro de dimanche n'a pas eu lieu, on perd
+tout ce que les agents ont produit depuis la fusion du 10/10.
