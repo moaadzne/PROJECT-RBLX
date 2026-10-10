@@ -2,6 +2,13 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:17
+FAIT     : Test assistant -> A reçu. Canal INBOX opérationnel.
+VÉRIFIÉ  : Écriture et lecture INBOX/A.md confirmées.
+BESOIN   : Aucun.
+
+---
+
 ## 2026-10-10 15:11
 FAIT     : Config.Shop alignee sur l'etude top 50 (DECISIONS_MARCHE.md) — nouveaux prix (VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199, PickCreature 399), Bundle, probabilites TideEgg affichees (60/25/10/4/1), PolicyService, RewardedAd, Premium Payouts. Config.CodexVariants inchanges (Normal/Golden) — le 3 connues + 4 mystere est affichage client (agent I). Ajoute Config.WreckInscription (texte grave epave) comme ref server-side. Commit 895ac05 pousse.
 VÉRIFIÉ  : lecture des deux docs, diff Config lu. **Rien testé en jeu**.
