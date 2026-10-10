@@ -235,6 +235,11 @@ Le Codex est la **seule collection durable** du jeu : il n'est **jamais** remis 
 
 **Ce qu'A code en Phase 1, et qui est déjà écrit** (`review_context.md`) : à chaque nouvelle case, le joueur reçoit automatiquement **le revenu de base × 50 pièces** (`Config.Codex.newEntryIncomeMult`), et une **ligne d'espèce complète donne +5 % de revenu permanent**. `codexCount` / `codexTotal` sont déjà dans le snapshot. **B n'a donc rien à demander à A pour afficher le Codex : il lit `state.codex`, `codexCount`, `codexTotal` et le Notify `codex`.**
 
+**Semaine 1 — affichage validé par étude de marché (`DECISIONS_MARCHE.md` §2) :**
+- **3 visibles** : Ghost Crab (Common, 1/s), Cushion Star (Common, 2/s), Hawksbill Turtle (Uncommon, montable Elder+, 10/s)
+- **4 mystère** : slots "? ? ? ?" avec silhouettes floues + rareté colorée (Rare/Epic/Legendary)
+- Barre de progression "X/10 découvertes", animation d'apparition scale 0→1 bounce + son "pop", clic sur mystère → tooltip "Découvre-le en jouant !" + particule
+
 Le tableau ci-dessous est ma **proposition Phase 2**, à réarbitrer par D le moment où le rebirth rouvre (§10). Je le garde ici pour que la décision soit déjà réfléchie — pas pour que quelqu'un le code maintenant.
 
 | Palier | Nom | Condition (lignes de Codex) | Récompense | Effet |
@@ -433,6 +438,19 @@ Config.Ranks = {
 	{ rank = 5, marks = 200000000, income = 1000000, bonus = 0.50 },
 }
 -- donnees : coinsEarnedSinceRank
+
+-- Monétisation top 10 validée (DECISIONS_MARCHE.md §5) — IDs 0 = en attente Moaad
+Config.Shop = {
+	Passes = {
+		VIPRider    = { id = 0, price = 79,   name = "VIP Rider" },
+		SpeedBoost  = { id = 0, price = 149,  name = "Speed Boost" },
+		BagExpand   = { id = 0, price = 99,   name = "Bag Expansion" },
+		StarterPack = { id = 0, price = 249,  name = "Starter Pack", includes = { "VIPRider", "SpeedBoost", "BagExpand" } },
+	},
+	TideEgg      = { id = 0, price = 199, chances = { Common = 60, Uncommon = 25, Rare = 10, Epic = 4, Legendary = 1 } },
+	PickCreature = { id = 0, price = 399 },
+	RewardedAd   = { enabled = true, reward = "TideEgg", cooldownHours = 24 },
+}
 ```
 
 **Rappel de cohérence** : `Stats.LagoonTier` doit être appelé avec le **revenu total** du joueur (`Stats.Income`, bonus compris), pas avec le revenu brut des bassins. Sinon le palier 5 devient inatteignable.
@@ -486,9 +504,17 @@ Elles sont **réelles** et doivent être tranchées avant que ça coûte du temp
 |---|---|---|
 | 1re mise à jour | `BlueRingedOctopus`, `LionsManeJelly` | Ce sont les **créatures de nuit** de `GDD.md` §6 bis : elles se voient de loin par leur lueur, donc la décision « je vais là-bas » est visuelle, sans texte. Un seul preset (`Night`) à faire pour les deux. |
 | 2e | `LeopardRay`, `GiantPacificOctopus` | Le **secret complet de l'épave** (`TABLEAU.md`, semaine 2). Le contenu de l'épave est donc à écrire avec elles, pas avant. |
+
+> **Gravure sur la quille (décision finale, `DECISIONS_MARCHE.md` §3) :**
+>
+> > **"Quand la mer recule, l'ancien roi revient.**
+> > **La marée extrême révèle ce qu'elle a prise."**
+>
+> Lisible en 3 s, compréhensible 10-30 ans. 10 ans = marée basse + gros monstre ; 20 ans = lien mécanique horaire ; 30 ans = lore Léviathan/Whale Shark. **Empreinte lumineuse** au sol pulsant au rythme des marées → partage organique TikTok/Shorts = acquisition gratuite. Pas de spoil : ne dit pas "Whale Shark" ni "Deep Dive".
+
 | 3e | `MantaRay`, `WhaleShark` | Les Légendaires montables. Elles supposent que le joueur ait déjà vu les 8 autres, et une économie qui tienne. **C'est aussi la promesse du Deep Dive** (`GDD.md` §9 bis) : elles doivent arriver *avec*, pas avant. |
 
-**Conséquence à acter dans l'interface (B), semaine 1** : le Codex affiche 10 espèces, 3 accessibles. **Les 7 autres sont montrées en « ? », pas masquées.** C'est le crochet de rétention normal d'un jeu de collection, et c'est gratuit. Mais si D préfère ne rien annoncer, le Codex n'affiche que les 3 connues — c'est un choix de 10 lignes côté B, à confirmer, pas un blocage.
+**Conséquence à acter dans l'interface (B), semaine 1** : le Codex affiche 10 espèces, **3 accessibles + 4 mystère** ("? ? ? ?" silhouettes floues + rareté colorée). C'est le crochet de rétention validé par étude de marché (pattern Adopt Me / Blox Fruits). Barre "X/10 découvertes", animation bounce, tooltip "Découvre-le en jouant !" sur les mystères. Si D préfère ne rien annoncer, le Codex n'affiche que les 3 connues — c'est un choix de 10 lignes côté B, à confirmer, pas un blocage.
 
 ### Deux valeurs manquantes, signalées plutôt que comblées
 
