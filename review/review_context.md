@@ -76,7 +76,7 @@ Référence design : docs/GDD.md v2 (§1 ter, §2, §4.6–4.8, §9, §11, §12,
   - ProcessReceipt idempotent ; les ids Roblox sont dans Config.Shop (0 = produit désactivé).
 - Mort ou reset = sac perdu (Notify `bagLost`). Bouton Home refusé hors du calme (`WaveActive`) et pendant le cooldown (`Cooldown`).
 - Données : DataStore, 3 essais, verrou de session, autosave 90 s, sauvegarde au départ et dans BindToClose. Si le chargement échoue, la session ne sauvegarde jamais (Notify `saveOff`). Schéma v2 ; une donnée v1 est rangée dans `legacy.v1`, rien n'est effacé.
-- Le serveur dépend seulement des NOMS et des ATTRIBUTS de la carte : `Plots/PlotN` (Index, SpawnPos, emprise du lagon = **`PlotN.Bounds`** : Part invisible et tournée, test dans son repère local, entrée face au centre de l'île ; replis : attributs Center + Radius, puis MinX/MaxX/MinZ/MaxZ), `Pedestals/PedestalN` (Slot, LockGui, hauteur Size.X ; un bassin = un PedestalN), `Towers/TowerN` (Center).
+- Le serveur dépend seulement des NOMS et des ATTRIBUTS de la carte : `Plots/PlotN` (Index, SpawnPos, emprise du lagon = attributs **`Center`** (Vector3) + **`Radius`** (cercle horizontal ; île de C : rayon 17, centres à r = 48, angles k × 45°) ; replis : Part `PlotN.Bounds` tournée, puis MinX/MaxX/MinZ/MaxZ ; sortie du lagon côté mer), `Pedestals/PedestalN` (Slot, LockGui, hauteur Size.X ; un bassin = un PedestalN), `Towers/TowerN` (Center).
 - Modèles : `ReplicatedStorage.Assets.Creatures.<Species>`. **Repli** tant qu'ils manquent : `Assets.Items.<ancien trésor>` via Config.LegacyItemToCreature.
 
 ## Contrat des remotes v2 (publié pour B — le serveur s'y tient exactement)
@@ -149,6 +149,7 @@ wave = {
   intro,                    -- true seulement pour la vague d'intro personnelle
   startD, endD, speed,      -- présents seulement si différents des valeurs par défaut (vague d'intro)
   royal,                    -- {active = true, endsAt} pendant un cycle de Marée Royale, sinon absent
+  extreme,                  -- marée extrême, pendant le calme de son cycle seulement : {active, revealAt, endsAt, center, radius}
 }
 ```
 - `startTime` = départ de la vague, en cours ou à venir.
@@ -170,6 +171,7 @@ wave = {
 | lock | `{active, readyAt}` |
 | royal | `{phase = "start"|"end", top = {{userId, name, score}}, rank?, coins?}` |
 | purchase | `{product, species?, mutation?}` : achat accordé |
+| extreme | `{endsAt, count}` : à tous, au moment où le récif se découvre (marée extrême) |
 | saveOff | `{text}` |
 | capture | `{species, mutation, rarity, position (Vector3), bagCount, bagMax, isNew}` (isNew = nouvelle case du Codex) |
 | bagFull | `{bagMax}` (au plus une fois toutes les 3 s) |
@@ -212,13 +214,19 @@ wave = {
 - PlotN : attributs `Owner` (UserId), `OwnerName` (DisplayName), `LagoonTier` (1..5). Owner et OwnerName sont retirés quand la base est libre.
 - PlotN : `Open` (bool, barrière baissée pour tous), `Locked` (bool), `Shield` ("" | "newbie" | "stolen" | "cap" | "lock").
 - `PlotN.Barrier` (Model de C) : attribut `Open`, écrit par le serveur. Le serveur règle `CanCollide` de ses parts. Les groupes de collision `TR_BarrierN` / `TR_CharN` laissent passer le propriétaire, et le joueur qui a la Revanche. B anime le visuel à partir de `Open`.
-- Un joueur trouvé sans droit dans un lagon fermé est ramené devant l'entrée, côté crique, à 5 studs du bord de Bounds. Vérification serveur 10 fois/s.
+- Un joueur trouvé sans droit dans un lagon fermé est ramené devant la sortie, côté mer : Center + o·(Radius + 5), où o = direction de la crique vers le lagon (dans la brèche de la falaise). Vérification serveur 10 fois/s.
 - Apparitions : uniquement sur le Terrain de plage (Config.Island.spawnMaterials = Sand, Mud), avec un sol entre spawnYMin et spawnYMax, et à plus de max(16, PlatformRadius + 4) studs du Center d'une tour.
 - `Config.Upgrades[*].icon = ""` (plus d'emoji) ; le LockGui des bassins affiche « LOCKED ». Les icônes viennent de B, d'après `key`.
 - Joueur : attributs `Plot`, `Loaded`, `Pets` ("CrabBuddy,Turtle"), `Bag` ("GhostCrab:Golden,CushionStar:" pour afficher la pile sur la tête).
 - Joueur : `Carrying` ("HawksbillTurtle:Golden" ou ""), `Mount` (espèce ou ""), `MountStage` (3 ou 4), `Surfing` (bool, monture Titan pendant la vague), `Crown` (0..3), `Newbie` (bool), `VIP` (bool).
 - Monture : le serveur soude au HumanoidRootPart un clone de la créature, à l'échelle de son stade. C fournit l'Attachment `Saddle` dans `Root`. Le serveur relève `Humanoid.HipHeight`. L'animation assise et le surf sont côté client.
 - Créature royale : attribut `Royal = true` sur son modèle, sur la plage comme dans un bassin.
+- **Marée extrême** (P1-37) :
+  - environ 1 fois par heure (Config.IsExtremeCycle : cycle % 58 == 29), jamais en même temps qu'une marée spéciale ;
+  - pendant le calme, de `revealAt` à `endsAt` (environ 25 s), le récif est découvert. Le récif = `Map.Reef` (attributs Center + Radius, construit par C), sinon le repli de Config.ExtremeTide.reef, au sud ;
+  - des créatures rares y apparaissent (attribut `Reef = true`), puis le serveur les retire à `endsAt` ;
+  - le retrait de la mer et son retour sont joués par le client d'après `wave.extreme`. Côté serveur, le récif reste sous l'eau ;
+  - debug : `extreme`.
 - leaderstats : `Coins` et `Income` (StringValue).
 
 ## Debug (Studio seulement) : ServerStorage.TR_Debug (BindableFunction)

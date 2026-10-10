@@ -22,10 +22,10 @@ local CHARACTER_TIMEOUT = 10
 local INCOME_TICK = 1
 local MAX_INCOME_DT = 5
 
--- [index] = { model, center, box? | radius? | bounds?, owner }. Emprise du lagon, par ordre de priorite :
--- PlotN.Bounds (Part tournee, convention de C pour l'ile ouverte), attributs Center + Radius, ancien rectangle MinX..MaxZ.
+-- [index] = { model, center, radius? | box? | bounds?, owner }. Emprise du lagon, par ordre de priorite :
+-- attributs Center + Radius (convention de l'ile ouverte, construite par C), Part PlotN.Bounds, ancien rectangle MinX..MaxZ.
 local plots = {}
-local ENTRANCE_GAP = 5
+local EXIT_GAP = 5
 local plotOf = {} -- [player] = index
 local knownStages = {} -- [player] = { [uid] = stage } : pour detecter un changement de stade
 
@@ -112,26 +112,25 @@ function PlotService.OutwardOf(index)
 	return flat.Unit
 end
 
--- Point juste devant l'entree du lagon, cote crique (l'entree de C fait face au centre de l'ile)
-function PlotService.EntranceOf(index)
+-- Point juste devant la sortie du lagon, cote mer : Center + o * (Radius + 5), o = direction de la crique
+-- vers le lagon. Sur l'ile de C, il tombe dans la breche de la falaise en face du lagon.
+function PlotService.ExitOf(index)
 	local plot = plots[index]
 	if not plot then
 		return nil
 	end
-	local c = Config.Island.center
-	local inward = Vector3.new(c.X - plot.center.X, 0, c.Z - plot.center.Z)
-	inward = inward.Magnitude > 0.01 and inward.Unit or Vector3.new(0, 0, -1)
+	local outward = PlotService.OutwardOf(index)
 	local extent
-	if plot.box then
-		local cf, size = plot.box.CFrame, plot.box.Size
-		extent = math.abs(inward:Dot(cf.RightVector)) * size.X / 2 + math.abs(inward:Dot(cf.LookVector)) * size.Z / 2
-	elseif plot.radius then
+	if plot.radius then
 		extent = plot.radius
+	elseif plot.box then
+		local cf, size = plot.box.CFrame, plot.box.Size
+		extent = math.abs(outward:Dot(cf.RightVector)) * size.X / 2 + math.abs(outward:Dot(cf.LookVector)) * size.Z / 2
 	else
 		local b = plot.bounds
 		extent = Vector2.new(b.maxX - b.minX, b.maxZ - b.minZ).Magnitude / 2
 	end
-	return plot.center + inward * (extent + ENTRANCE_GAP)
+	return plot.center + outward * (extent + EXIT_GAP)
 end
 
 function PlotService.OwnerOf(index)
@@ -450,10 +449,10 @@ function PlotService.Start()
 		local center, radius = model:GetAttribute("Center"), model:GetAttribute("Radius")
 		local minX, maxX = model:GetAttribute("MinX"), model:GetAttribute("MaxX")
 		local minZ, maxZ = model:GetAttribute("MinZ"), model:GetAttribute("MaxZ")
-		if type(index) == "number" and box and box:IsA("BasePart") then
-			plots[index] = { model = model, center = box.Position, box = box, owner = nil }
-		elseif type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
+		if type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
 			plots[index] = { model = model, center = center, radius = radius, owner = nil }
+		elseif type(index) == "number" and box and box:IsA("BasePart") then
+			plots[index] = { model = model, center = box.Position, box = box, owner = nil }
 		elseif type(index) == "number" and minX and maxX and minZ and maxZ then
 			plots[index] = {
 				model = model,
