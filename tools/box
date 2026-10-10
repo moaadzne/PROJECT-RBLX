@@ -1,0 +1,80 @@
+#!/bin/zsh
+# tools/box — envoie un message a une autre session OpenCode.
+#
+# Le CLI d'OpenCode n'etait pas dans le PATH : il est livre avec l'app.
+# C'est lui qui expose `run --session <id>`, le seul canal officiel pour
+# parler a une session qui n'est pas un sous-agent de la notre.
+#
+# Usage :
+#   tools/box list                       liste les sessions du repo
+#   tools/box send <lettre|id> "message"  envoie a une session
+#   tools/box bg <lettre|id> "message"   envoie sans attendre la reponse
+#
+# Lettres reconnues : A B C D E F
+set -euo pipefail
+
+BIN="$HOME/Library/Application Support/ai.opencode.desktop/cli/2.0.26/opencode-cli"
+REPO="$HOME/Documents/claude code/tide-rush"
+
+[ -x "$BIN" ] || { echo "CLI introuvable : $BIN" >&2; exit 1; }
+cd "$REPO"
+
+# Resout une lettre en ID de session via le titre.
+resolve() {
+  local want="$1"
+  local list
+  list=$("$BIN" session list 2>/dev/null)
+
+  if [[ "$want" == ses_* ]]; then
+    print -r -- "$want"
+    return 0
+  fi
+
+  # Un ID direct passe en premier.
+  print -r -- "$list" | grep -q "^${want}" && { print -r -- "$want"; return 0; }
+
+  # Sinon on cherche la lettre dans le titre : "Tide Rush · A Serveur", etc.
+  local id
+  id=$(print -r -- "$list" \
+    | grep -i "· *$want \|Tide Rush · $want\|Session $want" \
+    | head -1 | cut -f1)
+
+  if [[ -z "$id" ]]; then
+    echo "Lettre '$want' introuvable. Sessions :" >&2
+    print -r -- "$list" >&2
+    return 1
+  fi
+  print -r -- "$id"
+}
+
+case "${1:-}" in
+  list)
+    "$BIN" session list
+    ;;
+
+  send|bg)
+    mode="$1"; shift
+    target="$1"; shift
+    msg="$*"
+
+    [[ -z "$msg" ]] && { echo "Message vide." >&2; exit 1; }
+
+    id=$(resolve "$target")
+    echo "-> $id" >&2
+
+    if [[ "$mode" == bg ]]; then
+      # stdout etendu dans un log, on ne bloque pas.
+      log="docs/INBOX/logs/${target}-$(date +%H%M%S).log"
+      mkdir -p docs/INBOX/logs
+      ( "$BIN" run --session "$id" --print-logs "$msg" >"$log" 2>&1 ) &
+      echo "envoye en arriere-plan, log : $log" >&2
+    else
+      "$BIN" run --session "$id" --print-logs "$msg"
+    fi
+    ;;
+
+  *)
+    sed -n '2,14p' "$0"
+    exit 1
+    ;;
+esac

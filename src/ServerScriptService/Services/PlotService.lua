@@ -1,6 +1,6 @@
--- PlotService : bases des joueurs (attribution, tresors poses, verrous des socles),
--- proprietaire en attributs Owner / OwnerName (l'affichage du panneau appartient a C),
--- teleport a la base, bouton Home, revenus des socles (1 fois/s).
+-- PlotService : lagons des joueurs (attribution, creatures dans les bassins, verrous des bassins),
+-- attributs Owner / OwnerName / LagoonTier (l'affichage appartient a C), teleport a la base, bouton Home,
+-- revenus des bassins (1 fois/s) et passage des stades de croissance (Notify grown).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -8,11 +8,11 @@ local Services = script.Parent
 local Net = require(Services.Net)
 local Stats = require(Services.Stats)
 local DataService = require(Services.DataService)
-local ItemFactory = require(Services.ItemFactory)
+local CreatureFactory = require(Services.CreatureFactory)
 
 local PlotService = {}
 
-local LOCK_ICON = "🔒"
+local LOCK_ICON = "LOCKED" -- texte, pas d'emoji (DIRECTION_V2)
 local DISPLAY_BOB = 0.25
 local DISPLAY_GAP = 0.3
 local SPAWN_HEIGHT = 3 -- pivot du personnage au-dessus de SpawnPos : pieds sur le deck
@@ -22,8 +22,12 @@ local CHARACTER_TIMEOUT = 10
 local INCOME_TICK = 1
 local MAX_INCOME_DT = 5
 
-local plots = {} -- [index] = { model, bounds = {minX, maxX, minZ, maxZ}, owner }
+-- [index] = { model, center, radius? | box? | bounds?, owner }. Emprise du lagon, par ordre de priorite :
+-- attributs Center + Radius (convention de l'ile ouverte, construite par C), Part PlotN.Bounds, ancien rectangle MinX..MaxZ.
+local plots = {}
+local EXIT_GAP = 5
 local plotOf = {} -- [player] = index
+local knownStages = {} -- [player] = { [uid] = stage } : pour detecter un changement de stade
 
 local function pedestalOf(model, slot)
 	local folder = model:FindFirstChild("Pedestals")
@@ -48,6 +52,7 @@ local function resetPlot(index)
 	plot.owner = nil
 	plot.model:SetAttribute("Owner", nil)
 	plot.model:SetAttribute("OwnerName", nil)
+	plot.model:SetAttribute("LagoonTier", nil)
 	local display = plot.model:FindFirstChild("Display")
 	if display then
 		display:ClearAllChildren()
@@ -61,21 +66,92 @@ function PlotService.GetIndex(player)
 	return plotOf[player]
 end
 
+function PlotService.PedestalOf(index, slot)
+	return plots[index] and pedestalOf(plots[index].model, slot)
+end
+
 function PlotService.GetModel(index)
 	return plots[index] and plots[index].model
 end
 
-function PlotService.IsInOwnPlot(player, position)
-	local index = plotOf[player]
-	local bounds = index and plots[index].bounds
-	if not bounds then
+function PlotService.IsInPlot(index, position)
+	local plot = plots[index]
+	if not plot then
 		return false
 	end
+	if plot.box then
+		local p = plot.box.CFrame:PointToObjectSpace(position)
+		return math.abs(p.X) <= plot.box.Size.X / 2 and math.abs(p.Z) <= plot.box.Size.Z / 2
+	end
+	if plot.radius then
+		local dx, dz = position.X - plot.center.X, position.Z - plot.center.Z
+		return dx * dx + dz * dz <= plot.radius * plot.radius
+	end
+	local bounds = plot.bounds
 	return position.X >= bounds.minX and position.X <= bounds.maxX
 		and position.Z >= bounds.minZ and position.Z <= bounds.maxZ
 end
 
--- Pose les tresors du joueur sur ses socles et met a jour les cadenas
+function PlotService.IsInOwnPlot(player, position)
+	local index = plotOf[player]
+	return index ~= nil and PlotService.IsInPlot(index, position)
+end
+
+-- Centre du lagon et direction horizontale de la crique vers lui (vers la mer)
+function PlotService.CenterOf(index)
+	return plots[index] and plots[index].center
+end
+
+function PlotService.OutwardOf(index)
+	local center = plots[index] and plots[index].center
+	local c = Config.Island.center
+	local flat = center and Vector3.new(center.X - c.X, 0, center.Z - c.Z)
+	if not flat or flat.Magnitude < 0.01 then
+		return Vector3.new(0, 0, -1)
+	end
+	return flat.Unit
+end
+
+-- Point juste devant la sortie du lagon, cote mer : Center + o * (Radius + 5), o = direction de la crique
+-- vers le lagon. Sur l'ile de C, il tombe dans la breche de la falaise en face du lagon.
+function PlotService.ExitOf(index)
+	local plot = plots[index]
+	if not plot then
+		return nil
+	end
+	local outward = PlotService.OutwardOf(index)
+	local extent
+	if plot.radius then
+		extent = plot.radius
+	elseif plot.box then
+		local cf, size = plot.box.CFrame, plot.box.Size
+		extent = math.abs(outward:Dot(cf.RightVector)) * size.X / 2 + math.abs(outward:Dot(cf.LookVector)) * size.Z / 2
+	else
+		local b = plot.bounds
+		extent = Vector2.new(b.maxX - b.minX, b.maxZ - b.minZ).Magnitude / 2
+	end
+	return plot.center + outward * (extent + EXIT_GAP)
+end
+
+function PlotService.OwnerOf(index)
+	return plots[index] and plots[index].owner
+end
+
+-- Palier visuel du lagon, a partir du revenu (C l'utilise pour le decor)
+function PlotService.UpdateTier(player)
+	local index = plotOf[player]
+	local profile = DataService.Get(player)
+	if not index or not profile or not profile.loaded then
+		return
+	end
+	local tier = Stats.LagoonTier(Stats.Income(profile.data, os.time()))
+	local model = plots[index].model
+	if model:GetAttribute("LagoonTier") ~= tier then
+		model:SetAttribute("LagoonTier", tier)
+	end
+end
+
+-- Pose les creatures du joueur dans ses bassins et met a jour les cadenas
 function PlotService.RenderDisplay(player)
 	local index = plotOf[player]
 	local profile = DataService.Get(player)
@@ -89,6 +165,7 @@ function PlotService.RenderDisplay(player)
 	end
 	local d = profile.data
 	local slots = Stats.Slots(d)
+	local now = os.time()
 
 	local current = {}
 	for _, child in ipairs(display:GetChildren()) do
@@ -100,21 +177,37 @@ function PlotService.RenderDisplay(player)
 		end
 	end
 
+	local stages = {}
 	for slot = 1, Config.MaxSlots do
-		local want = (slot <= slots and d.display[slot]) or ""
+		local creature = slot <= slots and d.pools[slot] or nil
+		local stage = creature and Stats.Stage(creature, now, Stats.GrowthSpeed(d))
+		if creature then
+			stages[creature.uid] = stage
+			-- la monture et la creature portee par un voleur ne sont pas dans leur bassin
+			if profile.mountUid == creature.uid or profile.carriedOut[creature.uid] then
+				creature = nil
+			end
+		end
 		local have = current[slot]
-		if have and have:GetAttribute("ItemId") ~= want then
+		if have and (not creature or have:GetAttribute("Uid") ~= creature.uid) then
 			have:Destroy()
 			have = nil
 		end
 		local pedestal = pedestalOf(model, slot)
-		if want ~= "" and not have and pedestal then
+		if have then
+			have:SetAttribute("Stage", stage)
+		elseif creature and pedestal then
 			local top = pedestal.Position.Y + pedestal.Size.X / 2 -- cylindre couche : hauteur = Size.X
-			local y = top + ItemFactory.RestOffset(want) + DISPLAY_BOB + DISPLAY_GAP
-			local item = ItemFactory.Create(want, Vector3.new(pedestal.Position.X, y, pedestal.Position.Z), {
+			local y = top + CreatureFactory.RestOffset(creature.id) + DISPLAY_BOB + DISPLAY_GAP
+			local item = CreatureFactory.Create(creature.id, Vector3.new(pedestal.Position.X, y, pedestal.Position.Z), {
+				mutation = creature.mut,
+				stage = stage,
 				zone = 0,
 				bob = DISPLAY_BOB,
 				slot = slot,
+				uid = creature.uid,
+				born = creature.born,
+				royal = creature.royal,
 				beacon = false,
 			})
 			if item then
@@ -128,6 +221,42 @@ function PlotService.RenderDisplay(player)
 		end
 		setLock(model, slot, slot > slots, lockText)
 	end
+	knownStages[player] = stages
+	PlotService.UpdateTier(player)
+end
+
+-- Un stade a change depuis le dernier affichage : Notify grown, affichage et palier mis a jour
+local function checkGrowth(player, profile, now)
+	local known = knownStages[player]
+	if not known then
+		return
+	end
+	local grown = false
+	for slot, creature in ipairs(profile.data.pools) do
+		if creature then
+			local stage = Stats.Stage(creature, now, Stats.GrowthSpeed(profile.data))
+			local before = known[creature.uid]
+			if before and stage > before then
+				grown = true
+				Net.Notify(player, "grown", {
+					uid = creature.uid,
+					slot = slot,
+					species = creature.id,
+					stage = stage,
+					text = ("Your %s is now %s!"):format(Config.Creatures[creature.id].name, Config.Stages[stage].id),
+				})
+			end
+		end
+	end
+	if grown then
+		PlotService.RenderDisplay(player)
+		DataService.MarkDirty(player)
+	end
+end
+
+-- Vitesse autorisee : amelioration Speed x monture x ralenti du porteur de creature volee
+function PlotService.SpeedOf(profile)
+	return Stats.WalkSpeed(profile.data) * profile.mountMult * profile.carryMult
 end
 
 function PlotService.ApplySpeed(player)
@@ -135,7 +264,7 @@ function PlotService.ApplySpeed(player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if humanoid and profile and profile.loaded then
-		humanoid.WalkSpeed = Stats.WalkSpeed(profile.data)
+		humanoid.WalkSpeed = PlotService.SpeedOf(profile)
 	end
 end
 
@@ -166,6 +295,10 @@ function PlotService.SendHome(player)
 	if player.Character ~= character or not root.Parent then
 		return false
 	end
+	local profile = DataService.Get(player)
+	if profile then
+		profile.movedByServerAt = os.clock()
+	end
 	character:PivotTo(target)
 	root.AssemblyLinearVelocity = Vector3.zero
 	return true
@@ -177,6 +310,8 @@ local function onCharacter(player, character)
 	if not humanoid or not root or player.Character ~= character then
 		return
 	end
+	-- pas de nom ni de barre de vie Roblox au-dessus des tetes : B dessine l'etiquette maison
+	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 	PlotService.ApplySpeed(player)
 	humanoid.Died:Connect(function()
 		-- mort (reset compris) = sac perdu, sinon le reset deviendrait un retour gratuit avec le sac
@@ -244,6 +379,7 @@ end
 function PlotService.Release(player)
 	local index = plotOf[player]
 	plotOf[player] = nil
+	knownStages[player] = nil
 	if index and plots[index] and plots[index].owner == player then
 		resetPlot(index)
 	end
@@ -257,7 +393,7 @@ local function goHome(player)
 	if not plotOf[player] then
 		return false, "NoPlot"
 	end
-	local wave = Net.GetWave()
+	local wave = Net.GetWaveFor(player)
 	if wave and wave.phase ~= "calm" then
 		return false, "WaveActive"
 	end
@@ -283,11 +419,23 @@ local function incomeLoop()
 		local now = os.clock()
 		local dt = math.min(now - last, MAX_INCOME_DT)
 		last = now
+		local unixNow = os.time()
 		for player, profile in DataService.All() do
 			if profile.loaded and not profile.leaving then
-				local income = Stats.Income(profile.data)
+				profile.data.playTime += dt
+				local income = Stats.Income(profile.data, unixNow)
 				if income > 0 then
-					DataService.AddCoins(player, income * dt)
+					-- le contrat verse le revenu chaque seconde ; VIPRider majore les pieces, pas le revenu
+					DataService.AddCoins(player, income * dt * Stats.CoinBonus(profile.data))
+				end
+				local ok, err = pcall(checkGrowth, player, profile, unixNow)
+				if not ok then
+					warn(("[TideRush] croissance %s : %s"):format(player.Name, tostring(err)))
+				end
+				PlotService.UpdateTier(player) -- compagnons ou Codex peuvent changer le revenu
+				local newbie = Stats.IsNewbie(profile.data)
+				if player:GetAttribute("Newbie") ~= newbie then
+					player:SetAttribute("Newbie", newbie) -- etiquette au-dessus de la tete (B)
 				end
 			end
 		end
@@ -298,11 +446,18 @@ function PlotService.Start()
 	local folder = workspace:WaitForChild("Map"):WaitForChild("Plots")
 	for _, model in ipairs(folder:GetChildren()) do
 		local index = model:GetAttribute("Index")
+		local box = model:FindFirstChild("Bounds")
+		local center, radius = model:GetAttribute("Center"), model:GetAttribute("Radius")
 		local minX, maxX = model:GetAttribute("MinX"), model:GetAttribute("MaxX")
 		local minZ, maxZ = model:GetAttribute("MinZ"), model:GetAttribute("MaxZ")
-		if type(index) == "number" and minX and maxX and minZ and maxZ then
+		if type(index) == "number" and typeof(center) == "Vector3" and type(radius) == "number" and radius > 0 then
+			plots[index] = { model = model, center = center, radius = radius, owner = nil }
+		elseif type(index) == "number" and box and box:IsA("BasePart") then
+			plots[index] = { model = model, center = box.Position, box = box, owner = nil }
+		elseif type(index) == "number" and minX and maxX and minZ and maxZ then
 			plots[index] = {
 				model = model,
+				center = Vector3.new((minX + maxX) / 2, Config.Island.seaY, (minZ + maxZ) / 2),
 				bounds = { minX = minX, maxX = maxX, minZ = minZ, maxZ = maxZ },
 				owner = nil,
 			}

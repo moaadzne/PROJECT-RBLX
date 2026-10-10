@@ -1,19 +1,10 @@
--- Stats : calculs purs (revenus, sac, socles, vitesse, depot, tirages).
--- Aucun effet de bord : se teste en mode Edit.
+-- Stats : calculs purs (revenu, croissance, depot, mutations, Codex, hors ligne, tirages).
+-- Aucun effet de bord, aucune horloge lue ici : `now` est toujours passe en argument.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 
 local Stats = {}
-
-function Stats.ItemIncome(itemId)
-	local def = Config.Items[itemId]
-	return def and def.income or 0
-end
-
-function Stats.SellValue(itemId)
-	return Stats.ItemIncome(itemId) * Config.SellMultiplier
-end
 
 function Stats.BagMax(data)
 	return Config.GetUpgradeValue("Bag", data.levels.Bag)
@@ -26,6 +17,121 @@ end
 function Stats.WalkSpeed(data)
 	return Config.GetUpgradeValue("Speed", data.levels.Speed)
 end
+
+-- Creatures ----------------------------------------------------------------
+
+function Stats.Rarity(species)
+	local def = Config.Creatures[species]
+	return def and def.rarity or "Common"
+end
+
+function Stats.MutationMult(mutation)
+	local def = Config.Mutations[mutation]
+	return def and def.mult or 1
+end
+
+-- Revenu d'un bebe (mutation comprise), sert au prix de relache et a la comparaison au depot
+function Stats.BabyIncome(species, mutation)
+	local def = Config.Creatures[species]
+	return (def and def.income or 0) * Stats.MutationMult(mutation)
+end
+
+function Stats.ReleaseValue(species, mutation)
+	return Stats.BabyIncome(species, mutation) * Config.SellMultiplier
+end
+
+-- Champs passagers poses sur data par ShopService (jamais relus du DataStore) :
+-- _growth = vitesse de croissance (FastGrowth), _passBonus = bonus de pieces (VIPRider)
+function Stats.GrowthSpeed(data)
+	return data._growth or 1
+end
+
+-- Stade (1..4) et heure du stade suivant (0 au dernier stade, Titan)
+function Stats.Stage(creature, now, speed)
+	return Config.StageAt(Stats.Rarity(creature.id), creature.born, now, speed)
+end
+
+-- Revenu/s d'une creature deposee (stade et mutation), sans bonus
+function Stats.CreatureIncome(creature, now, speed)
+	local stage = Stats.Stage(creature, now, speed)
+	return Stats.BabyIncome(creature.id, creature.mut) * Config.Stages[stage].mult
+end
+
+function Stats.CreatureCount(data)
+	local count = 0
+	for _, creature in ipairs(data.pools) do
+		if creature then
+			count += 1
+		end
+	end
+	return count
+end
+
+-- Protection debutant : peu de temps de jeu ou peu de creatures (ni voler ni etre vole)
+function Stats.IsNewbie(data)
+	return data.playTime < Config.Steal.newbieMinutes * 60 or Stats.CreatureCount(data) < Config.Steal.newbieMinCreatures
+end
+
+function Stats.FindCreature(data, uid)
+	for slot, creature in ipairs(data.pools) do
+		if creature and creature.uid == uid then
+			return creature, slot
+		end
+	end
+	return nil, nil
+end
+
+-- Codex ---------------------------------------------------------------------
+
+function Stats.Variant(mutation)
+	return if mutation ~= nil and mutation ~= "" then mutation else "Normal"
+end
+
+function Stats.CodexTotal()
+	local species = 0
+	for _ in pairs(Config.Creatures) do
+		species += 1
+	end
+	return species * #Config.CodexVariants
+end
+
+function Stats.CodexCount(data)
+	local count = 0
+	for _, variants in pairs(data.codex) do
+		for _, variant in ipairs(Config.CodexVariants) do
+			if variants[variant] then
+				count += 1
+			end
+		end
+	end
+	return count
+end
+
+function Stats.CodexRowComplete(data, species)
+	local variants = data.codex[species]
+	if not variants then
+		return false
+	end
+	for _, variant in ipairs(Config.CodexVariants) do
+		if not variants[variant] then
+			return false
+		end
+	end
+	return true
+end
+
+-- Bonus permanent : +speciesBonus par ligne d'espece complete
+function Stats.CodexBonus(data)
+	local rows = 0
+	for species in pairs(data.codex) do
+		if Stats.CodexRowComplete(data, species) then
+			rows += 1
+		end
+	end
+	return rows * Config.Codex.speciesBonus
+end
+
+-- Compagnons -------------------------------------------------------------------
 
 function Stats.FindPet(data, uid)
 	for _, pet in ipairs(data.pets) do
@@ -51,96 +157,6 @@ function Stats.PetBoost(data)
 		end
 	end
 	return total
-end
-
--- Revenu des socles seuls, par seconde
-function Stats.BaseIncome(data)
-	local total = 0
-	for _, itemId in ipairs(data.display) do
-		total += Stats.ItemIncome(itemId)
-	end
-	return total
-end
-
--- Revenu total par seconde, bonus compris
-function Stats.Income(data)
-	return Stats.BaseIncome(data) * (1 + Stats.PetBoost(data))
-end
-
--- Tableau dense de longueur Slots, "" = socle vide
-function Stats.NormalizeDisplay(data)
-	local slots = Stats.Slots(data)
-	local out = table.create(slots, "")
-	for slot = 1, slots do
-		local itemId = data.display[slot]
-		if type(itemId) == "string" and Config.Items[itemId] then
-			out[slot] = itemId
-		end
-	end
-	return out
-end
-
--- Depot : garde les meilleurs tresors sur les socles, vend le reste.
--- Les tresors deja poses et conserves ne changent pas de socle.
--- Renvoie newDisplay, placed = {{slot, id}}, sold = {itemId}
-function Stats.Deposit(display, slots, bag)
-	local pool = {}
-	for slot = 1, slots do
-		local itemId = display[slot]
-		if itemId and itemId ~= "" then
-			table.insert(pool, { id = itemId, slot = slot })
-		end
-	end
-	for _, itemId in ipairs(bag) do
-		table.insert(pool, { id = itemId })
-	end
-	-- Plus gros revenu d'abord ; a egalite, ce qui est deja pose reste
-	table.sort(pool, function(a, b)
-		local incomeA, incomeB = Stats.ItemIncome(a.id), Stats.ItemIncome(b.id)
-		if incomeA ~= incomeB then
-			return incomeA > incomeB
-		end
-		return a.slot ~= nil and b.slot == nil
-	end)
-
-	local newDisplay = table.create(slots, "")
-	local newcomers, sold = {}, {}
-	for rank, entry in ipairs(pool) do
-		if rank > slots then
-			table.insert(sold, entry.id)
-		elseif entry.slot then
-			newDisplay[entry.slot] = entry.id
-		else
-			table.insert(newcomers, entry.id)
-		end
-	end
-
-	local placed = {}
-	local free = 1
-	for _, itemId in ipairs(newcomers) do
-		while newDisplay[free] ~= "" do
-			free += 1
-		end
-		newDisplay[free] = itemId
-		table.insert(placed, { slot = free, id = itemId })
-	end
-	return newDisplay, placed, sold
-end
-
--- Tirage pondere sur une liste {{id, poids}, ...}
-function Stats.PickWeighted(list, rng)
-	local total = 0
-	for _, entry in ipairs(list) do
-		total += entry[2]
-	end
-	local roll = rng:NextNumber() * total
-	for _, entry in ipairs(list) do
-		roll -= entry[2]
-		if roll < 0 then
-			return entry[1]
-		end
-	end
-	return list[#list][1]
 end
 
 -- Les meilleurs compagnons (uids), pour "Equip best"
@@ -169,6 +185,160 @@ function Stats.EquippedIds(data)
 		end
 	end
 	return table.concat(ids, ",")
+end
+
+-- Revenu ------------------------------------------------------------------------
+
+-- Multiplicateur commun du contrat v2.1 : 1 + compagnons + Codex.
+-- Le gamepass VIPRider n'entre PAS ici : le contrat dit "+10 % pieces", pas "+10 % de revenu".
+-- Le revenu affiche (state.income) et le LagoonTier suivent donc cette formule-la.
+function Stats.Bonus(data)
+	return 1 + Stats.PetBoost(data) + Stats.CodexBonus(data)
+end
+
+-- Bonus de pieces du gamepass VIPRider : applique au versement, jamais au revenu du contrat
+function Stats.CoinBonus(data)
+	return 1 + (data._passBonus or 0)
+end
+
+-- Revenu des bassins seuls, par seconde
+function Stats.BaseIncome(data, now)
+	local total = 0
+	for _, creature in ipairs(data.pools) do
+		if creature then
+			total += Stats.CreatureIncome(creature, now, Stats.GrowthSpeed(data))
+		end
+	end
+	return total
+end
+
+-- Revenu total par seconde, bonus compris
+function Stats.Income(data, now)
+	return Stats.BaseIncome(data, now) * Stats.Bonus(data)
+end
+
+-- Pieces gagnees entre t0 et t1 (bonus compris), en suivant les changements de stade
+function Stats.IncomeBetween(data, t0, t1)
+	if not (t1 > t0) then
+		return 0
+	end
+	local total = 0
+	local speed = Stats.GrowthSpeed(data)
+	for _, creature in ipairs(data.pools) do
+		if creature then
+			local t = t0
+			while t < t1 do
+				local stage, nextAt = Stats.Stage(creature, t, speed)
+				local stop = if nextAt > 0 then math.min(nextAt, t1) else t1
+				if stop <= t then
+					stop = t1 -- securite : jamais de boucle infinie
+				end
+				total += Stats.BabyIncome(creature.id, creature.mut) * Config.Stages[stage].mult * (stop - t)
+				t = stop
+			end
+		end
+	end
+	return total * Stats.Bonus(data)
+end
+
+function Stats.LagoonTier(income)
+	local tier = 1
+	for i, threshold in ipairs(Config.LagoonTiers) do
+		if income >= threshold then
+			tier = i
+		end
+	end
+	return tier
+end
+
+-- Bassins -------------------------------------------------------------------------
+
+-- Tableau dense de longueur Slots, false = bassin vide
+function Stats.NormalizePools(data)
+	local slots = Stats.Slots(data)
+	local out = table.create(slots, false)
+	for slot = 1, slots do
+		local creature = data.pools[slot]
+		if type(creature) == "table" then
+			out[slot] = creature
+		end
+	end
+	return out
+end
+
+-- Depot : bassin libre d'abord ; lagon plein -> la nouvelle remplace la plus faible si elle vaut plus,
+-- sinon elle est relachee. Les meilleures nouvelles passent en premier.
+-- newcomers = creatures deja creees ({uid, id, mut, born}).
+-- locked = { [uid] = true } : jamais remplacees (montee, portee par un voleur). speed = vitesse de croissance.
+-- Renvoie newPools, placed = {{slot, creature}}, released = {{creature, slot?}}
+function Stats.Deposit(pools, slots, newcomers, now, speed, locked)
+	locked = locked or {}
+	local out = table.create(slots, false)
+	for slot = 1, slots do
+		out[slot] = pools[slot] or false
+	end
+	local order = table.clone(newcomers)
+	table.sort(order, function(a, b)
+		return Stats.BabyIncome(a.id, a.mut) > Stats.BabyIncome(b.id, b.mut)
+	end)
+
+	local placed, released = {}, {}
+	for _, creature in ipairs(order) do
+		local target = table.find(out, false)
+		if not target then
+			local weakest, weakestIncome = nil, math.huge
+			for slot = 1, slots do
+				if not locked[out[slot].uid] then
+					local income = Stats.CreatureIncome(out[slot], now, speed)
+					if income < weakestIncome then
+						weakest, weakestIncome = slot, income
+					end
+				end
+			end
+			if weakest and Stats.CreatureIncome(creature, now, speed) > weakestIncome then
+				table.insert(released, { creature = out[weakest], slot = weakest })
+				target = weakest
+			end
+		end
+		if target then
+			out[target] = creature
+			table.insert(placed, { slot = target, creature = creature })
+		else
+			table.insert(released, { creature = creature })
+		end
+	end
+	return out, placed, released
+end
+
+-- Tirages -------------------------------------------------------------------------
+
+-- Tirage pondere sur une liste {{id, poids}, ...}
+function Stats.PickWeighted(list, rng)
+	local total = 0
+	for _, entry in ipairs(list) do
+		total += entry[2]
+	end
+	local roll = rng:NextNumber() * total
+	for _, entry in ipairs(list) do
+		roll -= entry[2]
+		if roll < 0 then
+			return entry[1]
+		end
+	end
+	return list[#list][1]
+end
+
+-- Mutation d'une creature qui apparait pendant la maree `tide` : "" ou une cle de Config.Mutations
+function Stats.RollMutation(tide, rng)
+	local def = Config.Tides[tide] or Config.Tides.Normal
+	local roll = rng:NextNumber() * 100
+	for _, entry in ipairs(def.odds) do
+		roll -= entry[2]
+		if roll < 0 then
+			return entry[1]
+		end
+	end
+	return ""
 end
 
 return Stats
