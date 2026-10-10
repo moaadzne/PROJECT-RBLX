@@ -1,3 +1,8 @@
+## 2026-10-10 21:15
+FAIT     : 4 specs docs Phase 1 livrées et poussées — POI_SPECS_P1.md, EXTREME_TIDE_P1.md, STREAMING_SPECS_P1.md, WEATHER_SPECS_P1.md
+VÉRIFIÉ  : Contenu vérifié identique dans HEAD (origin/claude/r-economy-pvp d6b3838) — malgré un reset parallèle qui avait orpheliné mon commit 4c75982, les fichiers ont été absorbés par le lot E et sont intacts sur le remote
+BESOIN   : D merge mes 4 specs dans claude/e-gdd-reef avant lundi — e-gdd-reef n'a que mon plan (153b86c), pas les specs
+
 ## 2026-10-10 20:30
 FAIT     : 3 docs specs livrés — POI_SPECS_P1.md (Belvédère/Épave/Récif), EXTREME_TIDE_P1.md (timeline 25s, signs sans texte), STREAMING_SPECS_P1.md (chunks 100×100, LOD 3 niveaux, budgets mobile/PC)
 VÉRIFIÉ  : Aligné DA_MONDE §0-5, DECISIONS_MARCHE §3, contrat v2.1, Config.ExtremeTide
