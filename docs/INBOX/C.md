@@ -2,6 +2,50 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 — Contrats A/D/E rattrapés, île reconstruite (P1-36)
+FAIT     : 4 commits (f28cf01, 25840eb, c74028d, 64fafa2). `build_lagoon` ne plantait plus sur l'ancienne géométrie (Center+Radius, A) ; vague 22→30 et tours 26→34, embruns bornés sous la plateforme sûre, ombre hors plastique (D/F) ; Night sans `SmoothPlastic` ; roster corrigé en **CushionStar** et stades **Elder=1.0** (E) ; 4 sons d'interface + barrière `Atomic` pour B ; **générateur d'île reconstruit** — le fichier du 09/10 était perdu avec la session, pas commité. Détails et 2 points à trancher : §5.
+VÉRIFIÉ  : `test_island_terrain.py` reimplémente la fonction de hauteur hors-jeu et vérifie les 11 contraintes de A → **11/11 OK** (il a attrapé 5 erreurs de géométrie au premier essai, corrigées). `.rbxl` relu. **Rien testé en jeu** : pas de Studio, et aucun son écouté.
+BESOIN   : **[A]** trancher 2 points bloquants pour l'île (§5.1) — sans quoi `build_lagoon` produira 10 cuvettes trop serrées dans un lagon de 36 studs. **[B]** m'envoyer la liste exacte des 4 sons d'UI pour vérifier que mes ids correspondent. **[D]** rien d'autre pour l'instant.
+
+### §5 — Deux points qui demandent ton arbitrage
+
+**§5.1 — [A] La crique de 70 est trop petite pour 8 lagons de 10 cuvettes.**
+Contrainte géométrique, pas une préférence : 8 disques disjoints dans un cercle de rayon 70 imposent
+`rayon ≤ 70·sin(π/8)/(1+sin(π/8)) = 19.4`. J'ai pris **18** (anneau à 50), c'est le maximum jouable.
+Mais l'ancien PlotN faisait **32 × 63 studs** ; il devient un **cercle de 36 de diamètre**.
+Or `DA_MONDE.md` §2 prévoit **10 cuvettes de 5 à 7 studs** par lagon, rangées sur deux rangs.
+**Elles ne tiennent pas dans 36 studs.** Trois options, c'est ta décision :
+- **(a)** `coveRadius` 70 → 110, et je recalcule. Lagons à 30 de rayon, tout rentre.
+- **(b)** 6 lagons au lieu de 8. Mais le GDD en compte 8, et A a câblé 8 partout.
+- **(c)** 6 cuvettes par lagon au lieu de 10. C'est un changement de design visible.
+Je n'ai **pas** tranché : c'est ton périmètre. En attendant j'ai construit à 18 et le lagon
+est **sous-dimensionné** — c'est visible et assumé, pas un oubli.
+
+**§5.2 — [A] Ton anneau d'apparition 1 et ma falaise se recouvrent.**
+`Config.Rings[1].rMin = 70`, or la falaise commence à `r = 70`. Elles se marchent dessus.
+J'ai réduit au minimum : une **crête** de 70 à 74 (4 studs) plutôt qu'un mur épais, ce qui
+donne **2.3 % de roche** dans l'anneau au lieu de 6.4 %. La collision reste dans tes chiffres.
+Deux pistes : faire commencer `Rings[1]` à 80, ou accepter que la crête soit hors des apparitions.
+C'est ta zone (Config), je n'y touche pas.
+
+**Ce que j'ai tranché seul, et pourquoi** : rayon 18, crête 70→74, houle 55 studs à l'horizon,
+4 orientations N/E/S/O. Ce sont des valeurs **de travail**, pas des décisions : elles viennent
+de `Config` quand il existe, et rien n'est figé. Le jeu n'est pas testable avant lundi, donc
+aucune de ces valeurs ne doit être considérée comme définitive.
+
+**§5.3 — [B] Sons d'interface.** J'ai ajouté `uiClick`, `uiDeny`, `uiPurchase`, `uiWhoosh`
+(groupe UI, bibliothèque ProSoundEffects sous licence). `grow` existait déjà. ⚠ **Je ne les ai pas
+écoutés** — j'ai choisi des ids de la même bibliothèque que le reste du catalogue, ce qui ne
+garantit rien sur le rendu. Un son absent est ignoré sans erreur par ton client, donc lundi tu
+peux les remplacer sans casser quoi que ce soit. Envoie-moi les 4 noms exacts que ton script
+attend si ce n'est pas `uiClick/uiDeny/uiPurchase/uiWhoosh`.
+
+**§5.4 — Rappel honnête sur le niveau visé.** Ma réponse de ce matin tient : les modèles gratuits
+ne donnent pas Fortnite / Sea of Thieves seuls. Le test fermé peut être un bon test *technique* ;
+ce ne sera pas un test de *niveau visuel*. Mieux vaut le dire à Moaad maintenant que le
+re-découvrir le 29/10.
+
+## 2026-10-10 — POINT BLOQUANT LEVÉ : `Assets._DecorLib` EXISTE
 ## 2026-10-10 — POINT BLOQUANT LEVÉ : `Assets._DecorLib` EXISTE
 FAIT     : Blocage invalidé. Le .rbxl **n'est pas illisible** : il est zstd-compressé, décompressable. Hiérarchie lue dans l'arbre réel : `ReplicatedStorage.Assets > _DecorLib > StylizedNaturePack`, pack **peuplé** (CoconutPalm, FanPalm, Rock, Coral, Seashell, Pier, Raft, LightHouse, Hut, Bush, Grass). Preuve reproductible en lecture seule : `tools/world/verify_decorlib.py` (commit 06f2f54). Constat sur le **commit 06f2f54 de la PR #1**, celui que tu cites. Détail : §1 ci-dessous.
 VÉRIFIÉ  : Décompression zstd du .rbxl (2058 chunks), lecture de l'ordre des noms dans le chunk offset 297915. Contre-vérif : la sauvegarde du **08/10 n'a PAS `_DecorLib`** → le pack a été importé le 09/10, ce n'est pas une corruption. Rien testé en jeu (pas de Studio).
