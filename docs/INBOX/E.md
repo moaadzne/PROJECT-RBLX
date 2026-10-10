@@ -1,4 +1,9 @@
 
+## 2026-10-10 18:05
+FAIT     : Reçu le pivot — Moaad veut **un vrai jeu avec histoire, progression, cinématiques, profondeur** : pas juste une boucle, mais un concept qui révolutionne Roblox. « Il faut vraiment une histoire : tu arrives, tu peux avancer. Petit à petit tu t'améliores, des gens plus forts, des gens moins forts, un vrai concept, une vraie histoire, des cinématiques, vraiment des gros trucs. »
+VÉRIFIÉ  : Le GDD actuel est une boucle de collection + vague. Ce qui est demandé change la nature du projet : narration, progression narrative, cinématiques, hiérarchie sociale, endgame.
+BESOIN   : **[D]** décision d'arbitrage — on pivote le GDD vers un *vrai jeu narratif* (nouvelles sections : histoire, progression, cinématiques, endgame, hiérarchie) ou on garde la boucle comme socle et on *ajoute* l'histoire par-dessus ? Moaad tranche, je réécris.
+
 ## 2026-10-10 17:20
 FAIT     : GDD_REEF.md §14 poussé (Codex 7 slots week 1, gravure exacte, Config.Shop prix finaux, police RobotoCondensed). Commit ad5a17a. Feu vert pour agents G→N.
 VÉRIFIÉ  : GDD figé cohérent avec DECISIONS_MARCHE.md. Agents G-N démarrent sur leurs zones exclusives, je ne touche pas.
