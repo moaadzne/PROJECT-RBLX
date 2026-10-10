@@ -274,13 +274,33 @@ local function buildPlot(index)
 		warn("[C] Plot" .. index .. " introuvable")
 		return
 	end
-	local minX, maxX = plot:GetAttribute("MinX"), plot:GetAttribute("MaxX")
-	local minZ, maxZ = plot:GetAttribute("MinZ"), plot:GetAttribute("MaxZ")
 	local spawnPos = plot:GetAttribute("SpawnPos")
-	assert(minX and maxX and minZ and maxZ and spawnPos, "[C] attributs MinX/MaxX/MinZ/MaxZ/SpawnPos manquants sur Plot" .. index)
-	local cx = (minX + maxX) / 2
+	assert(spawnPos, "[C] attribut SpawnPos manquant sur Plot" .. index)
 	local deckTop = spawnPos.Y
-	log(string.format("== Plot%d : X %.0f..%.0f, Z %.0f..%.0f, sol %.1f", index, minX, maxX, minZ, maxZ, deckTop))
+
+	-- Geometrie du lagon. A 10/10 a tranche : sur chaque PlotN, Center (Vector3, centre du lagon
+	-- au sol) + Radius (rayon horizontal, deck compris). "Dans le lagon" = distance horizontale
+	-- a Center <= Radius. Les anciens MinX/MaxX/MinZ/MaxZ restent un repli (A les garde en lecture
+	-- cote serveur) : on les accepte encore, mais on ne les exige plus, sinon le script planterait
+	-- sur l ile ouverte alors que le contrat est respecte.
+	local centerAttr, radiusAttr = plot:GetAttribute("Center"), plot:GetAttribute("Radius")
+	local minX, maxX, minZ, maxZ, cx, w, d
+	local cz, geometrySource
+	if centerAttr and radiusAttr then
+		cx, cz = centerAttr.X, centerAttr.Z
+		minX, maxX = cx - radiusAttr, cx + radiusAttr
+		minZ, maxZ = cz - radiusAttr, cz + radiusAttr
+		w, d = radiusAttr * 2, radiusAttr * 2
+		geometrySource = "Center+Radius r=" .. string.format("%.0f", radiusAttr) -- lu par A
+	else
+		minX, maxX = plot:GetAttribute("MinX"), plot:GetAttribute("MaxX")
+		minZ, maxZ = plot:GetAttribute("MinZ"), plot:GetAttribute("MaxZ")
+		assert(minX and maxX and minZ and maxZ, "[C] ni Center+Radius ni MinX/MaxX/MinZ/MaxZ sur Plot" .. index)
+		cx = (minX + maxX) / 2
+		w, d = maxX - minX, maxZ - minZ
+		geometrySource = "MinX/MaxX/MinZ/MaxZ (repli)" -- ancien format
+	end
+	log(string.format("== Plot%d : X %.0f..%.0f, Z %.0f..%.0f, sol %.1f, geometrie %s", index, minX, maxX, minZ, maxZ, deckTop, geometrySource))
 
 	-- 1. Anciens visuels -> ServerStorage.C_Backup.PlotN
 	local toMove = {}
@@ -316,8 +336,7 @@ local function buildPlot(index)
 		end
 	end
 
-	-- 3. Sable sous la base, jusqu'au niveau du deck
-	local w, d = maxX - minX, maxZ - minZ
+	-- 3. Sable sous la base, jusqu'au niveau du deck (w et d viennent du resolveur de geometrie)
 	log(string.format("  sable terrain %.0f x %.0f jusqu'a Y %.1f", w, d, deckTop))
 	if not DRY_RUN then
 		workspace.Terrain:FillBlock(CFrame.new(cx, deckTop - 1, (minZ + maxZ) / 2), Vector3.new(w, 2, d), Enum.Material.Sand)
