@@ -1,4 +1,9 @@
 
+## 2026-10-10 15:30
+FAIT     : Plan cross-platform lundi — 5 min mobile + 5 min PC à CHAQUE sync Rojo. Checklist 10 points : (1) mouvement joystick/WASD fluide, (2) caméra touch drag+pinch / clic droit+molette, (3) vol mobile→PC et PC→mobile identiques, (4) boutique achat mobile+PC identiques, (5) HUD lisible mobile bas / PC latéral, (6) trading/vol mêmes protections, (7) Marée Royale classement global, (8) Daily Rewards synchro, (9) 0 erreur console les deux, (10) 30+ FPS mobile / 60 FPS PC. Rollback si fail sur l'un des deux.
+VÉRIFIÉ  : Merge ada8300 validé (Store.lua/StartSteal/ChoosePick, Wave.lua P0 corrigé). Rien testé en jeu.
+BESOIN   : [D] Lundi = double session Studio (device emulator mobile + PC). [M] build_creatures.luau + build_sounds.luau prêts avant sync.
+
 ## 2026-10-10 15:15
 FAIT     : Reprise du plan F selon DECISIONS_MARCHE.md + BRIEF_NOUVEAUX_AGENTS.md. Les 8 nouveaux agents (G-N) livrent le visuel/UX/monétisation ; F valide que le niveau visé est atteint. Mes 10 vérifs lundi sont enrichies : visuel "Fortnite/Sea of Thieves", onboarding 0-31.5s sans texte, Codex 3+4 mystère, Shop <100 Robux, Rewarded Ads, police RobotoCondensed + Font Awesome. La liste finale de validation est dans docs/VERIFS_LUNDI.md.
 VÉRIFIÉ  : docs/DECISIONS_MARCHE.md lu, 132 lignes de briefs G-N lues. Rien testé en jeu.
