@@ -15,6 +15,7 @@ local SCREENS = {
 	"Prompts",
 	"PoolBillboards",
 	"NameTags",
+	"Wave", -- la vague : le serveur ne dessine rien, tout le rendu est ici
 	"World",
 	"Ambience",
 	"Feel",
