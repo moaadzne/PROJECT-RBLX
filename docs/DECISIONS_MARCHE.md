@@ -207,3 +207,145 @@ local Platform = UIS.TouchEnabled and "Mobile"
 - **G** : Boutique unifiée, mêmes prix/produits
 - **J** : Quêtes identiques, récompenses identiques
 - **F** : Test 5 min mobile + 5 min PC à chaque sync lundi
+---
+
+## 9. PIVOT MAJEUR — VRAI JEU MMORPG ROBLOX (REVOLUTION)
+
+**Ce n'est plus un "mobile game avec retention". C'est un VRAI JEU -- profondeur, histoire, progression infinie, boss, cinematographiques, PvP/PvE, economie joueur.**
+
+### Vision : "Le premier vrai MMORPG Roblox qui ne fait pas semblant"
+
+| Ce qu'on ETAIT | Ce qu'on DEVIENT |
+|---|---|
+| Jeu de vague 30s + collection | Monde persistant, histoire 100+ heures |
+| 3 creatures Phase 1 | 50+ creatures, evolution, builds |
+| Vague = mecano central | Vague = UN evenement parmi d'autres |
+| Boutique = revenus | Economie joueur = revenus (trading, craft, services) |
+| Retention J1-J7 | Retention J1-J365+ (annees) |
+| Enfantin | **Realiste, mature, 13-35 ans** |
+
+### Les 5 Piliers du VRAI JEU
+
+#### 1. HISTOIRE & LORE PROFONDE (E + nouvel agent O - Story)
+- **Lore central** : L'Archipel des Marees, l'Ancien Roi (Leviathan), la Malediction des Marees
+- **Campagne solo** : 10 chapitres, 20-30h, cinematographiques, choix qui comptent
+- **Quetes secondaires** : 100+, branches, consequences, PNJ memorables
+- **Lore environnemental** : ruines, journaux, echos, secrets decouverts par exploration
+- **Evenements mondiaux** : l'Eveil du Leviathan (raid 20 joueurs), la Maree Noire (PvP zone)
+
+#### 2. PROGRESSION INFINIE & BUILDS (A + K + nouvel agent P - Systems)
+- **Niveaux 1-100+** : XP par tout (combat, exploration, craft, social, trading)
+- **Classes/Specialisations** : Gardien des Vagues, Chasseur d'Abysses, Maitre des Marees, Tisseur d'Ecume
+- **Arbres de talents** : 3 par classe, respec possible (cout croissant)
+- **Equipement** : craft, enchantement, runes, sets legendaires
+- **Creatures** : 50+ especes, evolution ramifiee (pas lineaire), mutations hereditaries
+- **Montures** : vol, nage, terre -- chacune avec arbre de progression propre
+- **Logement/Bases** : construction, defense, production, Guild halls
+
+#### 3. BOSS & RAID (K + nouvel agent Q - Boss/Encounters)
+- **World Boss hebdo** : Leviathan, Kraken, Hydre des Marees -- 20 joueurs, mecanique complexe
+- **Donjons instancies** : 5 joueurs, 3 difficultes (Normal/Heroique/Mythique), loot tables
+- **Raids 10/20 joueurs** : Temple des Marees, Abysse du Roi, Cathedrale d'Ecume
+- **Mecaniques** : phases, enrage timers, positioning, coordination, pas "tank & spank"
+- **Recompenses** : cosmétiques uniques, materiaux craft legendaires, titres, mounts
+
+#### 4. PvP & ECONOMIE JOUEUR (G + J + nouvel agent R - Economy/PvP)
+- **Zones PvP** : ilots contestes, ressources rares, controle territorial (Guildes)
+- **Arenes classees** : 1v1, 2v2, 3v3, saisons, recompenses cosmétiques only
+- **Guerres de Guilde** : sieges de bases, ressources, controle d'ilots
+- **Economie joueur** : hotel des ventes, crafting services, transport, assurance vol
+- **Trading** : direct, marche, contrats, encheres -- taxes guilde/royaume
+- **Anti-RMT** : logs, limites, detection patterns, bannissement rapide
+
+#### 5. CINEMATIQUES & PRESENTATION (L + nouvel agent S - Cinematics)
+- **Moteur cinematographique** : camera scriptee, dialogue, choix, camera joueur verrouillee
+- **Intro** : 3 min cinematographique -- arrivee sur l'archipel, l'Ancien Roi qui s'eveille
+- **Chapitre cuts** : 2-3 min entre chapitres, choix impactants
+- **Boss intros** : 30s cinematographique unique par boss majeur
+- **Evenements mondiaux** : cinematographique serveur-synchro (tous la voient en meme temps)
+- **Replay system** : enregistrement automatique, camera libre, export video
+
+---
+
+## NOUVEAUX AGENTS SPECIALISES (8 supplementaires = 21 total)
+
+| Lettre | Role | Zone |
+|---|---|---|
+| **O** | **Story & Lore Lead** | Campagne, quetes, lore, PNJ, dialogues, choix |
+| **P** | **Progression & Systems** | Niveaux, classes, talents, gear, craft, builds |
+| **Q** | **Boss & Raid Design** | World bosses, donjons, raids, mecaniques, loot |
+| **R** | **Economy & PvP Systems** | Hotel des ventes, trading, guerres guilde, arènes |
+| **S** | **Cinematics & Presentation** | Moteur cinematographique, intro, boss intros, replay |
+| **T** | **World & Exploration** | Iles, secrets, exploration, events dynamiques, météo |
+| **U** | **Guild & Social Systems** | Guildes, bases, guerres, chat, voix, calendrier |
+| **V** | **Technical & Performance** | Streaming, instancing, netcode, serveur unique 100+ joueurs |
+
+---
+
+## ARCHITECTURE TECHNIQUE POUR VRAI MMORPG
+
+### Serveur Unique (Single Shard)
+- **1 serveur = 200-500 joueurs** (pas d'instances multiples du monde)
+- **StreamingEnabled** : chargement par chunks, LOD distance
+- **Instance pour donjons/raids** seulement
+- **Netcode** : interpolation, prediction, reconciliation (Net.lua etendu)
+
+### Data Architecture
+- **ProfileService** : donnees joueur (progression, inventaire, creatures)
+- **GlobalDataStore** : economie, marche, guildes, classements
+- **OrderedDataStore** : classements Maree Royale, Arenes, Guildes
+- **MessagingService** : events cross-serveur (si sharding futur)
+
+### Pipeline Contenu
+- **Outils internes** : editeur quetes, editeur boss, editeur cinematographique
+- **Versioning** : Git pour code, DataStore versioning pour donnees
+- **Hotfix** : patch sans restart (ModuleScript hot-reload)
+- **A/B Test** : framework natif (prix, drop rates, XP curves)
+
+---
+
+## PLANNING REALISTE (PIVOT)
+
+| Phase | Duree | Livrable |
+|---|---|---|
+| **Phase 1 : Fondation** (MAINTENANT) | 2 semaines | Serveur unique, Netcode, DataStore, Streaming, Base combat |
+| **Phase 2 : Monde & Histoire** | 3 semaines | Archipel complet, Chapitre 1-3, PNJ, quetes, cinematographiques |
+| **Phase 3 : Progression & Boss** | 3 semaines | Classes, talents, gear, craft, World Boss 1, Donjon 1 |
+| **Phase 4 : PvP & Economie** | 2 semaines | Arenes, hotel des ventes, guildes, bases, trading |
+| **Phase 5 : Endgame & Polish** | 2 semaines | Raid 10/20, World Boss 2-3, cinematographiques finales, optimisation |
+| **LANCEMENT** | **Semaine 12** | **VRAI JEU COMPLET** |
+
+**Budget temps** : 12 semaines = 3 mois. Equipe 21 agents = faisable si parallelisation max.
+
+---
+
+## REVENUS -- MODELE MMORPG ROBLOX
+
+| Source | % Revenus | Description |
+|---|---|---|
+| **Game Passes** (cosmetiques,QoL) | 25% | Mount skins, housing themes, UI themes, emotes |
+| **Cosmetiques directs** | 35% | Skins creatures, mounts, armes, ailes, auras, housing |
+| **Battle Pass saisonnier** | 20% | 12 semaines, gratuit + premium, cosmétiques only |
+| **Services economie** | 10% | Taxe hotel ventes (5%), frais guilde, assurance |
+| **Cosmetiques evenements** | 10% | Limited-time, FOMO sain (retour annuel garanti) |
+
+**ZERO Pay-to-Win** : tout achetable = cosmétique ou QoL (banque partagee, slots inventaire, auto-sort). Puissance = temps + skill uniquement.
+
+---
+
+## RECRUTEMENT IMMEDIAT -- 8 NOUVEAUX AGENTS
+
+Cree ces 8 onglets MAINTENANT :
+
+## O -- Story & Lore Lead
+## P -- Progression & Systems
+## Q -- Boss & Raid Design
+## R -- Economy & PvP
+## S -- Cinematics & Presentation
+## T -- World & Exploration
+## U -- Guild & Social
+## V -- Technical & Performance
+
+---
+
+**TOUT LE MONDE REPREND A ZERO SUR CETTE VISION.** L'ancien scope (vague + collection) = Phase 1 seulement. Le VRAI jeu commence MAINTENANT.
