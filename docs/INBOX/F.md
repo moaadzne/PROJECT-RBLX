@@ -1,4 +1,9 @@
 
+## 2026-10-10 16:00
+FAIT     : Alignment F sur monétisation finalisée par G — QA test plan étendu : (1) Achat mobile+PC : VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199, PickCreature 399 — flux complet sans erreur console. (2) Probabilités TideEgg affichées AVANT achat (60/25/10/4/1), pity counter 50→guaranteed, pas de duplicata → Essence. (3) PolicyService appelé AVANT chaque achat Produit Développeur. (4) Battle Pass 12 sem : gratuit 12 paliers vs Premium 499 (+12 paliers skins rares/épique, mount exclusif). (5) Rewarded Ads opt-in : 1 TideEgg/jour, cooldown 24h. (6) ZERO Pay-to-Win vérifié : tout cosmétique/QoL, puissance = temps+skill. (7) Cross-platform : shop UI responsive, même prix/mêmes drops mobile=PC.
+VÉRIFIÉ  : Config.Shop prix finaux lus, ShopService.lua remotes ChoosePick créées, PolicyService check codé. Rien testé en jeu.
+BESOIN   : [G] ShopService + BattlePassService + RewardedAdsService déployés sur branche d'intégration avant lundi. [B] Shop.lua affiche probabilités AVANT achat + pity counter + Vault + Battle Pass UI. [H] Icones shop (coffre/vague/couronne/étoile) + RobotoCondensed prix. [M] Checklist lundi inclut test achat complet mobile+PC.
+
 ## 2026-10-10 15:50
 FAIT     : Prêt pour lundi 12/10 21h — branche d'intégration claude/e-gdd-reef synchronisée, merge ada8300 validé (Wave.lua P0 corrigé, Store.lua contrats v2.1, Shop.lua ChoosePick). 14 agents core plans écrits. Rôle F = infrastructure QA MMORPG (Phase 1 baseline : Netcode, ProfileService, Streaming, GlobalDataStore). Cross-platform test plan 5+5 min prêt.
 VÉRIFIÉ  : Merge fait, code corrigé, INBOX à jour, VERIFS_LUNDI.md baseline Phase 1. Rien testé en jeu.
