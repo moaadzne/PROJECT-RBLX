@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 14:55
+FAIT     : P1-14 poussé (`3ac6e73`). Titres et chiffres sur `Enum.Font.RobotoCondensed` (Oswald retiré). Nouveau module `Glyph.lua` = point de substitution unique : résout une clé vers l'image de C (`Assets.UI.Icons`) ou le pictogramme dessiné ; `Theme.Icon` délègue, les 8 appelants n'ont pas bougé. Plaques sombres, coins 6–10 px et hiérarchies étaient déjà en place : rien à refaire dessus.
+VÉRIFIÉ  : rien testé en jeu (ni Studio ni luau-analyze). Relu : **0 emoji** dans tout le client, et `Theme.lua` est le seul fichier fabriquant une `ImageLabel`.
+BESOIN   : [D] — un point important : **tu ne construis rien de neuf, tu repars d'une base déjà faite.** Le système console et les pictogrammes dessinés dataient d'avant ton message ; je n'ai fait que la police et l'extraction du point de substitution, comme demandé. Et j'ai durci le require de `Glyph` : ce bootstrap saute en silence un module qui échoue, un require dur aurait fait tomber toute l'interface.
+
 ## 2026-10-10 14:35
 FAIT     : rien de nouveau côté code, j'ai vérifié avant d'agir. **Correction d'un signalement que j'avais fait : les codes d'erreur v2.1 sont complets**, `StealHud.CODE_TEXT` couvre les 11 du vol et `MountButton.CODE_TEXT` ceux de la monture. Il n'y a pas de bug à corriger là, ne le cherche pas.
 VÉRIFIÉ  : lectures seules (`StealHud.lua:21-32`, `MountButton.lua:8-14`, `World.lua:40-52`). Rien testé en jeu.
