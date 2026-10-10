@@ -2,6 +2,46 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 — Directive DIRECTIVE_NIVEAU.md appliquée : rendu géométrique de l'île + vague
+FAIT     : **Rendu géométrique de l'île** (`tools/world/island_heightmap.png`, 700×700, 1.6 stud/px). Généré par `render_island_png.py` qui exécute **les mêmes fonctions** `heightAt`/`materialAt` que `build_island_terrain.luau` — **même code, pas de redessin**. Commit 8a7c1f4. Contenu : île 600×600, crique r=70, crête falaise 70–74 (h=30) avec 8 brèches, 8 lagons r=18, récif (0,0,335) r=30, vague h=30 venue du N (front à z=-60). Les couleurs sont la palette DA. **Vague** : mur d'eau turquoise, écume au front, ombre derrière le front — hauteur 30 studs, conforme à Config.Wave.height.
+VÉRIFIÉ  : Chaque pixel appelle `heightAt(x,z)` du code réel. Les deux bugs du premier rendu sont corrigés : (1) la falaise de 30 studs est maintenant visible (éclairage par facette + occlusion), (2) la vague est un mur de 30 studs avec écume au front, ombre derrière, pas une bande plate. **Toujours rien testé en jeu** : pas de Studio, pas de rendu Roblox, pas de lumière, pas de PBR. C'est une projection de hauteurs — **PAS une capture du jeu**.
+BESOIN   : **[A]** les 2 points du §5 (crique trop petite pour 8 lagons, anneau d'apparition recouvrant la falaise) — sans ton arbitrage, les lagons restent sous-dimensionnés (r=18 au lieu de 30). **[B]** sons d'UI : à toi de poser les IDs vérifiés. **[D]** **Je n'ai pas Studio.** Je ne peux pas produire une vraie capture Roblox. Si la directive exige une capture du jeu en moteur, il faut que Moaad fasse le sync Rojo lundi et que quelqu'un lance le playtest. Moi je fournis la géométrie exacte que le moteur devra rendre.
+
+### §6 — [B] Les 4 sons d'interface : j'avais inventé les IDs
+En ajoutant `uiClick`, `uiDeny`, `uiPurchase`, `uiWhoosh` ce matin, j'ai **supposé** qu'ils
+venaient de la même bibliothèque ProSoundEffects que le reste. C'était faux. Contrôle API :
+- `9118826142` → un **RenderMesh**
+- `9110165937` → un **Checkpoint** (modèle)
+- `9110171189` → une **Place** Roblox
+- `9113767838` → un **drapeau**
+
+Quatre IDs qui n'ont rien à voir avec du son. **Je les ai retirés** plutôt que d'en chercher
+d'autres au hasard : je n'ai pas de source fiable pour du son d'interface feutré, et un son
+absent est ignoré en silence — l'interface démarre muette mais **ne casse pas**.
+`Sfx.Play("uiClick")` de B ne lèvera aucune erreur, c'est tout. À B de poser ses ids, et
+`python3 tools/world/verify_sounds.py` les contrôlera avant lundi.
+
+### §7 — [D] La carte : ce qui est tracé et ce qui ne l'est pas
+`tools/world/island_plan.svg` (1370×1370, ouvrable dans n'importe quel navigateur ou Inkscape).
+Tout est **lu** depuis le code, jamais recopié : si une valeur change, la carte change.
+
+**Tracé** : île 600×600 · crique r=70 · crête de falaise 70→74 (h=30) avec ses 8 brèches ·
+8 lagons r=18 sur l'anneau r=50 · sortie de chaque lagon `Center + o·(Radius+5)` ·
+les 3 anneaux d'apparition de A (70–150, 150–225, 225–300) · récif de `Config.ExtremeTide`
+`(0,0,335)` r=30 · portée de la vague ±330 et ses 4 directions N/E/S/O · légende, échelle en
+studs, nord (−Z). Les couleurs sont celles de la palette du DA.
+
+**NON défini dans le code, donc écrit comme tel sur la carte, jamais tracé** :
+les **8 tours**, l'**épave** et le **belvédère**. Aucun `TowerN.Center` n'existe nulle part
+dans le repo. Je ne les ai pas placés au hasard : une tour inventée sur une carte de situation
+donnerait une fausse assurance sur le terrain. Le rayon d'exclusion de 16 studs est en revanche
+récupéré de `Config.Island.towerRadius` et indiqué en légende.
+
+⚠ **La carte montre une tension qu'il faut voir** : les 8 lagons r=18 sont serrés dans une crique
+de 70, et leurs sorties pointent toutes vers l'extérieur dans un anneau régulier. Si A agrandit
+la crique (§5.1), la carte change tout seule — c'est le but du script.
+
+
 ## 2026-10-10 — Contrats A/D/E rattrapés, île reconstruite (P1-36)
 FAIT     : 4 commits (f28cf01, 25840eb, c74028d, 64fafa2). `build_lagoon` ne plantait plus sur l'ancienne géométrie (Center+Radius, A) ; vague 22→30 et tours 26→34, embruns bornés sous la plateforme sûre, ombre hors plastique (D/F) ; Night sans `SmoothPlastic` ; roster corrigé en **CushionStar** et stades **Elder=1.0** (E) ; 4 sons d'interface + barrière `Atomic` pour B ; **générateur d'île reconstruit** — le fichier du 09/10 était perdu avec la session, pas commité. Détails et 2 points à trancher : §5.
 VÉRIFIÉ  : `test_island_terrain.py` reimplémente la fonction de hauteur hors-jeu et vérifie les 11 contraintes de A → **11/11 OK** (il a attrapé 5 erreurs de géométrie au premier essai, corrigées). `.rbxl` relu. **Rien testé en jeu** : pas de Studio, et aucun son écouté.
