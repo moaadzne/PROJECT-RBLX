@@ -2,6 +2,33 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 16:07
+FAIT     : **AUDIT COMPLET CONTRAT v2.1** — 26/26 Notify kinds, 23/23 codes erreur, 34/34 state fields, 10/10 creature fields, roster v3 (10 espèces), stades J/A/E/T, 13/13 remotes, 6/6 WaveState attrs, map conventions (Center/Radius, Pedestal Slot/LockGui, Tower Center), clés Zones/Beach/BaseLineZ absentes, protections vol complètes, Marée Royale, Config.Shop nouvelle structure. **VERDICT : 100% CONFORME**. Rapport détaillé ci-dessous.
+VÉRIFIÉ  : Audit mécanique exhaustif — grep/sed sur tout `src/ServerScriptService`, recoupement bidirectionnel (zéro écart dans les deux sens). **Rien testé en jeu**.
+BESOIN   : Aucun sur l'audit. Prochaine étape : implémentation DailyRewardService + QuestService + BattlePassService + Config.CrossPlatform.
+
+---
+
+### RAPPORT D'AUDIT DÉTAILLÉ
+1. **Notify Kinds** — 26/26 ✅ (égalité stricte bidirectionnelle)
+2. **Codes Erreur** — 23/23 ✅ (12 base + 11 v2.1)
+3. **State Fields** — 34/34 ✅
+4. **Creature Fields** — 10/10 ✅
+5. **Roster v3** — 10 espèces ✅
+6. **Stades** — Juvenile/Adult/Elder/Titan (indices 1..4) ✅
+7. **Remotes v2.1** — 13/13 ✅ (9 RF + 4 RE)
+8. **WaveState Attributes** — 6/6 ✅
+9. **Runtime Attributes** — 33+ ✅
+10. **Map Conventions** — Center/Radius, Pedestal Slot/LockGui, Tower Center ✅
+11. **Clés Supprimées** — Zones/Beach/BaseLineZ absentes de src/ ✅
+12. **Protections Vol** — Newbie, LastCreature, Mounted, Locked, Revenge, Cap ✅
+13. **Marée Royale** — Score revenu/s contrat, top 3 5/3/2 min, royale Golden ✅
+14. **Config.Shop** — Nouvelle structure (Passes[], TideEgg.chances{}, RewardedAd) ✅
+
+**POINTS D'ATTENTION** : ItemId=nil (nettoyage v1), VIPRider sur versement via CoinBonus, GetWave vs GetWaveFor (divergence nulle), review/Config.lua périmé non importé.
+
+---
+
 ## 2026-10-10 15:59
 FAIT     : Alignment monétisation finalisée (G) — **ShopService** : ajoute remote `ChoosePick` (déjà dans contrat v2.1), check `PolicyService` AVANT chaque achat Produit Développeur, crée `RewardCheck` remote pour Rewarded Ads. **Config.Shop** déjà à jour (prix finaux, probas TideEgg, pity, Vault, BattlePass, RewardedAd). **DataService** : nouveaux champs `cosmeticsInventory`, `battlePassProgress`, `rewardedAdCooldown` persistés cross-device. **Zéro puissance vendue** — Bag/Speed/VIP = QoL/confort, créatures/montures/power = temps + skill only. L'existant couvre 90% ; seul `ChoosePick` + `PolicyService` + champs cosmetiques à coder.
 VÉRIFIÉ  : Config.Shop relue (prix 79/149/99/249/199/399, probas 60/25/10/4/1, pity 50, Vault, BP, RewardedAd, PolicyService). **Rien testé en jeu** — pas Studio.
