@@ -1,4 +1,9 @@
 
+## 2026-10-10 20:10
+FAIT     : Alignement monétisation finalisée validé — rôle E = skins lore-friendly (Abyssal, Corail, Aurore, Éveil Léviathan) pour que le cosmétique porte l'histoire. GDD scope MMORPG déjà prévoit : cosmetics = valeur perçue via lore (Story O + Cinematics S), Battle Pass paliers cosmétiques, drops boss/raid cosmétiques uniques, zéro P2W.
+VÉRIFIÉ  : Tous les systèmes listés (Tide Egg probas/pity, Battle Pass 12 sem, Rewarded Ads, Vault, PolicyService, Hotel ventes 5%, trading, A/B test) sont compatibles avec le GDD pivot 12 sem. Aucune puissance vendue. Rien testé en jeu.
+BESOIN   : **[D]** feu vert lundi pour réécrire GDD complet scope MMORPG (incluant systèmes cosmetics/lore/battle pass/économie joueur) + briefs agents O→V. G code, je documente.
+
 ## 2026-10-10 19:25
 FAIT     : BRIEF D reçu — 14 agents core (A-N+J) prêts, branche integration = claude/e-gdd-reef, sync Rojo lundi 12/10 21h. Quota Moaad épuisé, reset 21h. Aucun test lourd, aucune capture, aucun luau-analyze. Repos.
 VÉRIFIÉ  : Plan E pivot MMORPG écrit (INBOX 19:15), GDD_REEF à jour, SEMAINE_2.md dual-platform. Attend feu vert D lundi pour réécrire GDD scope complet + briefs O→V.
