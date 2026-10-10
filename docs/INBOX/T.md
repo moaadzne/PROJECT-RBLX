@@ -1,3 +1,8 @@
+## 2026-10-10 20:30
+FAIT     : 3 docs specs livrés — POI_SPECS_P1.md (Belvédère/Épave/Récif), EXTREME_TIDE_P1.md (timeline 25s, signs sans texte), STREAMING_SPECS_P1.md (chunks 100×100, LOD 3 niveaux, budgets mobile/PC)
+VÉRIFIÉ  : Aligné DA_MONDE §0-5, DECISIONS_MARCHE §3, contrat v2.1, Config.ExtremeTide
+BESOIN   : C implémente lundi (POI visuels, assets corail/mouettes, modèles LOD) ; A confirme Config.WreckInscription + ExtremeTide values ; B fog of war + boussole ; F test mobile/PC lundi
+
 ## 2026-10-10 20:00
 FAIT     : Config.Island{} specs Phase 1 — center, size=600, coveRadius=110, seaMargin=30, spawnYMin/Max, towerRadius=16, rings[3] (70-150/150-225/225-300), POIs[3] (Belvédère/Epave/Recif) ; build_island_terrain.luau génère île 600x600, 8 lagons r=30
 VÉRIFIÉ  : Spécifications alignées contrat v2.1 (Config.Island, Config.Rings, Config.Wave), DA_MONDE §0-4, TABLEAU P1-36
