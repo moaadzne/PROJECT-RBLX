@@ -1,4 +1,9 @@
 
+## 2026-10-10 17:20
+FAIT     : GDD_REEF.md §14 poussé (Codex 7 slots week 1, gravure exacte, Config.Shop prix finaux, police RobotoCondensed). Commit ad5a17a. Feu vert pour agents G→N.
+VÉRIFIÉ  : GDD figé cohérent avec DECISIONS_MARCHE.md. Agents G-N démarrent sur leurs zones exclusives, je ne touche pas.
+BESOIN   : **[D]** rien — plan exécuté, nouvelles conversations G→N prêtes.
+
 ## 2026-10-10 16:45
 FAIT     : Revu l'existant contre `DECISIONS_MARCHE.md` et `BRIEF_NOUVEAUX_AGENTS.md`. GDD_REEF figé inchangé. Plan de reprise : (1) Codex semaine 1 → 3 visibles + 4 "? ? ? ?" silhouettes floues + rareté colorée, barre "X/10 découvertes" ; (2) Gravure épave → texte exact "Quand la mer recule, l'ancien roi revient. La marée extrême révèle ce qu'elle a prise." + empreinte lumineuse pulsante ; (3) Monétisation Config.Shop alignée sur prix finaux (VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199, PickCreature 399, RewardedAd 1/jour) ; (4) Police RobotoCondensed + IconResolver Font Awesome partout, zéro emoji.
 VÉRIFIÉ  : GDD_REEF déjà cohérent sur : 30s intro, roster 10, 5 marées, 5 zones/tiers, bassins/réserve/Codex/mutations Phase 2. Écart mineur : GDD dit 5 paliers Codex, marché dit 4 mystère (donc 7 au total week 1) — aligné sur le marché. Rien testé en jeu.
