@@ -149,3 +149,61 @@ Config.CrossPlatform = {
 - N : Performance + qualité graphique
 - K : LOD créatures + particules
 - L : Onboarding détection plateforme
+
+---
+
+## 8. STRATÉGIE DOUBLE PLATEFORME — VOLUME MOBILE + REVENUS PC
+
+**Réalité économique Roblox** (données 2024-2025) :
+- **Mobile/tablette** = 70%+ des joueurs, 40% des revenus — volume, acquisition, rétention jour 1-7
+- **PC** = 25-30% des joueurs, 60%+ des revenus — whales, traders, investis, sessions longues, ARPPU 3-5x mobile
+
+**Objectif** : **Même jeu, même progression, même économie** — contrôles adaptés, zéro disparité.
+
+### Architecture technique (Net.lua déjà prêt)
+- **Mêmes serveurs** : mobile et PC sur les mêmes instances
+- **Même DataStore** : progression, inventaire, créatures, pièces synchro instantanée
+- **Mêmes remotes** : `StartSteal`, `ChoosePick`, `EquipPet` identiques
+- **Détection** : `UserInputService.TouchEnabled` + `UserInputService.KeyboardEnabled` + `UserInputService.GamepadEnabled`
+
+### Adaptations par plateforme
+
+| Système | Mobile/Tablette | PC |
+|---|---|---|
+| **Mouvement** | Joystick virtuel natif Roblox | WASD + Flèches + Shift (sprint) |
+| **Caméra** | Touch drag + pinch zoom | Clic droit drag + molette zoom |
+| **Actions** | Tap zones ≥44px | Clic gauche + raccourcis (1-5, Q, E, R, F) |
+| **HUD** | Compact bas, icônes 48px | Latéral étendu, tooltips hover, raccourcis visibles |
+| **Chat** | Bouton dédié, clavier virtuel | Entrée directe, historique scroll |
+| **Trading/Vol** | Tap cible → confirmer | Clic droit cible → menu contextuel + raccourcis |
+| **Boutique** | Grille grande, scroll vertical | Grille compacte, filtres, raccourcis achat |
+| **Codex** | Carrousel swipe | Grille + filtres + recherche clavier |
+
+### Économique unifiée (PAS de ségrégation)
+- **Mêmes prix** : 79/149/99/249/199/399 Robux partout
+- **Mêmes drops** : TideEgg mêmes probabilités
+- **Même vol** : mobile peut voler PC et inversement
+- **Même Marée Royale** : classement global unique
+- **Même Daily Rewards** : synchro instantanée
+- **Cross-save** : connexion compte Roblox = tout suit
+
+### Détection robuste (Net.lua côté client)
+```lua
+local UIS = game:GetService("UserInputService")
+local Platform = UIS.TouchEnabled and "Mobile" 
+	or UIS.KeyboardEnabled and "PC"
+	or UIS.GamepadEnabled and "Console"
+	or "Unknown"
+```
+
+### Anti-bugs cross-platform
+- **Pas de feature mobile-only** : tout doit exister sur PC
+- **Pas de feature PC-only** : tout doit exister sur mobile (raccourcis clavier = boutons UI)
+- **Test obligatoire** : Playtest 5 min mobile + 5 min PC à chaque sync
+- **Raccourcis PC** : documentés dans Codex, pas cachés
+
+### Responsables
+- **B/H/L** : UI adaptative, détection plateforme, onboarding différencié
+- **G** : Boutique unifiée, mêmes prix/produits
+- **J** : Quêtes identiques, récompenses identiques
+- **F** : Test 5 min mobile + 5 min PC à chaque sync lundi
