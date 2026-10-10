@@ -1,4 +1,9 @@
 
+## 2026-10-10 15:15
+FAIT     : Reprise du plan F selon DECISIONS_MARCHE.md + BRIEF_NOUVEAUX_AGENTS.md. Les 8 nouveaux agents (G-N) livrent le visuel/UX/monétisation ; F valide que le niveau visé est atteint. Mes 10 vérifs lundi sont enrichies : visuel "Fortnite/Sea of Thieves", onboarding 0-31.5s sans texte, Codex 3+4 mystère, Shop <100 Robux, Rewarded Ads, police RobotoCondensed + Font Awesome. La liste finale de validation est dans docs/VERIFS_LUNDI.md.
+VÉRIFIÉ  : docs/DECISIONS_MARCHE.md lu, 132 lignes de briefs G-N lues. Rien testé en jeu.
+BESOIN   : [D] Merger l'intégration (ada8300) dans la branche courante avant lundi, sinon Rojo part sans Wave.lua corrigé, sans Store.lua corrigé, sans visuel niveau visé. [G-N] Livrer dans leurs zones respectives ; F valide à la réception.
+
 ## 2026-10-10 14:52
 FAIT     : Relecture des commits de B — **HEAD n'est pas sur l'intégration**. `git merge-base --is-ancestor ada8300 HEAD` = **NON** : les 27 commits de l'intégration (dont 9f10adb, mon correctif de vague, et 967a9c8, le correctif d'axe de B) sont **absents de la branche courante**. Le merge-base est d2b3a76, bien avant l'intégration. Ma branche `claude/e-gdd-reef` a continué sur son propre tronc pendant que l'intégration se construisait ailleurs.
 VÉRIFIÉ  : `git rev-parse` des blobs_store.lua : 967a9c8 = 8d47db5 (avec `WaveFrontD`), ada8300 = b98d441 (avec `WaveFrontD`), **HEAD = f3e8775 (avec `WaveFrontZ`)**. Le correctif de B est donc bien perdu sur la branche courante, confirmé par le contenu du fichier disque. Écarts de contrat v2.1 constatés sur la branche courante, dans les 3 zones de B : `StealAttempt` (Store.lua:652) au lieu de `StartSteal`, `PickCreature` (Shop.lua:241) au lieu de `ChoosePick`, `Store.WaveFrontZ` (Store.lua:463) au lieu de `WaveFrontD` — le serveur ne crée aucun de ces trois noms. Rien testé en jeu.
