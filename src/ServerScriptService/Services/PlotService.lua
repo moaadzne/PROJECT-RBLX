@@ -343,7 +343,12 @@ function PlotService.Assign(player)
 		onCharacter(player, character)
 	end)
 	if player.Character then
-		task.spawn(onCharacter, player, player.Character)
+		task.spawn(function()
+			local ok, err = pcall(onCharacter, player, player.Character)
+			if not ok then
+				warn("[TideRush] respawn " .. player.Name .. " : " .. tostring(err))
+			end
+		end)
 	end
 
 	local index = nil

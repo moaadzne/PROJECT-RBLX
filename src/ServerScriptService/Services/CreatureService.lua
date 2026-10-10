@@ -245,8 +245,17 @@ local function collect(player, profile, model, info)
 		isNew = isNew,
 		text = ("%s%s (%d/%d)"):format(info.mutation ~= "" and (info.mutation .. " ") or "", def.name, #profile.bag, bagMax),
 	})
+	-- pcall comme les crochets de WaveService (runHooks) : la capture est le geste le plus
+	-- repete du jeu, un crochet plante ne doit pas laisser une erreur console derriere lui
+	local caughtSpecies, caughtMutation = info.species, info.mutation
+	local caughtValue = Stats.BabyIncome(caughtSpecies, caughtMutation)
 	for _, hook in ipairs(captureHooks) do
-		task.spawn(hook, player, info.species, info.mutation, Stats.BabyIncome(info.species, info.mutation))
+		task.spawn(function()
+			local ok, err = pcall(hook, player, caughtSpecies, caughtMutation, caughtValue)
+			if not ok then
+				warn("[TideRush] crochet de capture : " .. tostring(err))
+			end
+		end)
 	end
 	local rarity = Config.Rarities[def.rarity]
 	if info.royal then
