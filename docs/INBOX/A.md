@@ -2,6 +2,13 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:30
+FAIT     : Plan double plateforme mobile/PC — serveur inchangé (même DataStore, même économie, mêmes Remotes v2.1). Aucune modification de Config, Net, DataService, ShopService, StealService, RoyalService, MountService, PlotService, WaveService, CreatureService, LagoonService, UpgradeService, PetService, IntroService, DebugService. Détection plateforme côté client uniquement (B/L). Anti-cheat serveur déjà commun (SpeedGuard + position). Vol mobile↔PC : même logique, même protections, bouclier revanche 24h déjà codé. Marée Royale : classement global unique, score = revenu/s contrat sans gamepass. Daily Rewards : synchro instantanée cross-device via DataStore existant. Plan = zéro code serveur, validation que l'existant couvre déjà tout.
+VÉRIFIÉ  : lecture de Net.lua (client attend remotes identiques), DataService (DataStore unique), ShopService (PolicyService déjà appelé), StealService (aucune ref plateforme), RoyalService (score global). **Rien testé en jeu**.
+BESOIN   : de B/L confirmation que la détection plateforme client n'envoie rien au serveur (remotes identiques). Greenlight D pour valider qu'aucun ticket serveur n'est nécessaire.
+
+---
+
 ## 2026-10-10 15:23
 FAIT     : SUNK_POOLS — **accord direct donné**. Config.SunkPoolOffset = -3.5 ajoute dans Config.lua. C peut maintenant build_lagoon r=30 avec les bassins creusés. Decision D validée, TABLEAU maj.
 VÉRIFIÉ  : Config relue, commit 2eddd84 pousse.
