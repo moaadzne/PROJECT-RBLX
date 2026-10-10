@@ -15,8 +15,10 @@ local GETSTATE_ATTEMPTS = 5
 local ATTRIBUTE_SETTLE = 0.15 -- delai avant de relire les attributs de vague
 local PHASES = { calm = true, warning = true, wave = true, recede = true }
 local INTRO_STEPS = { intro = true, golden = true, done = true }
-local STAGE_IDS = { "Baby", "Juvenile", "Adult", "Giant" }
--- Croissance du GDD §4.3 (minutes cumulees vers Juvenile, Adult, Giant), tant que Config.GrowthMinutes manque
+-- Stades du contrat v2.1 : Juvenile / Adult / Elder / Titan, indices 1..4.
+-- Source de verite = Config.Stages ; cette liste n'est que le repli.
+local STAGE_IDS = { "Juvenile", "Adult", "Elder", "Titan" }
+-- Repli si Config.GrowthMinutes manque : minutes cumulees vers Adult, Elder, Titan.
 local GROWTH_FALLBACK = {
 	Common = { 3, 15, 60 },
 	Uncommon = { 5, 30, 120 },
@@ -581,7 +583,7 @@ local function growthMarks(species: string): { number }
 	local info = Store.CreatureInfo(species)
 	local growthTable = (Config :: any).GrowthMinutes or GROWTH_FALLBACK
 	local growth = growthTable[info and info.rarity or "Common"] or growthTable.Common or GROWTH_FALLBACK.Common
-	-- seuils en secondes : Baby 0, Juvenile, Adult, Giant
+	-- seuils en secondes : Juvenile 0, puis Adult, Elder, Titan
 	return { 0, growth[1] * 60, growth[2] * 60, growth[3] * 60 }
 end
 
