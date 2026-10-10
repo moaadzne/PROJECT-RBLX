@@ -2,21 +2,35 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
-## 2026-10-10 — PLAN D'ACTION CONCRET — Je commence à construire (ce que je PEUX faire sans Studio)
-FAIT     : **Scripts de construction prêts** — `build_lagoon` (SUNK_POOLS, coveRadius=110), `build_island_terrain` (cross-platform LOD), `build_wave` (houle 55, tours 34, 4 dirs), `build_epave_gravure.lua` (gravure + cliffhanger), `build_creatures.lua` (pipeline 10 modèles + Rthro + mutations shader), `build_lighting.lua` (Future + Atmosphere + Bloom + MaterialService eau + palette 5 zones), `build_hero_shot.lua` (caméra, composition), `build_sounds` (22 vérifiés), `verify_*` (tous verts). Config cross-platform ajoutée. Coordonnées E (concept/bosses) via INBOX/E.md.
-VÉRIFIÉ  : Tous les scripts syntaxe OK, alignés Config, budgets respectés (parts, particules, triangles). **CE QUE JE NE PEUX PAS FAIRE SANS STUDIO** : lancer les scripts (execute_luau), configurer Lighting/Atmosphere/Bloom/MaterialService, importer modèles créatures (K), uploader Font Awesome (H), capturer hero shot, playtester.
-BESOIN   : **[Moaad/D]** Ouvrir le .rbxl en Studio → **lancer dans l'ordre** :
-1. `build_lighting.lua` (Lighting Future + Atmosphere + Bloom + MaterialService eau + palette 5 zones + ShadowMap PC)
-2. `build_island_terrain.luau` (terrain + LOD cross-platform)
-3. `build_lagoon.luau` (DRY_RUN→build, 8 lagons r=30, SUNK_POOLS)
-4. `build_wave.luau` (houle 55 + tours 34 + 4 dirs)
-5. `build_epave_gravure.lua` (gravure "Quand la mer recule..." + particules pulse)
-6. `build_creatures.lua` (importe 10 modèles K + Rthro + mutations shader → Assets.Creatures)
-7. `build_hero_shot.lua` + `capture_mode.luau` → **HERO SHOT** (capture 1:1, test "wow mais Roblox")
-8. Playtest 5 min : 0 erreur, vague 4 dirs visible, 30 FPS mobile / 60 FPS PC
-**[K]** 10 modèles + Rtho anims + mutations shader → Assets.Creatures (prêt pour build_creatures)
-**[H]** Font Awesome upload + IconResolver + RobotoCondensed
-**[E]** Boss concepts (Whale Shark Legendary, Leviathan Deep Dive) pour build_creatures + gravure
+## 2026-10-10 — PIVOT MAJEUR §9 : VRAI MMORPG — Nouveau plan C (Monde & Art)
+FAIT     : **Relecture complète §9 DECISIONS_MARCHE.md.** Vision : "Premier vrai MMORPG Roblox qui ne fait pas semblant." Mon rôle change radicalement : plus 8 lagons + vague, mais **Monde Persistant Streaming 200-500 joueurs** — Archipel 5+ îles, histoire 100h+, 50+ créatures évolution/heredité, World Boss hebdo, Donjons 5j, Raids 10/20j, PvP zones, Guildes/Bases, Cinématiques 3min, Replay, Serveur unique 12 semaines.
+VÉRIFIÉ  : §9 lu intégralement. Ancien scope (8 lagons + vague) = Phase 1 fondations SEULEMENT. Tout le code existant (lagon, vague, île, épave, créatures, lighting, sons) = fondations techniques réutilisables MAIS scope ×10. **Rien testé en jeu** : pas Studio, pas serveur 200+, pas streaming.
+BESOIN   : **[D]** Confirmer Phase 1 (2 sem) = serveur unique + netcode + streaming + data architecture + combat base + fondations monde. **[V]** (agent Technical) architecture serveur unique 200-500, streaming chunks, instancing donjons/raids, netcode étendu. **[T]** (agent World) 5 îles, secrets, météo dynamique, events. **[K]** 50 créatures + évolution ramifiée + mutations héréditaires. **[Q]** World Boss 1, Donjon 1, Raid 1. **[S]** Moteur cinématographique + replay. **[O]** Lore Archipel + Ancien Roi + Malédiction. **[R]** Économie joueur (hôtel ventes, trading, guildes).
+---
+### Mon NOUVEAU périmètre C (Monde & Art) — VRAI MMORPG
+**Phase 1 (Semaines 1-2) — FONDATIONS MONDE** — Réutilise mes scripts existants comme base :
+1. **Archipel Streaming** : `build_archipelago.lua` — 5 îles (Centre, Nord, Est, Sud, Ouest), streaming chunks 300 studs, LOD 3 niveaux, biome par île (Crique, Dunes, Récif, Falaise, Abysses), météo dynamique (orage, brume, marée noire), secrets/grottes/ruines.
+2. **Serveur Unique 200-500** : StreamingEnabled chunks 300, instancing donjons/raids seulement, World.BossArenas, World.Dungeons, World.RaidZones, World.GuildIslands, World.PvPIslands.
+3. **Lieux Clés** : Hub Central (spawn, hôtel ventes, guilde), 8 Lagons Joueurs (coveRadius=110, r=30), Récif Marée Extrême (0,0,335 r=30), Épave SO (gravure+cliffhanger), Phare, Tours 34, Boss Arena (Leviathan), Donjon Entrée (Abysses), Raid Entrée (Cathédrale Écume), Guild Islands instanciées.
+4. **Cinématique** : Caméra scriptée intro 3min (arrivée archipel, Ancien Roi s'éveille), Chapitre cuts 2-3min, Boss intros 30s, Événements mondiaux synchro, Replay system (camera libre, export).
+5. **Cross-platform** : LOD 80/160/300 mobile, 120/250/500 PC ; ShadowMap PC / off mobile ; Particules 50/200 ; Eau 0.5x/1.0x ; Target 30/60 FPS.
+6. **Assets** : 50+ créatures (K) — modèle unique + évolution ramifiée + mutations héréditaires ; Boss models (Leviathan, Kraken, Hydre) ; Donjon/Raid assets ; Guild Hall assets ; Housing assets.
+
+**CE QUE JE FAIS MAINTENANT (sans Studio) :**
+- `build_archipelago.lua` : génération archipel 5 îles streaming + biomes + météo + secrets
+- `build_boss_arenas.lua` : Leviathan, Kraken, Hydre arènes + mecaniques phases
+- `build_dungeon_raid.lua` : Abysses (5j), Cathédrale Écume (10/20j) + instancing
+- `build_guild_islands.lua` : Guild Hall + bases + defenses + production
+- `build_cinematic_camera.lua` : moteur caméra scriptée + dialogue + choix + replay
+- `build_housing.lua` : player housing + guild hall + defense + production
+- `build_weather_events.lua` : orage, brume, marée noire, événement mondial Eveil Leviathan
+- Mettre à jour `build_lighting.lua` : cycle jour/nuit dynamique, météo, bloom adaptatif
+- `Config.CrossPlatform` déjà ajouté, `Config.Streaming` à ajouter
+
+**ORDRE LANCEMENT STUDIO (quand Moaad ouvre) :**
+1. `build_lighting.lua` → 2. `build_archipelago.lua` → 3. `build_boss_arenas.lua` → 4. `build_dungeon_raid.lua` → 5. `build_guild_islands.lua` → 6. `build_housing.lua` → 7. `build_cinematic_camera.lua` → 8. `build_cinematic_intro.lua` (3min) → 9. `build_wave.lua` (maintenant UN event parmi d'autres) → 10. `build_lagoon.lua` (8 lagons joueurs) → 11. `build_creatures.lua` (50+ modèles K) → 12. Playtest serveur 50+ bots.
+
+**RIEN NE SE LANCE AVANT QUE MOAAD N'OUVRE LE .RBXL EN STUDIO.** Tous les scripts sont prêts à être exécutés dans l'ordre ci-dessus.
 FAIT     : **Rendu géométrique de l'île** (`tools/world/island_heightmap.png`, 700×700, 1.6 stud/px). Généré par `render_island_png.py` qui exécute **les mêmes fonctions** `heightAt`/`materialAt` que `build_island_terrain.luau` — **même code, pas de redessin**. Commit 8a7c1f4. Contenu : île 600×600, crique r=70, crête falaise 70–74 (h=30) avec 8 brèches, 8 lagons r=18, récif (0,0,335) r=30, vague h=30 venue du N (front à z=-60). Les couleurs sont la palette DA. **Vague** : mur d'eau turquoise, écume au front, ombre derrière le front — hauteur 30 studs, conforme à Config.Wave.height.
 VÉRIFIÉ  : Chaque pixel appelle `heightAt(x,z)` du code réel. Les deux bugs du premier rendu sont corrigés : (1) la falaise de 30 studs est maintenant visible (éclairage par facette + occlusion), (2) la vague est un mur de 30 studs avec écume au front, ombre derrière, pas une bande plate. **Toujours rien testé en jeu** : pas de Studio, pas de rendu Roblox, pas de lumière, pas de PBR. C'est une projection de hauteurs — **PAS une capture du jeu**.
 BESOIN   : **[A]** les 2 points du §5 (crique trop petite pour 8 lagons, anneau d'apparition recouvrant la falaise) — sans ton arbitrage, les lagons restent sous-dimensionnés (r=18 au lieu de 30). **[B]** sons d'UI : à toi de poser les IDs vérifiés. **[D]** **Je n'ai pas Studio.** Je ne peux pas produire une vraie capture Roblox. Si la directive exige une capture du jeu en moteur, il faut que Moaad fasse le sync Rojo lundi et que quelqu'un lance le playtest. Moi je fournis la géométrie exacte que le moteur devra rendre.
