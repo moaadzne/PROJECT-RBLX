@@ -10,38 +10,46 @@
 #   tools/box send <lettre|id> "message"  envoie a une session
 #   tools/box bg <lettre|id> "message"   envoie sans attendre la reponse
 #
-# Lettres reconnues : A B C D E F
+# Lettres reconnues : A a V (via docs/INBOX/REGISTRE.md, la meme source que tools/pont).
 set -euo pipefail
 
 BIN="$HOME/Library/Application Support/ai.opencode.desktop/cli/2.0.26/opencode-cli"
 REPO="$HOME/Documents/claude code/tide-rush"
+REGISTRE="$REPO/docs/INBOX/REGISTRE.md"
 
 [ -x "$BIN" ] || { echo "CLI introuvable : $BIN" >&2; exit 1; }
 cd "$REPO"
 
-# Resout une lettre en ID de session via le titre.
+# Resout une lettre en ID de session. Ordre : id direct, puis REGISTRE, puis titre.
 resolve() {
   local want="$1"
-  local list
-  list=$("$BIN" session list 2>/dev/null)
+  local list id
 
   if [[ "$want" == ses_* ]]; then
     print -r -- "$want"
     return 0
   fi
 
-  # Un ID direct passe en premier.
-  print -r -- "$list" | grep -q "^${want}" && { print -r -- "$want"; return 0; }
+  # Le REGISTRE est la source de verite (meme table que tools/pont).
+  if [[ -f "$REGISTRE" ]]; then
+    id=$(grep -E "^\| *${want} *\|" "$REGISTRE" | grep -oE 'ses_[A-Za-z0-9]+' | head -1)
+    if [[ -n "$id" ]]; then
+      print -r -- "$id"
+      return 0
+    fi
+  fi
 
-  # Sinon on cherche la lettre dans le titre : "Tide Rush · A Serveur", etc.
-  local id
+  # Repli : la lettre dans le titre de session ("Tide Rush · A", ...).
+  list=$("$BIN" session list 2>/dev/null || true)
   id=$(print -r -- "$list" \
-    | grep -i "· *$want \|Tide Rush · $want\|Session $want" \
+    | grep -iE "· *${want}( |$)|Tide Rush ${want}\b|Session ${want}\b" \
     | head -1 | cut -f1)
 
   if [[ -z "$id" ]]; then
-    echo "Lettre '$want' introuvable. Sessions :" >&2
-    print -r -- "$list" >&2
+    echo "Lettre '$want' introuvable (ni dans docs/INBOX/REGISTRE.md, ni dans les titres)." >&2
+    echo "Lettres connues :" >&2
+    grep -oE '^\| *[A-Z] *\|' "$REGISTRE" 2>/dev/null | tr -d '| ' | tr '\n' ' ' >&2
+    echo >&2
     return 1
   fi
   print -r -- "$id"
