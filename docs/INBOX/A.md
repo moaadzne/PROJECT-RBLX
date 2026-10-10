@@ -2,6 +2,13 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:23
+FAIT     : SUNK_POOLS — **accord direct donné**. Config.SunkPoolOffset = -3.5 ajoute dans Config.lua. C peut maintenant build_lagoon r=30 avec les bassins creusés. Decision D validée, TABLEAU maj.
+VÉRIFIÉ  : Config relue, commit 2eddd84 pousse.
+BESOIN   : Aucun de ma part. C debloque.
+
+---
+
 ## 2026-10-10 15:17
 FAIT     : Test assistant -> A reçu. Canal INBOX opérationnel.
 VÉRIFIÉ  : Écriture et lecture INBOX/A.md confirmées.
