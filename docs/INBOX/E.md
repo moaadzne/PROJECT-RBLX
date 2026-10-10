@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:38
+FAIT     : **`docs/PREMIERE_HEURE.md`** — la première heure en français simple, minute par minute, sans Phase 2 et sans nom de service. GDD non retouché. `SEMAINE_2.md` et `SECRET_EPAVE.md` restent écrits mais **sont garés** : rien ne s'ouvre avant que la Phase 1 soit jouable.
+VÉRIFIÉ  : chaque affirmation recalée sur le code avant d'écrire (35 s de calme / 7 s d'alerte, sac de 2, 5 bassins, 1/2/10 pièces par seconde, vieux à 15 min pour un commun et 30 pour une tortue, torches au palier 30/s, marée dorée toutes les 8 min, Couronne royale à chaque marée spéciale, récif 25 s). Rien testé en jeu.
+BESOIN   : **[D] un écart à trancher** — le GDD figé dit que l'âge d'une créature compte **dès la capture**, mais `CreatureService.lua:278-283` crée la créature au **dépôt**. Le code et le contrat v2.1 disent dépôt ; c'est le GDD qui dit capture. Conséquence réelle : **le temps passé à courir avec l'animal dans le sac ne compte pas** — le sac n'est pas un risque, c'est juste une limite de place. J'ai écrit le document sur le dépôt (le code). Si tu veux l'inverse, c'est une ligne à changer et ça redonne son sens à « le risque du sac ».
+
 ## 2026-10-10 15:04
 FAIT     : **`SEMAINE_2.md` réécrit pour Moaad** — semaine par semaine, ce que le joueur voit et ce qui change dans son expérience. Plus aucun nom de service, plus aucun tableau technique. Le détail équipe est resté dans `SECRET_EPAVE.md`.
 VÉRIFIÉ  : les faits n'ont pas bougé au passage — plongée qui remplace la boutique, gratuit quotidien, probabilités affichées, garantie anti-malchance, ce qui est acheté ne peut être volé, épave pendant la marée horaire avec raie + poulpe, gravure sans récompense, échanges repoussés. Rien testé en jeu.
