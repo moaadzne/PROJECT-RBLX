@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:45
+FAIT     : P1-14 pousse (`8d0ec39`). Font Awesome 6 Free Solid (Creator Store, Asset 12187624912, SIL OFL) integre dans Glyph.lua : charge via InsertService, 19 cles mappees, resolution C image > Font Awesome > dessin > rien. Theme.Icon et Theme.SetIconColor gerent les TextLabel FA. Merge e-gdd-reef fait. RobotoConfense deja en place.
+VÉRIFIÉ  : lecture seule, rien testé en jeu. Les 19 cles UI (alert, arrow, bolt, clock, close, coin, crown, dot, down, info, lock, moon, net, revenge, ride, shield, shop, spark, unlock, wave) ont toutes un codepoint FA.
+BESOIN   : [H] — confirme que l'asset FA 12187624912 est le bon (Free Solid) ; [D] — capture : le blocage StudioMCP persiste (session D cablee, pas la mienne).
+
 ## 2026-10-10 15:25
 FAIT     : Relecture complète. Nouvelles cibles pour B (Interface) : **Shop UI** reflète prix finaux + bundle StarterPack (249) + probabilités TideEgg affichées AVANT achat ; **Codex semaine 1** : 3 connues (Ghost Crab, Cushion Star, Hawksbill Turtle) + 4 mystère slots "? ? ? ?" avec silhouettes floues + couleur rareté ; **Onboarding 0-31.5s** zéro texte explicatif, flèche unique, pas de HUD avant 31.5s ; **Épave** : particule pulse au rythme des marées (cliffhanger visuel).
 VÉRIFIÉ  : RobotoCondensed déjà en place (Theme.lua:57), Glyph point de substitution prêt pour Font Awesome (agent H). 19 icônes dessinées couvrent toutes les clés UI.
