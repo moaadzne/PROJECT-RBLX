@@ -92,6 +92,15 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 - [A 09/10] docs/ARCHI_SERVEUR_REEF.md.
 - [B 09/10] docs/UI_REEF.md.
 - [C 09/10] docs/DA_MONDE.md et docs/CREATURES_ART.md.
+- [A 10/10] Audit du serveur contre le contrat v2.1 : conforme sur les noms (26/26 kinds de Notify, 23/23 codes, 34/34 champs de `state`, attributs, roster d'espèces, Config). Un écart corrigé : le gamepass VIPRider était appliqué au **revenu** au lieu des **pièces** — il gonflait `state.income` et `lagoonTier` de 10 %.
+- [A 10/10] `Stats.Bonus` = 1 + compagnons + Codex (formule du contrat, sans gamepass) ; nouveau `Stats.CoinBonus` appliqué au seul versement (revenu passif, hors-ligne). La Marée Royale lit désormais le revenu du contrat. **À réimporter lundi.**
+
+## À trancher (D) — sans urgence, rien ne bloque
+
+1. **Portée du +10 % de VIPRider.** Corrigé conformément au contrat (« +10 % pièces »). Reste à confirmer : la Marée Royale, qui dit « 5/3/2 min de son revenu », est aujourd'hui calculée **sans** le bonus. Un joueur VIPRider est donc avantagé sur le revenu passif mais pas sur la récompense royale. Ouverture possible, pas appliquée.
+2. **Vague personnelle : incohérence latente.** `GoHome` utilise `GetWaveFor(player)`, mais `LagoonService` et `StealService` utilisent `Net.GetWave()` (vague globale), sur 8 appels. Sans effet aujourd'hui : les seuls joueurs à vague personnelle sont des nouveaux joueurs, que la protection débutant bloque avant. Cassera si les règles d'intro changent.
+3. **`review/Config.lua` est un Config v1 périmé** resté dans le dépôt : il contient encore `Zones`, `Beach` et `BaseLineZ` (supprimés par le contrat) et `GameName = "Tide Rush"`. Rien ne l'importe. Je ne l'ai pas supprimé (règle : ne pas supprimer ce qu'on n'a pas créé) — à supprimer ou à déplacer par son auteur.
+4. `docs/GDD_REEF.md` vs contrat v2.1 : pas tranché. Le GDD REEF contient « TIDE RANK (rebirth) » et « LES 5 ZONES », que la Phase 1 ignore (île ouverte, anneaux). Confirmer s'il remplace `docs/GDD.md` v2 pour le design, ou s'il reste un document de travail pour plus tard.
 
 ## Questions pour Moaad
 1. Créer les gamepasses et produits développeur dans Creator Hub (après la publication privée), puis donner leurs ids à A. En attendant, les ids sont à 0 et la boutique est désactivée.
