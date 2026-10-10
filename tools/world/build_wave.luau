@@ -182,6 +182,13 @@ local function buildSwell()
 	model:SetAttribute("Height", SWELL.height)
 	model:SetAttribute("RiseTime", SWELL.riseTime)
 	model:SetAttribute("SpawnZ", SWELL.spawnZ)
+	-- A 10/10 : la vague arrive des 4 directions (N/E/S/O). UNE SEULE houle est construite,
+	-- modelisee face a +Z comme la v1 ; c'est B qui la oriente selon la direction annoncee.
+	-- Ne pas construire 4 houles : meme modele, 4 orientations.
+	-- Convention A : "from N" vient de -Z et avance vers +Z ; "from E" vient de +X et avance
+	-- vers -X ; S et W a l'inverse. La houle traverse de -330 a +330 sur son axe.
+	model:SetAttribute("AxisConvention", "front=+Z ; N=-Z E=+X S=+Z W=-X")
+	model:SetAttribute("Reach", 330)
 	local body = wall(model, SWELL, { outer = C.ocean, inner = C.deep })
 	emitter("Mist", {
 		Rate = 6,
@@ -197,7 +204,7 @@ end
 
 local function build()
 	log(string.format("Assets.Wave v2 : corps %d x %d x %d, crete %d, embruns jusqu'a Y %d, ombre au sol", WAVE.width, WAVE.height, WAVE.thickness, WAVE.crest, WAVE.sprayMaxY))
-	log(string.format("Assets.WaveSwell : houle %d x %d a Z %d, montee en %d s", SWELL.width, SWELL.height, SWELL.spawnZ, SWELL.riseTime))
+	log(string.format("Assets.WaveSwell : houle %d x %d, montee en %d s, portee +-330 sur son axe, orientee par B (4 directions N/E/S/O)", SWELL.width, SWELL.height, SWELL.riseTime))
 	if DRY_RUN then
 		return
 	end
