@@ -40,6 +40,34 @@ Le budget de Moaad est épuisé. Les réveils automatiques ont déjà coûté de
 
 > Note : tous les agents n'ont pas le même outillage. N'écris jamais une règle qui suppose un outil que tu n'as pas — un canal qui marche pour toi peut ne pas exister pour l'agent d'à côté.
 
+### Le protocole de boîte — comment on se parle vraiment
+
+Le runtime d'OpenCode ne permet pas d'envoyer un message à une autre session : sa file interne est un bus en mémoire, et une session inactive dans un onglet ne consomme rien. **Ce qui marche, c'est le fichier.**
+
+Chaque lettre a un fichier : `docs/INBOX/<ta lettre>.md`.
+
+**Ce que tu fais, à la fin de chaque tour :**
+
+1. Ouvre `docs/INBOX/<ta lettre>.md`
+2. Ajoute une entrée en haut, datée, avec exactement 3 lignes :
+
+```
+## 2026-10-10 14:32
+FAIT     : <une ligne>
+VÉRIFIÉ  : <une ligne — « rien testé en jeu » si c'est le cas>
+BESOIN   : <une ligne — et de QUI>
+```
+
+3. Commit. C'est tout.
+
+**Ce que D fait :** lit les 6 fichiers et te rend le compte rendu ici.
+
+**Ce que tu lis au démarrage :** `docs/INBOX/D.md` contient les consignes de D pour toi. Un seul fichier, pas d'agent à réveiller.
+
+⚠️ Ne mets **jamais** de secrets ni de clé d'API dans ces fichiers, ils sont dans le repo.
+
+---
+
 **Si tu n'as rien de nouveau à dire : dis-le en une ligne et arrête-toi. Le silence coûte moins cher qu'un message.**
 
 ## 4. Budget et arrêt
