@@ -109,7 +109,13 @@ cd "$HOME/Documents/claude code/project-rblx"
 1. Onglet **Plugins** → bouton **Rojo**. Un panneau s'ouvre.
 2. Adresse `localhost`, port `34872` (valeurs par défaut) → **Connect**.
 3. Rojo affiche la liste des changements. Vérifie qu'elle ne parle **que** de ReplicatedStorage.Shared, ServerScriptService, StarterPlayerScripts (et Remotes, StarterGui, ReplicatedFirst s'ils existent dans le repo). S'il y a **Workspace, Lighting ou Assets** dans la liste → **Abort** et on prévient D.
-4. Sinon → **Accept**.
+   **Changements attendus**, état du 09/10 à 16 h ; la session locale compare avec `rojo sourcemap` du jour :
+   - `ServerScriptService.Services` : **ajouts** CreatureFactory, CreatureService, IntroService, LagoonService, StealService, MountService, RoyalService, ShopService ; **suppressions** TreasureService et ItemFactory. Elles sont normales : dans ce dossier, le repo fait foi. Les autres services sont mis à jour.
+   - `ServerScriptService.Main` et `ReplicatedStorage.Shared.Config` : mis à jour.
+   - `StarterPlayerScripts.TideClient` : le LocalScript (vide aujourd'hui) est rempli, et ses modules sont ajoutés.
+   - `ReplicatedFirst` : ajout de `LoadingScreen`.
+   - Aucune suppression ailleurs que dans `Services`.
+4. Si la liste correspond → **Accept**.
 5. **Cmd + S**.
 
 ### Étape 7 : vérifier la synchronisation (session locale, juste après l'étape 6, AVANT de toucher au monde)
