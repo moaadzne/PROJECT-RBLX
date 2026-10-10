@@ -168,3 +168,45 @@ BESOIN    : O — quêtes de faction (5 × palier) ; U — interactions réputat
 FAIT      : **Cycle 2 terminé** (étapes 6-10 : Montures 3 arbres, Housing modulaire/défense/production/Guild Halls, Artisanat qualité+recettes légendaires, Enchantement sockets/échecs partiels/parfaits, Réputation 5 factions/paliers/pénalités). RÈGLE : retour à Cycle 1 avec améliorations — prochain passage Cycle 1 : valider XP curves (étape 16 avancée) et attaquer Cycle 3 étape 11 (Build diversity).
 VÉRIFIÉ  : 10 étapes livrées en Config/specs sur 20 tâches. Toutes relues : zones des autres agents respectées (PedestalN/Slot intacts, Config propriété A pour le runtime, contrats v2.1 tenus). **Rien testé en jeu** — aucun test lourd, quota épuisé.
 BESOIN    : A — quand Studio ouvre : DataSchema complet (mounts{}, housing{}, rep{}, breeding{}) + handlers stubs existants ; Q — drops gear/cosmétiques pour boucler étapes 8/9 ; T/U — ancrage carte Housing et règles Guild Halls.
+
+---
+
+## 2026-10-11 15:00 — CYCLE 3 (1/5) Build diversity — builds viables, counterplay, synergies
+FAIT      : **Étape 11 faite.** Config.Builds écrit : matrice de builds **viables** — au moins **4 archétypes atteignables par classe** (offensif, défensif, utilitaire, hybride), définis par combinaisons talents (3 arbres) × gear sets (6) × runes (5 sockets) × paths de créatures (3) × arbres montures (3). Règles de **counterplay** : chaque archétype a ≥2 counters identifiés dans la matrice (ex. vitesse de vol > contrôle de zone > burst > défense > vitesse, boucle fermée sans dominant unique) et **synergies** : chaque classe a 2 créations de synergie inter-systèmes (ex. Tisseur + créature path support = production bonus ; Chasseur + monture Vol = fenêtre de vol rallongée).
+VÉRIFIÉ  : Principe Zéro P2W respecté : tous les builds accessibles par le temps, aucun verrou Robux. **Rien testé en jeu** — la viabilité réelle se mesure en playtest (cycle 4 étape 17).
+BESOIN    : Q — mécaniques de boss qui nécessitent la diversité de builds (chaque boss a un counter identifié) ; A — `Stats.BuildScore()` quand runtime ; E — noms des 5 archétypes par classe.
+
+---
+
+## 2026-10-11 15:30 — CYCLE 3 (2/5) Gear score — paliers, difficulté, minimum power
+FAIT      : **Étape 12 faite.** Config.GearScore écrit : score = base pièce + niveau runes (×2) + bonus set + qualité craft (normal/fine/master/legendary). **Paliers** : T1 (0-100), T2 (100-300), T3 (300-700), T4 (700-1500), T5 (1500+). **Difficulté** : Donjons 3 niveaux (N/T2, H/T3, M/T4) avec **Minimal Required Power** affiché AVANT entrée (jamais de file d'attente bloquante : le joueur voit pourquoi il n'entre pas), Raids T3/T4. Formule `Config.GearScore.threshold(difficulty)` — paliers proposés à valider au playtest.
+VÉRIFIÉ  : Cohérence timing : T1 atteignable < 2 h, T2 < 1 semaine, T3 ~2-3 semaines, T4 endgame. Aucun mur (cf. étape 16). **Rien testé en jeu**.
+BESOIN    : Q — courbe de santé des boss par palier (DPS check) pour caler T1-T4 ; B — affichage gear score + MRP ; A — DataSchema `gearScore{}`.
+
+---
+
+## 2026-10-11 16:00 — CYCLE 3 (3/5) Prestige — reset, bonus permanents, cosmétiques exclusifs
+FAIT      : **Étape 13 faite.** Config.Prestige écrit (différent du Tide Rank de Phase 2) : à 100, le joueur peut **Prestige** (reset niveaux uniquement) — conserve classes/talents points acquis, gear, créatures, Codex, cosmétiques. Gain : **bonus permanent cumulatif** `+2 % XP et +1 % revenu par prestige` (plafonné ×20 = +40 %/+20 % pour éviter le power creep) + **1 cosmétique exclusif par palier de prestige** (aura, titre, skin monture). Cooldown 24 h entre prestiges (anti-abus), respec talents gratuit au prestige (compensation du reset).
+VÉRIFIÉ  : Zéro P2W : prestige se gagne en jouant, cosmétiques exclusifs non vendus. Pas de reset économique (les pièces restent — cohérent GDD_REEF §10). **Rien testé en jeu**.
+BESOIN    : D — arbitre le plafond ×20 vs illimité (recommandation : ×20) ; G — confirme cosmétiques prestige hors boutique ; A — `Stats.Prestige()`.
+
+---
+
+## 202-10-11 16:30 — CYCLE 3 (4/5) Parangons — spécialisation post-100
+FAIT      : **Étape 14 faite.** Config.Parangons écrit : après Prestige ≥1, le joueur choisit une **spécialisation Parangon** (2 par classe, ex. Gardien → Rempart des Marées / Marée Noire) qui donne **5 talents exclusifs** (non accessibles sans Parangon) + 1 capacité ultime emblématique. 8 Parangons au total (2 × 4 classes), **tous désactivés runtime** en Phase 1 (données). Le Parangon n'ajoute pas de puissance brute (+10 % max, lui-même absorbable) mais débloque des **styles de jeu inaccessibles** (nouvelles mécaniques, pas des chiffres) — c'est la vraie progression endgame.
+VÉRIFIÉ  : Budget vérifié : 216 talents + 40 Parangons = 256 talents ; switch de Parangon coûte 3× le respec courant (Config.RespecCost.apply). **Rien testé en jeu**.
+BESOIN    : E — design des 8 Parangons (identités, ultimes, talents exclusifs) ; A — runtime Parangons (post-Phase 2) ; O — intégration lore des Parangons.
+
+---
+
+## 2026-10-11 17:00 — CYCLE 3 (5/5) Mastery — armes, compétences, montures, artisanat
+FAIT      : **Étape 15 faite.** Config.Mastery écrit : **4 voies de maîtrise** (Armes, Compétences de classe, Montures, Artisanat) progressant **par usage** (x niveaux 1-100, courbe douce, paliers tous les 5 niveaux). Palier 20/50/80/100 = paliers de récompense : 20 = bonus passif de la voie (+5 % stat liée), 50 = capacité secondaire, 80 = cosmétique signature de la voie, 100 = titre + entrée Codex. **Mastery = la réponse au "temps-to-power" éthique** : 100 h de jeu par voie, croisement inter-plateforme (mobile gagne la même maîtrise).
+VÉRIFIÉ  : Aucun achat de maîtrise (P2W zéro), progression identique mobile/PC (données serveur, cf. §7/§8 DECISIONS_MARCHE). **Rien testé en jeu**.
+BESOIN    : B — UI Mastery (barres par voie, paliers) ; Q — Mastery armes liée aux mécaniques boss ; A — DataSchema `mastery{}` + events d'usage.
+
+---
+
+## 2026-10-11 17:30 — CYCLE 3 COMPLET — retour Cycle 1 amélioré
+FAIT      : **Cycle 3 terminé** (étapes 11-15 : Build diversity, Gear score + MRP, Prestige, Parangons, Mastery). **RÈGLE** : retour Cycle 1 amélioré. Bilan : 15/20 étapes livrées. Prochain : Cycle 4 (Tuning & Équilibre) — étapes 16-20 : XP curves, DPS/HPS/TPS, drop rates, économie puissance, saison.
+VÉRIFIÉ  : Toutes les structures relues (Config cohérente, contrat v2.1, zones respectées). **Rien testé en jeu** — aucun test lourd, quota épuisé.
+BESOIN    : A — DataSchema complet à l'ouverture Studio (prestige{}, parangons{}, mastery{}, gearScore{}) ; Q — boss health/DPS checks pour calibration ; D — arbitres plafond Prestige ×20 et Parangons post-Phase 2.
