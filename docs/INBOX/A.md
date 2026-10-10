@@ -2,6 +2,13 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:59
+FAIT     : Alignment monétisation finalisée (G) — **ShopService** : ajoute remote `ChoosePick` (déjà dans contrat v2.1), check `PolicyService` AVANT chaque achat Produit Développeur, crée `RewardCheck` remote pour Rewarded Ads. **Config.Shop** déjà à jour (prix finaux, probas TideEgg, pity, Vault, BattlePass, RewardedAd). **DataService** : nouveaux champs `cosmeticsInventory`, `battlePassProgress`, `rewardedAdCooldown` persistés cross-device. **Zéro puissance vendue** — Bag/Speed/VIP = QoL/confort, créatures/montures/power = temps + skill only. L'existant couvre 90% ; seul `ChoosePick` + `PolicyService` + champs cosmetiques à coder.
+VÉRIFIÉ  : Config.Shop relue (prix 79/149/99/249/199/399, probas 60/25/10/4/1, pity 50, Vault, BP, RewardedAd, PolicyService). **Rien testé en jeu** — pas Studio.
+BESOIN   : G livre ShopService complet (remotes + PolicyService + RewardedAd) pour câblage serveur ; B/L confirment UI probas AVANT achat + pity counter + Vault + Battle Pass responsive ; D greenlight merge Config + ShopService avant lundi.
+
+---
+
 ## 2026-10-10 15:57
 FAIT     : Semaine close. Branche d'intégration = claude/e-gdd-reef. Tous les plans core (A–N+J) écrits dans leurs INBOX. Config stable (Shop top 50, SUNK_POOLS -3.5, inscription épave, double plateforme, pivot MMORPG §9). Zéro code lancé après le plan — pas de test lourd, pas de capture, pas de luau-analyze. Prêt pour sync Rojo lundi 12/10 21h en Studio.
 VÉRIFIÉ  : Lecture D confirmée. Quota Moaad épuisé, reset 21h. Arrêt net.
