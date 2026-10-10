@@ -602,7 +602,7 @@ for key, drawFn in pairs(DRAW) do
 end
 
 -- Icone carree de `size` px. La resolution passe par Glyph : image de C si elle existe,
--- sinon le pictogramme dessine de cette cle, sinon rien du tout (aucune icone fantome).
+-- sinon Font Awesome si charge, sinon le pictogramme dessine de cette cle, sinon rien.
 function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
 	local c = color or Theme.Colors.Text
 	local key = name or "dot"
@@ -617,6 +617,14 @@ function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
 			ScaleType = Enum.ScaleType.Fit,
 		})
 	end
+	if resolved.kind == "fontawesome" and resolved.label then
+		local label = resolved.label
+		label.Name = "Icon"
+		label.Size = UDim2.fromOffset(size, size)
+		label.TextColor3 = c
+		label.TextSize = size
+		return label
+	end
 	local holder = create("Frame", {
 		Name = "Icon",
 		BackgroundTransparency = 1,
@@ -629,10 +637,14 @@ function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
 	return holder
 end
 
--- Recolore une icone (image ou dessin)
+-- Recolore une icone (image, Font Awesome, ou dessin)
 function Theme.SetIconColor(icon: Instance, color: Color3)
 	if icon:IsA("ImageLabel") then
 		icon.ImageColor3 = color
+		return
+	end
+	if icon:IsA("TextLabel") and icon.Name == "FAIcon" then
+		icon.TextColor3 = color
 		return
 	end
 	for _, d in icon:GetDescendants() do
