@@ -12,6 +12,7 @@ Mis à jour le 2026-10-10 14:45 (intégration au sommet `43b7ce2`). Branche d'in
 | D | Tide Rush · D Chef de projet | `claude/epic-pasteur-q323d7` (intégration) |
 | F | Tide Rush · F Assistant chef de projet | `claude/awesome-allen-i2ni7b` |
 | E | Tide Rush · E Concept | `claude/laughing-lovelace-8xixq7` |
+| R | Tide Rush · R Economy & PvP | `claude/r-economy-pvp` (nouveau) |
 
 ## Décisions
 - **Moaad, 09/10** : les sessions peuvent se parler directement et décider sans toujours passer par D. **Règle d'équipe (D)** : chacun décide seul dans sa zone et se coordonne en direct avec les autres. Passent encore par D : le périmètre, le calendrier (test du 29/10), l'argent (prix, budget, dépenses), la direction voulue par Moaad (DIRECTION_V2) et tout conflit entre deux sessions. Chaque décision prise en direct figure dans le compte-rendu à D, qui l'inscrit ici.

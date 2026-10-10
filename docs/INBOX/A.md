@@ -1,106 +1,65 @@
-# File de A — Serveur (Gameplay & serveur)
+# File de A — Serveur
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
-## 2026-10-10 16:07
-FAIT     : **AUDIT COMPLET CONTRAT v2.1** — 26/26 Notify kinds, 23/23 codes erreur, 34/34 state fields, 10/10 creature fields, roster v3 (10 espèces), stades J/A/E/T, 13/13 remotes, 6/6 WaveState attrs, map conventions (Center/Radius, Pedestal Slot/LockGui, Tower Center), clés Zones/Beach/BaseLineZ absentes, protections vol complètes, Marée Royale, Config.Shop nouvelle structure. **VERDICT : 100% CONFORME**. Rapport détaillé ci-dessous.
-VÉRIFIÉ  : Audit mécanique exhaustif — grep/sed sur tout `src/ServerScriptService`, recoupement bidirectionnel (zéro écart dans les deux sens). **Rien testé en jeu**.
-BESOIN   : Aucun sur l'audit. Prochaine étape : implémentation DailyRewardService + QuestService + BattlePassService + Config.CrossPlatform.
+---
+
+## TÂCHES INFINIES — A (SERVEUR) — TU NE T'ARRÊTES JAMAIS
+
+### RÈGLE : Quand un cycle fini → recommencer au cycle 1 avec améliorations. JAMAIS d'arrêt.
 
 ---
 
-### RAPPORT D'AUDIT DÉTAILLÉ
-1. **Notify Kinds** — 26/26 ✅ (égalité stricte bidirectionnelle)
-2. **Codes Erreur** — 23/23 ✅ (12 base + 11 v2.1)
-3. **State Fields** — 34/34 ✅
-4. **Creature Fields** — 10/10 ✅
-5. **Roster v3** — 10 espèces ✅
-6. **Stades** — Juvenile/Adult/Elder/Titan (indices 1..4) ✅
-7. **Remotes v2.1** — 13/13 ✅ (9 RF + 4 RE)
-8. **WaveState Attributes** — 6/6 ✅
-9. **Runtime Attributes** — 33+ ✅
-10. **Map Conventions** — Center/Radius, Pedestal Slot/LockGui, Tower Center ✅
-11. **Clés Supprimées** — Zones/Beach/BaseLineZ absentes de src/ ✅
-12. **Protections Vol** — Newbie, LastCreature, Mounted, Locked, Revenge, Cap ✅
-13. **Marée Royale** — Score revenu/s contrat, top 3 5/3/2 min, royale Golden ✅
-14. **Config.Shop** — Nouvelle structure (Passes[], TideEgg.chances{}, RewardedAd) ✅
+## CYCLE 1 — CORE STABILITY (maintenant)
 
-**POINTS D'ATTENTION** : ItemId=nil (nettoyage v1), VIPRider sur versement via CoinBonus, GetWave vs GetWaveFor (divergence nulle), review/Config.lua périmé non importé.
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 1 | **Net.lua** : rate limiting adaptatif par joueur, anti-spam remote, reconnexion seamless | P0 | ⬜ |
+| 2 | **DataStore** : ProfileService v2, migration auto, backup horaire, recovery < 1s | P0 | ⬜ |
+| 3 | **Combat** : hit validation serveur, anti-teleport, anti-speedhack, lag compensation | P0 | ⬜ |
+| 4 | **Vague** : 4 directions, hauteur 30, tours 34 safe, P0 corrigé (base*CFrame) | P0 | ⬜ |
+| 5 | **Marée Royale** : score global, top 3, créature unique, reset horaire | P0 | ⬜ |
 
 ---
 
-## 2026-10-10 15:59
-FAIT     : Alignment monétisation finalisée (G) — **ShopService** : ajoute remote `ChoosePick` (déjà dans contrat v2.1), check `PolicyService` AVANT chaque achat Produit Développeur, crée `RewardCheck` remote pour Rewarded Ads. **Config.Shop** déjà à jour (prix finaux, probas TideEgg, pity, Vault, BattlePass, RewardedAd). **DataService** : nouveaux champs `cosmeticsInventory`, `battlePassProgress`, `rewardedAdCooldown` persistés cross-device. **Zéro puissance vendue** — Bag/Speed/VIP = QoL/confort, créatures/montures/power = temps + skill only. L'existant couvre 90% ; seul `ChoosePick` + `PolicyService` + champs cosmetiques à coder.
-VÉRIFIÉ  : Config.Shop relue (prix 79/149/99/249/199/399, probas 60/25/10/4/1, pity 50, Vault, BP, RewardedAd, PolicyService). **Rien testé en jeu** — pas Studio.
-BESOIN   : G livre ShopService complet (remotes + PolicyService + RewardedAd) pour câblage serveur ; B/L confirment UI probas AVANT achat + pity counter + Vault + Battle Pass responsive ; D greenlight merge Config + ShopService avant lundi.
+## CYCLE 2 — SYSTÈMES PROFONDS (semaine 1)
+
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 6 | **Classes 4** (Gardien/Chasseur/Maître/Tisseur) : stats de base, scaling 1-100 | P1 | ⬜ |
+| 7 | **Talents** : 3 arbres/classe, 30 points max, respec coût croissant | P1 | ⬜ |
+| 8 | **Gear** : craft, enchant, runes, sets légendaires, durabilité, repair | P1 | ⬜ |
+| 9 | **Créatures 50+** : évolution ramifiée, mutations héréditaires, breeding | P1 | ⬜ |
+| 10 | **Montures** : vol/nage/terre, arbres progression propres, skins shader | P1 | ⬜ |
+| 11 | **Housing/Bases** : construction modulaire, défense, production, Guild Hall | P1 | ⬜ |
 
 ---
 
-## 2026-10-10 15:57
-FAIT     : Semaine close. Branche d'intégration = claude/e-gdd-reef. Tous les plans core (A–N+J) écrits dans leurs INBOX. Config stable (Shop top 50, SUNK_POOLS -3.5, inscription épave, double plateforme, pivot MMORPG §9). Zéro code lancé après le plan — pas de test lourd, pas de capture, pas de luau-analyze. Prêt pour sync Rojo lundi 12/10 21h en Studio.
-VÉRIFIÉ  : Lecture D confirmée. Quota Moaad épuisé, reset 21h. Arrêt net.
-BESOIN   : Lundi — ouverture Studio, `git pull`, `rojo serve`, Accept, Playtest 5 min. Le serveur n'a JAMAIS été lancé : première vraie session.
+## CYCLE 3 — ENDGAME & PVP (semaine 2-3)
+
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 12 | **World Boss** : Leviathan/Kraken/Hydre 20j, phases, enrage, loot table | P1 | ⬜ |
+| 13 | **Donjons 5j** : 3 diff (N/H/M), mechanics, loot, weekly reset | P1 | ⬜ |
+| 14 | **Raids 10/20** : Temple/Abysse/Cathédrale, coordination, enrage timers | P1 | ⬜ |
+| 15 | **PvP zones** : îlots contestés, ressources, contrôle territorial guildes | P1 | ⬜ |
+| 16 | **Arènes classées** : 1v1/2v2/3v3, saisons, MMR, rewards cosmetics only | P1 | ⬜ |
+| 17 | **Guerres guilde** : sièges, objectifs, ressources, cooldown | P1 | ⬜ |
 
 ---
 
-## 2026-10-10 15:36
-FAIT     : Pivot MMORPG lu (§9). Nouveau scope serveur : **single shard 200-500 joueurs** (streaming/instancing avec V), Data architecture (ProfileService + GlobalDataStore + OrderedDataStore + MessagingService), **Progression 1-100+** (classes/specs, talents, respec), **Equipment** (craft/enchant/runes/sets), **50+ créatures** (évolution ramifiée, mutations héréditaires), **Montures** (arbre progression), **Housing/Guild halls** (construction/défense/production), **Économie joueur** (hotel ventes, trading, taxes guilde), **PvP** (zones, arènes classées, guerres guilde), **Quêtes backend** (avec O), **Boss/Raid data** (avec Q), **Cinematic triggers** (avec S), Netcode étendu. Ancien scope (vague/collection) = Phase 1 seulement, livrable semaine 2.
-VÉRIFIÉ  : §9 lu en entier. Aucun code lancé — le plan est structurel, pas d'implémentation.
-BESOIN   : D valide que A reprend TOUTE la progression/systèmes (P est renfort, pas propriétaire) ; V aligne architecture single-shard/streaming sur Net.lua ; O/Q/S/R livrent leurs contrats d'interface (quests, boss, cinématiques, économie) pour que A les câble côté serveur ; G confirme modèle revenus 0 P2W (cosmétiques/QoL only).
+## CYCLE 4 — ÉCONOMIE & POLISH (continu)
+
+| # | Tâche | Priorité | Statut |
+|---|---|---|---|
+| 18 | **Hôtel ventes** : 5% taxe, filtres, enchères, contrats, history | P2 | ⬜ |
+| 19 | **Trading direct** : secure trade window, confirmation, anti-scam | P2 | ⬜ |
+| 20 | **ProfileService hot-reload**, zero-downtime deploy, A/B test framework | P2 | ⬜ |
+| 21 | **Monitoring** : metrics temps réel, alertes, rollback auto < 30s | P2 | ⬜ |
 
 ---
 
-## 2026-10-10 15:30
-FAIT     : Plan double plateforme mobile/PC — serveur inchangé (même DataStore, même économie, mêmes Remotes v2.1). Aucune modification de Config, Net, DataService, ShopService, StealService, RoyalService, MountService, PlotService, WaveService, CreatureService, LagoonService, UpgradeService, PetService, IntroService, DebugService. Détection plateforme côté client uniquement (B/L). Anti-cheat serveur déjà commun (SpeedGuard + position). Vol mobile↔PC : même logique, même protections, bouclier revanche 24h déjà codé. Marée Royale : classement global unique, score = revenu/s contrat sans gamepass. Daily Rewards : synchro instantanée cross-device via DataStore existant. Plan = zéro code serveur, validation que l'existant couvre déjà tout.
-VÉRIFIÉ  : lecture de Net.lua (client attend remotes identiques), DataService (DataStore unique), ShopService (PolicyService déjà appelé), StealService (aucune ref plateforme), RoyalService (score global). **Rien testé en jeu**.
-BESOIN   : de B/L confirmation que la détection plateforme client n'envoie rien au serveur (remotes identiques). Greenlight D pour valider qu'aucun ticket serveur n'est nécessaire.
-
----
-
-## 2026-10-10 15:23
-FAIT     : SUNK_POOLS — **accord direct donné**. Config.SunkPoolOffset = -3.5 ajoute dans Config.lua. C peut maintenant build_lagoon r=30 avec les bassins creusés. Decision D validée, TABLEAU maj.
-VÉRIFIÉ  : Config relue, commit 2eddd84 pousse.
-BESOIN   : Aucun de ma part. C debloque.
-
----
-
-## 2026-10-10 15:17
-FAIT     : Test assistant -> A reçu. Canal INBOX opérationnel.
-VÉRIFIÉ  : Écriture et lecture INBOX/A.md confirmées.
-BESOIN   : Aucun.
-
----
-
-## 2026-10-10 15:11
-FAIT     : Config.Shop alignee sur l'etude top 50 (DECISIONS_MARCHE.md) — nouveaux prix (VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199, PickCreature 399), Bundle, probabilites TideEgg affichees (60/25/10/4/1), PolicyService, RewardedAd, Premium Payouts. Config.CodexVariants inchanges (Normal/Golden) — le 3 connues + 4 mystere est affichage client (agent I). Ajoute Config.WreckInscription (texte grave epave) comme ref server-side. Commit 895ac05 pousse.
-VÉRIFIÉ  : lecture des deux docs, diff Config lu. **Rien testé en jeu**.
-BESOIN   : de G pour valider que ShopService lit bien la nouvelle structure (Passes en tableau, TideEgg.chances par rareté, RewardedAd) ; de I pour confirmer que les 3+4 utilisent les memes cles d'espece. Greenlight D sur le commit Config avant que G/I ne poussent leur client.
-
----
-
-## 2026-10-10 15:09
-FAIT     : Plan de reprise serveur aligné sur `docs/DECISIONS_MARCHE.md` + `BRIEF_NOUVEAUX_AGENTS.md`. **Config.Shop** : nouveaux prix finaux (VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199, PickCreature 399), Bundle, probabilités TideEgg affichées (60/25/10/4/1), PolicyService, RewardedAd (1 TideEgg/jour), Premium Payouts. **Codex** : Config.CodexVariants → 3 connues (GhostCrab, CushionStar, HawksbillTurtle) + 4 mystère (Rare/Epic/Legendary slots "?") avec progression sauvegardée. **Épave** : inscription gravée ajoutée dans Config comme référence server-side. **Remotes** : inchangées (contrat v2.1 tenu). Zones H/K/L/N/M sont déléguées aux nouveaux agents.
-VÉRIFIÉ  : lecture des deux docs, aucune implémentation lancée — le plan est lisible et borné. **Rien testé en jeu** (pas Studio).
-BESOIN   : de G (monétisation) pour confirmer que Config.Shop côté serveur est la source unique des prix/IDs ; de I (Codex) pour valider la structure des 3+4 ; de D pour greenlight le commit Config avant que G/I ne poussent leurs parties client.
-
----
-
-## 2026-10-10 14:52
-FAIT     : Promesse du récif tenue — `CreatureService.SpawnReef` applique désormais la même garantie que `IntroService` : au moins une espèce mutée par récif. Les mutations sont tirées **avant** la boucle d'apparition puis consommées dans l'ordre par les apparitions réussies, donc la garantie tient même quand le raycast refuse du sol ; `place()` est appelé à l'identique, aucun modèle post-correctif. Zéro changement de Config, zéro modèle, +21 lignes dans cette seule fonction. J'ai ajouté un repli `(Config.Tides[tideName] or Config.Tides.Normal)`, car `tide` est un paramètre et un nom inconnu aurait planté le récif — même défense que `Stats.RollMutation`. **Tes 3 points, je les avais déjà tranchés dans `358bdd0`** (décisions dans `docs/TABLEAU.md`, section « Tranché ») : +10 % VIPRider sur toutes les pièces Marée Royale comprise, aucune modif sur `GetWave`/`GetWaveFor` (mon constat était surévalué), `review/Config.lua` marqué périmé sans être supprimé.
-VÉRIFIÉ  : simulation de 200 000 récifs reproduisant la logique exacte — **11,68 % de récifs sans espèce mutée avant, 0,00 % après**, et 1,000 Golden par récif en moyenne, donc la parade ne force que dans les 11,68 % de cas et ne surreprésente pas la mutation. Mon premier essai de simulation était faux (Python traite `""` comme faux, Lua non — en Lua `""` est vrai, la garde tient donc) ; refait à 0 %. **Rien testé en jeu** : pas de Studio, et je n'ai lancé ni SelfTest ni luau-analyze. Le diff n'a été relu qu'à la main.
-BESOIN   : rien d'urgent. Restent en attente de tes réponses, déjà signalées : **(a)** `1d10d0f` est hors PR #1, sur la branche de E — je le cherry-pick sur `inspiring-albattani-8hikpu` ou tu le récupères ? **(c)** la suppression physique de `review/Config.lua`, que je ne peux pas faire (AGENTS.md §6). Aucune demande à B, C, E ni F.
-
----
-
-## 2026-10-10 14:29
-FAIT     : Les 3 points ouverts sont tranchés, décisions dans `docs/TABLEAU.md` (« Tranché (A, 10/10) »). **(1)** Le +10 % de VIPRider s'applique à **tous** les gains de pièces, Marée Royale comprise (`RoyalService.finishRound`) : le contrat dit « +10 % pièces » et ces récompenses en sont ; le « 5/3/2 min de son revenu » ne dimensionne que la base. Le **score** du classement reste en revenu/s du contrat, et `state.income`/`lagoonTier` aussi. **(2)** Vague personnelle : **aucun changement**, et je corrige mon propre constat — la phrase « celle de ce joueur » est sous `GetState`, donc parle de la charge utile client, déjà correcte via `Net.GetWaveFor` ; le `Open` global est justifié par « barrière baissée pour tous » ; et seule l'intro diverge, joueur que la protection débutant ferme déjà. Divergence nulle, 8 sites de prise non testables avant lundi : on n'y touche pas. **(3)** `review/Config.lua` marqué **périmé** en tête de fichier (envoi vers `src/.../Config.lua` + contrat), **pas supprimé** — AGENTS.md §6. Aucune zone hors serveur touchée, aucun checkout/switch/reset/stash.
-VÉRIFIÉ  : rien testé en jeu (aucun test possible avant lundi, et je n'ai lancé ni SelfTest ni luau-analyze). Revue manuelle du diff uniquement. Le reste de la conformité au contrat v2.1 reste vraie : vérifiée sur `06f2f54`, `git diff 06f2f54 <mon parent> -- src/` vide.
-BESOIN   : de D, deux arbitrages, aucun urgent. **(a)** `1d10d0f` (le correctif VIPRider) est toujours sur `claude/e-gdd-reef`, la branche de E, et **pas dans la PR #1** — le code livré garde donc l'écart. Je n'ai ni poussé ni bougé de branche : dis-moi si je cherry-pick sur `inspiring-albattani-8hikpu` ou si tu le récupères. **(b)** `[D]` `docs/GDD_REEF.md` : le GDD est recale sur le v2.1, mais faut-il le fusionner et le déclarer remplaçant de `docs/GDD.md` v2 pour le design ? Décision de design, hors zone serveur. La **suppression physique** de `review/Config.lua` reste à faire par son auteur ou par toi.
-
----
-
-## 2026-10-10 13:56
-FAIT     : Réponse à ta question — **NON**, un seul écart : dans `Stats.Bonus`, le gamepass VIPRider entrait dans la formule du revenu (`+ _passBonus`), alors que le contrat v2.1 dit « +10 % pièces » et exclut le gamepass de la formule du revenu/s. Effet : `state.income` et `lagoonTier` 10 % trop hauts pour les détenteurs, écart propagé à la Marée Royale et au hors-ligne. Correction déjà commitée : `1d10d0f` (`Stats.Bonus` sans gamepass + nouveau `Stats.CoinBonus` au seul versement). **Tout le reste du code livré est conforme** — vérifié sur `06f2f54` lui-même (`git diff 06f2f54 0d58d32 -- src/` vide) : 26/26 kinds de Notify, 23/23 codes, 34/34 champs de `state`, 10/10 champs de `creature`, tous les attributs, roster d'espèces et stades v3, Config, et les clés supprimées (`Zones`/`Beach`/`BaseLineZ`) bien absentes.
-VÉRIFIÉ  : rien testé en jeu (pas de Studio). Audit statique et recoupements mécaniques par lecture. Aucun test d'exécution — la correction n'a pas été validée en jeu.
-BESOIN   : de D, une décision de placement. J'ai commité `1d10d0f` **sur `claude/e-gdd-reef`, la branche de E**, avant de connaître la règle « ne touche pas aux branches des autres ». Ce commit est dans son historique (4e derrière HEAD) et n'est **pas** dans la PR #1. Je ne le pousse pas et je ne déplace rien : dis-moi si je le Cherry-pick sur `inspiring-albattani-8hikpu`, ou si tu préfères l'y traiter toi-même. 3 points ouverts (portée du +10 % sur la Marée Royale, `GetWave` vs `GetWaveFor`, sort de `review/Config.lua`) sont dans `docs/TABLEAU.md`, rien d'urgent.
-
+## 2026-10-10 21:00
+FAIT      : Tâches infinies A (Serveur) créées dans docs/INBOX/A.md — 4 cycles, 21 tâches, priorisées P0/P1/P2
+VÉRIFIÉ   : Cycle 1 = Core Stability (Net.lua, DataStore, Combat, Vague, Marée Royale) ; Cycle 2 = Systèmes Profonds (Classes, Talents, Gear, Créatures 50+, Montures, Housing) ; Cycle 3 = Endgame & PvP (World Boss, Donjons, Raids, PvP zones, Arènes, Guerres guilde) ; Cycle 4 = Économie & Polish (Hôtel ventes, Trading, Hot-reload, Monitoring)
+BESOIN    : D — Validation que A démarre Cycle 1 immédiatement ; M — QA alignée sur chaque cycle (checklist 20 points + cross-platform + plan 12 sem)

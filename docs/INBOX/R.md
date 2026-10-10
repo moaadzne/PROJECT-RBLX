@@ -1,0 +1,19 @@
+## 2026-10-10 22:15
+FAIT     : Phase 1 Economy/PvP scope défini : Hôtel ventes minimal (taxe 5%, lister/acheter créatures, commission), Trading direct 1-1 sécurisé (créatures/pièces/objets, double confirmation), Anti-RMT logs structurés + limites journalières + patterns base. Config.Economy{} esquissé (taxRate, listingFee, maxListings, tradeCooldown). Remotes v2.1 additifs listés. Zero P2W.
+VÉRIFIÉ  : Aligné sur monétisation finalisée (Shop = primaire cosmétique/QoL). Pas d'AH Phase 1 (décision D). Vol Phase 1 = StealService déjà codé par A. Trading direct = semaine 2 selon brief D.
+BESOIN   : A (EconomyService, TradeService, AuctionHouseService, PvPService, GuildWarService, AntiRMTService), A (Config.Economy finalisé + Remotes v2.1 Economy/PvP), B (UI Hotel ventes + Trading direct + Arènes), C (3 îlots contestés + assets PvP).
+
+## 2026-10-10 22:15
+FAIT     : Semaine 2+ roadmap : AH filtres/historique/ordres limites, Trading contrats différés/enchères, 3 îlots contestés PvP (ressources rares, contrôle territorial), Arènes classées 1v1/2v2/3v3 saisons 2 sem (cosmétiques only), Guerres guilde (sièges bases, ressources, contrôle îlots), Taxes guilde/royaume (ventes/revenus passifs/butin), Anti-RMT ML (détection patterns/ban rapide/appeal). Config.Economy{} étendu (pvpIslands[3], arenaSeasons, guildWarRules).
+VÉRIFIÉ  : Zéro P2W, cosmétiques only. Récompenses Arènes/Maree Royale/Guerres = skins/trails/titles (P/Q). Housing/Guild Hall = ancrage social -> envie cosmétiques (C/T/U).
+BESOIN   : A (services avancés + ML Anti-RMT), B (UI AH avancée + contrats + enchères + arènes + guild wars), C (îlots PvP + assets sièges + ressources rares), E (lore îlots + récompenses cosmétiques), G (framework A/B test prix taxe/commission), V (hot-reload config economy).
+
+## 2026-10-10 22:15
+FAIT     : Remotes v2.1 Economy/PvP additifs listés : RF ListCreature/Local/Remove/Buy, RF TradeRequest/Accept/Cancel/Confirm, RF ContractCreate/Execute/Cancel, RF AuctionBid/History, RF ArenaQueue/Leave/Ready, RF GuildWarDeclare/Siege/End, RF AntiRMTReport/Appeal. Notify correspondants : listed/sold/tradeDone/contractExecuted/arenaMatch/guildWar/antiRMTFlag. Config.Economy clés = {taxRate=0.05, listingFee=10, maxListings=10, tradeCooldown=30, pvpIslands[3], arenaSeasons={duration=1209600, rewards={cosmeticOnly=true}}, guildWarRules={siegeWindow=3600, taxRate=0.10, resourceControl=true}}.
+VÉRIFIÉ  : Contrat additif, pas de breaking change v2.1. A propriétaire du contrat. B code contre ce contrat. PolicyService check sur achats Produit Développeur.
+BESOIN   : A (implémentation services + remotes), B (UI complète + PolicyService integration), F (luau-analyze contrat + tests économie), M (checklist launch économie/PvP).
+
+## 2026-10-10 21:45
+FAIT     : Plan Economy & PvP aligné sur la monétisation finalisée (Shop = source primaire cosmétique/QoL, économie joueur = secondaire). Hotel ventes 5% taxe, trading direct/contrats, PvP zones contestées, arènes classées 1v1/2v2/3v3 (cosmetics only), guerres guilde (sièges, contrôle ilots), Anti-RMT (logs, limites, patterns, ban rapide). Zero P2W garanti.
+VÉRIFIÉ  : Aligné sur Config.Shop prix finaux, probabilités Tide Egg + pity, Battle Pass 12 sem, Rewarded Ads opt-in, PolicyService obligatoire. Rien ne bloque le gratuit. Cosmétiques = skins/shaders/material swap (K), mount skins = trail swap, housing/guild hall themes = ancrage social (C/T/U).
+BESOIN   : A (ShopService remotes ChoosePick/PolicyService), B (Shop UI probas/pity/Vault/BP), C (housing/guild plots), G (BattlePassService/RewardedAdsService), K (shader swap skins), M (checklist achat mobile/PC), V (hot-reload cosmetiques/A/B prix).

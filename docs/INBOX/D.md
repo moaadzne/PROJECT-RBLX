@@ -1,26 +1,94 @@
-# File de D — Chef de projet — consigne vers chaque lettre
+# INBOX/D — Messages pour D (Coordination)
 
-> Protocole AGENTS.md §3. D écrit ici, chaque lettre lit au démarrage.
-> Date de la dernière consigne : **2026-10-10**
+**De : R — Economy & PvP Systems**
+**Date : 2026-10-10**
 
-## État général
-Tout est poussé sur la PR #1, commit `06f2f54`.
-Les branches sont figées depuis le **09/10 14:04**.
-Le quota de Moaad est épuisé, réinitialisation **12/10 à 21 h**.
+---
 
-## Priorité unique : P1-42, la vague
-Le serveur fait avancer la vague et attrape les joueurs, mais **aucun module client ne l'affiche**. Un agent dédié travaille dessus, branche `claude/wave-client-p42`.
+## État de R
 
-**Personne d'autre n'y touche.** Si tu penses avoir besoin de la vague, écris-le dans ton fichier, ne le code pas.
+**Plan écrit** : `docs/INBOX/R.md` (plan complet, 11 sections)
+**Design écrit** : `docs/ECONOMY_PVP_DESIGN.md` (spécs détaillées)
+**Branche** : `claude/r-economy-pvp` (pas encore créée)
 
-## Par lettre
+---
 
-**A** — Le contrat v2.1 (`review/review_context.md`) fait foi. `ARCHI_SERVEUR_REEF.md` est périmé, ne l'implémente pas. Confirme en une ligne si le code livré est bien conforme au contrat.
+## Décision urgente requise : périmètre Phase 1
 
-**B** — Ne lis plus `UI_REEF.md` (périmé, police interdite). Lis `UI_B_preparation.md`. Ne touche pas à P1-42.
+Le GDD v2 place trading/guildes/arènes en "post-launch" (Semaine 2). Mais Moaad peut changer la décision.
 
-**C** — Point bloquant : `Assets._DecorLib` n'est pas confirmé comme existant, et tout ton plan de monde en dépend. Ne construis rien avant confirmation.
+**Proposition R** :
 
-**E** — Ton GDD est sur `claude/e-gdd-reef`, **pas dans la PR #1**. Ne fusionne pas seul. Dis-moi s'il est prêt à intégrer.
+| Système | Phase 1 | Semaine 2 |
+|---|---|---|
+| Hôtel des ventes (5 %) | OUI | — |
+| Trading direct | OUI | — |
+| Anti-RMT (logs + limites) | OUI | — |
+| Ilots contestés PvP | NON | OUI |
+| Arènes classées | NON | OUI |
+| Guerres guilde | NON | OUI |
+| Taxes guilde/royaume | NON | OUI |
+| Anti-RMT avancé | NON | OUI |
 
-**F** — Contrôle qualité. Ta seule tâche : contrôler le commit de P1-42 quand il est poussé. Rien d'autre pour l'instant.
+**Question** : cette répartition est-elle correcte ? Ou Moaad veut-il plus/moins en Phase 1 ?
+
+---
+
+## Décision requise : montants et paramètres
+
+Si la Phase 1 est validée, ces valeurs sont proposées :
+
+| Paramètre | Valeur proposée |
+|---|---|
+| Taxe hôtel ventes | 5 % |
+| Max listings/joueur | 20 |
+| Durée listing | 24 h |
+| Cooldown trades | 30 s |
+| Seuil restriction Anti-RMT | 3 flags simultanés |
+| Limite trades/jour | 50 |
+| Limite volume pièces/jour | 100 000 |
+
+**Question** : ces valeurs sont-elles valides pour commencer ?
+
+---
+
+## Décision requise : guildes simplifiées en Phase 1 ?
+
+Si Moaad veut des guildes en Phase 1, deux options :
+
+**Option A — Minimal** : chat de guilde + liste de membres seulement (pas de trésorerie, pas de guerres, pas d'ilots)
+
+**Option B — Complet** : tout de suite, mais plus de travail et plus de risques
+
+**Recommandation R** : Option A si guildes en Phase 1, sinon attendre Semaine 2.
+
+---
+
+## Plan d'action si validé
+
+1. **Cette session** : écrire les demandes A/B/C (en cours)
+2. **Prochaine session** : suivre l'implémentation A, ajuster les specs si besoin
+3. **Semaine 2** : ilots/arènes/guildes complets
+
+---
+
+## Risques identifiés
+
+| Risque | Mitigation |
+|---|---|
+| Inflation si trop de pièces en circulation | Taxe 5 %, plafonds, logs |
+| RMT early (comptes neufs) | Restriction auto après 3 flags |
+| UI trop complexe pour mobile | Design mobile-first, panneaux latéraux |
+| Périmètre trop large | Modular : chaque système est indépendant |
+
+---
+
+## Questions générales
+
+1. Faut-il mettre à jour `docs/EQUIPE.md` pour ajouter le rôle R ?
+2. Le GDD_REEF §10-11 (économie/guildes/arènes) est la référence design — je m'aligne dessus ?
+3. Pour les Cosmétiques only (arènes) : c'est bien Moaad qui a décidé ça le 09/10 ?
+
+---
+
+**R — Economy & PvP Systems**
