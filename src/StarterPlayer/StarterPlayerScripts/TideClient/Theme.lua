@@ -4,6 +4,18 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+-- Point de substitution unique des glyphes : aucune brique d'interface ne cherche une image
+-- toute seule, tout passe par Glyph (voir Glyph.lua).
+-- Require defensif : ce bootstrap saute en silence un module qui echoue, et Theme est une brique
+-- de fondation. Si Glyph manque, l'interface continue a tourner sur les pictogrammes dessines.
+local Glyph
+do
+	local node = script.Parent:FindFirstChild("Glyph")
+	if node then
+		local ok, mod = pcall(require, node)
+		Glyph = if ok then mod else nil
+	end
+end
 
 local Util -- injecte dans Init
 
@@ -48,13 +60,16 @@ Theme.Transparency = {
 	TextStroke = 0.55,
 }
 
--- Titres et chiffres : Oswald (condensee, nette ; la plus proche de Barlow Condensed parmi les polices integrees
--- a Roblox, donc rien a charger). Texte courant : Builder Sans (VISION_TON §3).
-local OSWALD = "rbxasset://fonts/families/Oswald.json"
+-- Titres et chiffres : RobotoCondensed (police native Roblox, condensee et nette : exactement le
+-- style console demande par DIRECTION_V2). Rien a charger, rien a licencer.
+-- Si Roblox expose la variante grasse de la famille, elle est preferee pour les titres.
+local CONDENSED = Enum.Font.RobotoCondensed
+local CONDENSED_BOLD = (Enum.Font :: any).RobotoCondensedBold or CONDENSED
+-- Texte courant : Builder Sans (bible §5), garde en famille pour conserver le gras et le medium.
 local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
 Theme.Fonts = {
-	Title = Font.new(OSWALD, Enum.FontWeight.Bold),
-	Number = Font.new(OSWALD, Enum.FontWeight.Bold),
+	Title = CONDENSED_BOLD,
+	Number = CONDENSED_BOLD,
 	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
 	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
 }
@@ -435,21 +450,8 @@ function Theme.SetButtonText(button: GuiObject, text: string)
 end
 
 ---------------------------------------------------------------- Icones (aucun emoji)
--- Image de C si elle existe : Assets.UI.Icons.<name> (Decal, ImageLabel ou StringValue "rbxassetid://...")
-local function iconImage(name: string): string?
-	local node = Util and Util.Find(ReplicatedStorage, "Assets", "UI", "Icons", name)
-	if not node then
-		return nil
-	end
-	if node:IsA("Decal") or node:IsA("Texture") then
-		return node.Texture
-	elseif node:IsA("ImageLabel") or node:IsA("ImageButton") then
-		return node.Image
-	elseif node:IsA("StringValue") then
-		return node.Value
-	end
-	return nil
-end
+-- La resolution d'image vit dans Glyph (Assets.UI.Icons.<cle> de C). Theme ne fait plus que
+-- deposer ses pictogrammes dessines dans Glyph, a l'init.
 
 -- Trait plein en coordonnees relatives (0..1) dans l'icone
 local function bar(parent: Instance, cx: number, cy: number, w: number, h: number, rot: number, color: Color3, round: boolean?)
@@ -591,17 +593,26 @@ local DRAW = {
 }
 Theme.IconNames = DRAW
 
--- Icone carree de `size` px : image de C si elle existe, sinon pictogramme dessine (un seul style, plein ou au trait)
+-- Les pictogrammes enters dans le point de substitution : c'est le seul endroit ou l'interface
+-- ajoute du visuel a Glyph. Quand Moaad tranche le sort des icones, Glyph suffit.
+for key, drawFn in pairs(DRAW) do
+	if Glyph then
+		Glyph.RegisterDraw(key, drawFn)
+	end
+end
+
+-- Icone carree de `size` px. La resolution passe par Glyph : image de C si elle existe,
+-- sinon le pictogramme dessine de cette cle, sinon rien du tout (aucune icone fantome).
 function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
 	local c = color or Theme.Colors.Text
 	local key = name or "dot"
-	local image = iconImage(key)
-	if image then
+	local resolved = if Glyph then Glyph.Resolve(key) else { kind = "none" }
+	if resolved.kind == "image" and resolved.image then
 		return create("ImageLabel", {
 			Name = "Icon",
 			BackgroundTransparency = 1,
 			Size = UDim2.fromOffset(size, size),
-			Image = image,
+			Image = resolved.image,
 			ImageColor3 = c,
 			ScaleType = Enum.ScaleType.Fit,
 		})
@@ -611,8 +622,10 @@ function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
 		BackgroundTransparency = 1,
 		Size = UDim2.fromOffset(size, size),
 	})
-	local draw = DRAW[key] or DRAW.dot
-	draw(holder, c, math.max(1.5, size * 0.09))
+	local draw = (if Glyph then Glyph.Draw(key) else nil) or DRAW[key] or DRAW.dot
+	if draw then
+		draw(holder, c, math.max(1.5, size * 0.09))
+	end
 	return holder
 end
 
