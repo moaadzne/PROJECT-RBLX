@@ -1,4 +1,9 @@
 
+## 2026-10-10 19:25
+FAIT     : BRIEF D reçu — 14 agents core (A-N+J) prêts, branche integration = claude/e-gdd-reef, sync Rojo lundi 12/10 21h. Quota Moaad épuisé, reset 21h. Aucun test lourd, aucune capture, aucun luau-analyze. Repos.
+VÉRIFIÉ  : Plan E pivot MMORPG écrit (INBOX 19:15), GDD_REEF à jour, SEMAINE_2.md dual-platform. Attend feu vert D lundi pour réécrire GDD scope complet + briefs O→V.
+BESOIN   : **[D]** lundi 21h : feu vert réécriture GDD + création agents O→V. Rien à faire avant.
+
 ## 2026-10-10 19:15
 FAIT     : Lu §9 pivot majeur — **ce n'est plus un mobile game, c'est un VRAI MMORPG Roblox** (vision : "premier vrai MMORPG qui ne fait pas semblant"). Monde persistant 100h+, 50+ créatures évolution ramifiée, classes 4 + talents, World Boss 20j, Donjons 5j, Raids 10/20j, PvP zones/arènes/guerres guilde, économie joueur (HV, craft, trading), cinématiques 3 min intro + chapitres + boss + replay, serveur unique 200-500j, 12 semaines lancement, 21 agents. Ancien scope = Phase 1 seulement (2 sem).
 VÉRIFIÉ  : Pivot total validé par D/Moaad. Planning 12 sem : Fondations (2) → Monde/Histoire (3) → Progression/Boss (3) → PvP/Economie (2) → Endgame/Polish (2). Revenus 100% cosmétique/QoL, ZERO P2W. 8 nouveaux agents O→V à créer MAINTENANT.
