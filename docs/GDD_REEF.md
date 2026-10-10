@@ -444,7 +444,7 @@ Config.Ranks = {
 | # | Sujet | Qui tranche | Quand |
 |---|---|---|---|
 | 1 | Récompense exacte du **Léviathan** (rang 3+) | D + Moaad | Phase 2 |
-| 2 | Les 6 espèces **Rare / Epic / Legendary** : absentes de la nature en Phase 1 (choix par défaut), ou ajoutées à `Config.ExtremeTide.creatures` | D | **avant le test fermé** |
+| 2 | ~~Les 6 espèces **Rare / Epic / Legendary** : absentes ou ajoutées au récif ?~~ | **TRANCHÉ par E le 10/10** — voir ci-dessous | clos |
 | 3 | Contenu du Deep Dive (`GDD.md` §9 bis) au-delà de ce que A a déjà écrit dans `Config.Shop` | D | Phase 2 |
 | 4 | Rangs 6+ : courbe | D | Phase 2 |
 | 5 | Prix Robux finaux | Moaad | Lancement |
@@ -464,7 +464,34 @@ Elles sont **réelles** et doivent être tranchées avant que ça coûte du temp
 4. **`SeaStar` vs `CushionStar` — l'id de l'étoile de mer.**
    `Config.Creatures` s'appelle **`CushionStar`**, et c'est déjà l'id **validé par D le 09/10** (`TABLEAU.md`). Mais `CREATURES_ART.md` §3 et `SOURCING_C.md` §1 proposent encore **`SeaStar`** (y compris l'asset candidat `5088223335`). → **`CushionStar` gagne.** C range ses modèles dans `Assets.Creatures.CushionStar` et corrige ses deux documents ; s'il garde `SeaStar` en nom de fichier local, il lui faut un alias, sinon `Assets.Creatures` ne résoudra pas à l'exécution.
 
+### §14 nº 2 — TRANCHÉ : les 6 espèces rares restent hors de la Phase 1, et le récif gagne une garantie
+
+**Décision E, 10/10.** Les 6 espèces `BlueRingedOctopus`, `LeopardRay`, `GiantPacificOctopus`, `LionsManeJelly`, `MantaRay`, `WhaleShark` **n'apparaissent pas dans la nature en Phase 1**. Elles reviennent en Phase 2, dans cet ordre.
+
+**Pourquoi, en trois arguments — le premier est arithmétique, pas goût :**
+
+1. **Un Whali Shark en semaine 1 casse l'économie.** Il vaut 1 500 /s juvénile. Le seuil du palier 5 de lagon est **100 000 /s** et le palier 4 est **5 000 /s** (`Config.LagoonTiers`). Un seul Whali Shark Titan dans un bassin — 12 000 /s — **saute le palier 4**. Le joueur gagne les deux tiers de sa courbe de richesse en une capture, et `Config.LagoonTiers` cesse de mesurer quoi que ce soit. La rareté ne se régle pas en Phase 1 : **la Phase 1 est le lieu où l'économie se cale.**
+2. **C n'a pas les modèles, et ce n'est pas le moment.** P1-20 fait 3 créatures. P1-42 (la vague rendue côté client) est P0 pour lundi. Six modèles de plus avant lundi coûtent exactement ce qui bloque le jeu.
+3. **Un Rare doit arriver préparé.** Quand une Manta Ray apparaît en Phase 2, le joueur doit déjà connaître le cycle des stades et avoir vu le récif. Sinon c'est un objet rare dans un jeu où la rareté ne veut rien dire encore.
+
+**En revanche, le récif ne doit pas sembler vide.** C'est le vrai sujet derrière la question, et il a une réponse qui ne coûte **aucun modèle** :
+
+> ⚠️ **Écart trouvé en vérifiant le code.** La décision de D du 09/10 dit « des créatures **rares** pendant un temps limité ». Or `Config.ExtremeTide.creatures = { HawksbillTurtle 70, Lionfish 30 }` : **les deux sont `Uncommon`.** Le secret du jeu, une fois par heure, ne donne donc rien de plus rare que l'anneau extérieur. Et `mutationTide = "Golden"` necorrige pas le tir : avec 6 créatures à 30 %, la probabilité qu'**aucune** ne soit mutée est de 0,7⁶ ≈ **12 %**. Douze pour cent d'heures déçues, une fois par heure.
+>
+> **A : la correction est la même que celle que tu as déjà écrite pour la marée Golden personnelle.** `IntroService` (lignes 156-164) force « au moins une créature mutée » quand le tirage n'en donne aucune. **Reprends cette garantie telle quelle pour le récif.** Une seule règle, pas de nouvelle entrée de Config, aucun modèle pour C. Le récif devient alors un rendez-vous qui paie vraiment : une **Golden** y est garantie, une fois par heure, pendant 25 s.
+
+**Ordre de retour en Phase 2** (pour ne pas rouvrir la question à chaque session) :
+
+| Vague | Espèces | Pourquoi dans cet ordre |
+|---|---|---|
+| 1re mise à jour | `BlueRingedOctopus`, `LionsManeJelly` | Ce sont les **créatures de nuit** de `GDD.md` §6 bis : elles se voient de loin par leur lueur, donc la décision « je vais là-bas » est visuelle, sans texte. Un seul preset (`Night`) à faire pour les deux. |
+| 2e | `LeopardRay`, `GiantPacificOctopus` | Le **secret complet de l'épave** (`TABLEAU.md`, semaine 2). Le contenu de l'épave est donc à écrire avec elles, pas avant. |
+| 3e | `MantaRay`, `WhaleShark` | Les Légendaires montables. Elles supposent que le joueur ait déjà vu les 8 autres, et une économie qui tienne. **C'est aussi la promesse du Deep Dive** (`GDD.md` §9 bis) : elles doivent arriver *avec*, pas avant. |
+
+**Conséquence à acter dans l'interface (B), semaine 1** : le Codex affiche 10 espèces, 3 accessibles. **Les 7 autres sont montrées en « ? », pas masquées.** C'est le crochet de rétention normal d'un jeu de collection, et c'est gratuit. Mais si D préfère ne rien annoncer, le Codex n'affiche que les 3 connues — c'est un choix de 10 lignes côté B, à confirmer, pas un blocage.
+
 ### Deux valeurs manquantes, signalées plutôt que comblées
+
 
 | Manque | Où | Pourquoi ce n'est pas tranché ici |
 |---|---|---|
