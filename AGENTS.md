@@ -12,7 +12,8 @@
 Puis, selon ta lettre :
 
 - **A** serveur : `review/review_context.md` (contrat v2.1, fait foi)
-- **B** interface : `docs/UI_REEF.md`
+- **B** interface : `docs/UI_B_preparation.md`
+  ⚠️ **Pas `docs/UI_REEF.md` : ce doc est périmé.** Il impose encore Luckiest Guy, police interdite par DIRECTION_V2, et il fait partie du lot rejeté par Moaad le 09/10.
 - **C** monde : `docs/DA_MONDE.md`
 - **E** concept : `docs/GDD.md` et `docs/GDD_REEF.md`
 - **D, F** : rien d'autre au démarrage
@@ -30,11 +31,14 @@ Puis, selon ta lettre :
 
 Le budget de Moaad est épuisé. Les réveils automatiques ont déjà coûté de l'argent pour rien.
 
-- ❌ **Interdit** : `send_message` à une autre session « pour savoir où elle en est », « pour la relancer », « pour proposer un coup de main » sans blocage réel.
+- ❌ **Interdit** : réveiller une autre session « pour savoir où elle en est », « pour la relancer », « pour proposer un coup de main » sans blocage réel.
 - ❌ **Interdit** : mettre en place une vérification automatique, une surveillance de PR, un rappel planifié, un « je reviens dans 15 min ».
-- ❌ **Interdit** : envoie un message « ok » pourDire qu'on est vivant.
-- ✅ Autorisé : écrire une question ou une décision **dans `docs/TABLEAU.md`**. C'est asynchrone, gratuit, et la personne la verra à sa prochaine session.
-- ✅ Autorisé : `send_message` uniquement pour un **blocage critique** qui empêche le jeu de tourner (bug qui casse le jeu, fichier manquant, décision impossible à prendre).
+- ❌ **Interdit** : écrire un message « ok » pour dire qu'on est vivant.
+- ❌ **Interdit** : créer une branche, un tableau de bord ou une « boîte aux lettres » pour coordonner l'équipe. C'est exactement l'infra que ce fichier remplace.
+- ✅ **Seul canal réel : `docs/TABLEAU.md`.** On y écrit une question, une décision ou un constat ; la personne le verra à sa prochaine session. Asynchrone, gratuit.
+- ✅ Si ton outillage te fournit malgré tout un moyen d'écrire à une autre session, garde-le pour un **blocage critique** qui empêche le jeu de tourner (bug qui casse le jeu, fichier manquant, décision impossible). Rien d'autre.
+
+> Note : tous les agents n'ont pas le même outillage. N'écris jamais une règle qui suppose un outil que tu n'as pas — un canal qui marche pour toi peut ne pas exister pour l'agent d'à côté.
 
 **Si tu n'as rien de nouveau à dire : dis-le en une ligne et arrête-toi. Le silence coûte moins cher qu'un message.**
 
