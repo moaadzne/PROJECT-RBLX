@@ -189,9 +189,16 @@ end
 
 -- Revenu ------------------------------------------------------------------------
 
--- Multiplicateur commun : 1 + compagnons + Codex + gamepass
+-- Multiplicateur commun du contrat v2.1 : 1 + compagnons + Codex.
+-- Le gamepass VIPRider n'entre PAS ici : le contrat dit "+10 % pieces", pas "+10 % de revenu".
+-- Le revenu affiche (state.income) et le LagoonTier suivent donc cette formule-la.
 function Stats.Bonus(data)
-	return 1 + Stats.PetBoost(data) + Stats.CodexBonus(data) + (data._passBonus or 0)
+	return 1 + Stats.PetBoost(data) + Stats.CodexBonus(data)
+end
+
+-- Bonus de pieces du gamepass VIPRider : applique au versement, jamais au revenu du contrat
+function Stats.CoinBonus(data)
+	return 1 + (data._passBonus or 0)
 end
 
 -- Revenu des bassins seuls, par seconde

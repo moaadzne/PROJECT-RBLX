@@ -79,6 +79,7 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-32 | B | Renommer TideClient.client.lua en init.client.lua (sinon aucun module client ne se charge avec Rojo) | fait (53a9f71) |
 | P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | fait (c9b95d2, créées au démarrage) |
 | P1-41 | E | Appliquer DIRECTION_V2 au GDD : roster de vraies espèces, noms, ton des textes, onboarding, miniatures cinématiques | fait (GDD v3, LagoonTiers) |
+| **P1-42** | **B** | **P0 lundi — vague visible.** B a déjà un rendu provisoire dans `testbuild/TestWaveRenderer.client.lua` (144e50e) : ne pas repartir de zéro, ne pas le paralléliser. Reste à faire : (1) le sortir de `testbuild/` vers le module client normal, (2) le passer sur les 4 directions N/E/S/O du serveur (1ba0aa3) au lieu de l'ancien axe Z, (3) houle + ombre + sons. Tant que ce n'est pas fait, le serveur attrape des joueurs avec une vague invisible. **Zone B exclusivement — aucune autre session n'y touche.** | **en cours (B)** |
 | P1-23 | C | Appliquer DIRECTION_V2 : DA du monde, fiches et prompts des créatures réalistes, vague à grande échelle, sons | fait (1a0bd8f) |
 | P1-15 | B | **CRITIQUE avant lundi** : aligner le client sur le contrat v2.1 de A (StartSteal + Notify, Mount(nil), ChoosePick, shop.randomAllowed, newbie/shield, stades Juvenile…Titan, ids v3 dans la démo) ; sinon le vol, la monture et la boutique ne marchent pas | à faire |
 | P1-14 | B | Appliquer DIRECTION_V2 : système visuel console (police condensée, panneaux sombres, sans emojis), textes d'action | à faire, prioritaire |
@@ -86,6 +87,10 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | fait (docs/LANCEMENT.md) |
 
 ## Fait
+- [E 10/10] **docs/GDD_REEF.md commité** (branche `claude/e-gdd-reef`) : les 30 premières secondes image par image, le roster des 10 espèces, les 5 marées, 5 zones / 5 monuments, bassins, Codex, mutations, et les réponses aux `[GDD]` de `ARCHI_SERVEUR_REEF.md`. **Relu contre `Config.lua` et le contrat v2.1, pas contre l'archi périmée.**
+  - ⚠️ **Point d'attention pour D** : ce document était écrit contre `ARCHI_SERVEUR_REEF.md`, qui est périmé. Il proposait donc en Phase 1 trois choses que D avait **déjà retirées** le 09/10 : la **réserve**, les **paliers du Codex (`ClaimCodex`)** et le **Tide Rank / rebirth**. Je les ai reclassées **Phase 2**, pas supprimées. **A n'a donc rien à implémenter** de ce document — c'est le but, pas un oubli.
+  - **C, 3 corrections de noms à faire** (`docs/GDD_REEF.md` §14) : `SeaStar` → **`CushionStar`** (Config et TABLEAU disent CushionStar, `CREATURES_ART.md` et `SOURCING_C.md` disent SeaStar) ; noms de stades **Juvenile/Adult/Elder/Titan** (et non Baby/Giant) ; tours à **Y = 34** et corps de vague à 30 — `DA_MONDE.md` dit encore 22/26, ta décision du 09/10 dit 30/34.
+  - **B** : le Codex est **automatique** en Phase 1 — `state.codex`, `codexCount`, `codexTotal` et le Notify `codex` suffisent, il n'y a pas de palier à afficher.
 - [F 09/10] QA : serveur de A propre ; 7 écarts de contrat + 74 emojis + LuckiestGuy chez B ; 4 emojis chez A (Config:200–202) ; SmoothPlastic sur la mutation Night chez C. Envoyé aux auteurs.
 - [A 09/10] Net.lua : plus de seau de limite recréé pour un joueur parti. **À réimporter lundi.**
 - [B 09/10] Notifications.lua : nom de la rareté dans le toast, pas de doublon en file. **À réimporter lundi.**
@@ -93,6 +98,15 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 - [A 09/10] docs/ARCHI_SERVEUR_REEF.md.
 - [B 09/10] docs/UI_REEF.md.
 - [C 09/10] docs/DA_MONDE.md et docs/CREATURES_ART.md.
+- [A 10/10] Audit du serveur contre le contrat v2.1 : conforme sur les noms (26/26 kinds de Notify, 23/23 codes, 34/34 champs de `state`, attributs, roster d'espèces, Config). Un écart corrigé : le gamepass VIPRider était appliqué au **revenu** au lieu des **pièces** — il gonflait `state.income` et `lagoonTier` de 10 %.
+- [A 10/10] `Stats.Bonus` = 1 + compagnons + Codex (formule du contrat, sans gamepass) ; nouveau `Stats.CoinBonus` appliqué au seul versement (revenu passif, hors-ligne). La Marée Royale lit désormais le revenu du contrat. **À réimporter lundi.**
+
+## À trancher (D) — sans urgence, rien ne bloque
+
+1. **Portée du +10 % de VIPRider.** Corrigé conformément au contrat (« +10 % pièces »). Reste à confirmer : la Marée Royale, qui dit « 5/3/2 min de son revenu », est aujourd'hui calculée **sans** le bonus. Un joueur VIPRider est donc avantagé sur le revenu passif mais pas sur la récompense royale. Ouverture possible, pas appliquée.
+2. **Vague personnelle : incohérence latente.** `GoHome` utilise `GetWaveFor(player)`, mais `LagoonService` et `StealService` utilisent `Net.GetWave()` (vague globale), sur 8 appels. Sans effet aujourd'hui : les seuls joueurs à vague personnelle sont des nouveaux joueurs, que la protection débutant bloque avant. Cassera si les règles d'intro changent.
+3. **`review/Config.lua` est un Config v1 périmé** resté dans le dépôt : il contient encore `Zones`, `Beach` et `BaseLineZ` (supprimés par le contrat) et `GameName = "Tide Rush"`. Rien ne l'importe. Je ne l'ai pas supprimé (règle : ne pas supprimer ce qu'on n'a pas créé) — à supprimer ou à déplacer par son auteur.
+4. `docs/GDD_REEF.md` vs contrat v2.1 : pas tranché. Le GDD REEF contient « TIDE RANK (rebirth) » et « LES 5 ZONES », que la Phase 1 ignore (île ouverte, anneaux). Confirmer s'il remplace `docs/GDD.md` v2 pour le design, ou s'il reste un document de travail pour plus tard.
 
 ## Questions pour Moaad
 1. Créer les gamepasses et produits développeur dans Creator Hub (après la publication privée), puis donner leurs ids à A. En attendant, les ids sont à 0 et la boutique est désactivée.
