@@ -264,7 +264,7 @@ local function normalizeWave(raw: any)
 	if type(raw.royal) == "table" then
 		royal = { active = raw.royal.active == true, endsAt = num(raw.royal.endsAt, 0) }
 	end
-	return {
+	local nextWave = {
 		phase = raw.phase,
 		phaseStart = num(raw.phaseStart, 0),
 		phaseEnd = num(raw.phaseEnd, 0),
@@ -275,8 +275,25 @@ local function normalizeWave(raw: any)
 		intro = raw.intro == true,
 		startZ = optNumber(raw.startZ), -- vague d'intro seulement
 		speed = optNumber(raw.speed),
+		-- Ile ouverte (GDD 3 bis) : la vague traverse l'ile sur un axe, pas sur Z.
+		-- `dir` est le sens de marche de CE cycle ; `direction` son nom (N/E/S/O).
+		-- Repli sur le nom si le Vector3 n'est pas arrive. nil = on ne sait pas (vague non rendue).
+		direction = optString(raw.direction),
+		dir = nil, -- remplit juste apres
+		startD = optNumber(raw.startD),
+		endD = optNumber(raw.endD),
 		royal = royal,
 	}
+	-- `Config.WaveTravel` est la source unique du sens de marche (Config.lua).
+	local travel = nextWave.direction and Config.WaveTravel[nextWave.direction] or nil
+	if typeof(raw.dir) == "Vector3" then
+		local d = Vector3.new(raw.dir.X, 0, raw.dir.Z)
+		if d.Magnitude > 0.001 then
+			travel = d.Unit
+		end
+	end
+	nextWave.dir = travel
+	return nextWave
 end
 
 ---------------------------------------------------------------- Mise a jour
@@ -306,6 +323,7 @@ local function setWave(raw: any)
 		and prev.startTime == nextWave.startTime
 		and prev.tide == nextWave.tide
 		and prev.intro == nextWave.intro
+		and prev.direction == nextWave.direction
 	then
 		return
 	end
@@ -375,7 +393,10 @@ end
 
 local function demoWaveLoop()
 	local cfg = Config.Wave
-	local travel = (cfg.endZ - cfg.startZ) / cfg.speed
+	-- La vague traverse l'ile sur un axe (GDD 3 bis) : la duree de trajet se calcule
+	-- sur REACH, plus sur des startZ/endZ qui n'existent plus en Config.
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	local travel = (reach * 2) / cfg.speed
 	local cycle = 0
 	while demoActive do
 		cycle += 1
@@ -392,6 +413,10 @@ local function demoWaveLoop()
 		-- une marée doree (avec Maree Royale) tous les 3 cycles, annoncee a l'avance
 		local golden = cycle % 3 == 0
 		local nextGolden = cycle + (3 - cycle % 3)
+		-- une direction par cycle (N/E/S/O), jamais deux fois la meme (Config.Island)
+		local dirs = Config.Island.waveDirections
+		local dirName = dirs[((cycle - 1) % #dirs) + 1]
+		local dirVec = Config.WaveTravel[dirName]
 		for _, step in steps do
 			if not demoActive then
 				return
@@ -405,6 +430,10 @@ local function demoWaveLoop()
 				tide = if golden then "Golden" else "Normal",
 				nextSpecial = { tide = "Golden", cycle = if golden then cycle + 3 else nextGolden },
 				royal = if golden then { active = true, endsAt = waveEnd + cfg.recedeTime } else nil,
+				direction = dirName,
+				dir = dirVec,
+				startD = -reach,
+				endD = reach,
 			})
 			task.wait(math.max(0, step[3] - Store.Now()))
 		end
@@ -475,16 +504,36 @@ function Store.WaveProgress(): number
 	return math.clamp((Store.Now() - wave.phaseStart) / span, 0, 1)
 end
 
--- Z du front de vague, formule du contrat (nil quand la vague ne roule pas)
-function Store.WaveFrontZ(now: number?): number?
+-- Position du front de vague SUR SON AXE (Config.WaveFrontD : d = startD + speed * (t - startTime)).
+-- nil quand la vague ne roule pas, ou quand le serveur n'a pas donne de direction.
+function Store.WaveFrontD(now: number?): number?
 	if wave.phase ~= "wave" and wave.phase ~= "recede" then
 		return nil
 	end
-	local cfg = Config.Wave
-	local t = now or Store.Now()
-	local startZ = wave.startZ or cfg.startZ
-	local speed = wave.speed or cfg.speed
-	return math.min(cfg.endZ, startZ + speed * math.max(0, t - wave.startTime))
+	if not wave.dir then
+		return nil
+	end
+	return Config.WaveFrontD(wave, now or Store.Now())
+end
+
+-- Distance du joueur au front, en studs, sur l'axe de la vague (pas sur Z).
+-- C'est la seule mesure de distance a utiliser pour la vague : elle vaut pour N, E, S et O.
+function Store.WaveDistanceTo(position: Vector3, now: number?): number?
+	local front = Store.WaveFrontD(now)
+	if front == nil then
+		return nil
+	end
+	return math.abs(Config.WaveAxis(wave, position) - front)
+end
+
+-- Point monde du front, a une hauteur donnee (pour poser un son ou un effet).
+function Store.WaveFrontPoint(height: number, now: number?): Vector3?
+	local front = Store.WaveFrontD(now)
+	if front == nil then
+		return nil
+	end
+	local d = wave.dir or Vector3.new(0, 0, 1)
+	return Config.Island.center + d * front + Vector3.new(0, height, 0)
 end
 
 -- Fiche d'une espece : Config.Creatures (v2) puis Config.Items (v1). nil si inconnue.
