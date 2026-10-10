@@ -1,8 +1,22 @@
 # GDD_REEF — Reef Keepers : spécification de référence
 
-**Auteur : E (concept & game design). Écrit le 2026-10-10.**
+**Auteur : E (concept & game design). Écrit le 2026-10-10, revu contre le code le même jour.**
 Base : branche `claude/e-gdd-reef`, tirée du commit `06f2f54` (dernier état de A).
 
+> ## ⚠️ LIRE CE CADRE AVANT TOUT
+>
+> **`docs/ARCHI_SERVEUR_REEF.md` est PÉRIMÉ** (il le dit lui-même ligne 3, et `AGENTS.md` §7 le confirme). Ce document répond **quand même** à ses emplacements `[GDD]` parce que c'était la demande — mais **ce qui fait foi, c'est `review/review_context.md` (contrat v2.1) et `Config.lua`**.
+>
+> **Conséquence concrète :** la Phase 1 a été arbitrée par D le 09/10 et **retire trois choses** que ce document propose ailleurs. Ne les construisez pas :
+>
+> | Sujet | Statut réel | Où le lire |
+> |---|---|---|
+> | **Réserve / `storage`** | ❌ **écarté de la Phase 1** par D. Pas de `Config.Storage`. Le dépôt reste « bassin libre → plus faible remplacée → relâchée ». | §6.2, `TABLEAU.md` D 09/10 |
+> | **Paliers du Codex / `ClaimCodex`** | ❌ **écarté**. Pas de `ClaimCodex` en Phase 1 : les récompenses du Codex sont **automatiques** à la capture. | §7.1, `review_context.md` |
+> | **Tide Rank / rebirth** | ❌ **absent du contrat v2.1**. Ni `rank`, ni `Rebirth()`. | §10 |
+>
+> Ces trois sujets sont gardés ici comme **propositions Phase 2**, clairement étiquetées. Personne ne doit les coder en Phase 1.
+>
 > **Règle de lecture.** Ce document ne réécrit pas `docs/GDD.md` (v3, la prose du concept) : il le **fige** là où A, B et C bloquent. Tout ce qui est déjà dans `ReplicatedStorage.Shared.Config` est **repris tel quel**, pas redécidé.
 > **Avertissement honnête** : tous les chiffres ci-dessous sont des **valeurs de départ proposées par E** (choix de design), jamais des mesures ni des faits. Ils se règlent au playtest. Ce qui n'est pas décidé est écrit `[À DÉFINIR]` et listé au §14.
 
@@ -10,15 +24,15 @@ Base : branche `claude/e-gdd-reef`, tirée du commit `06f2f54` (dernier état de
 
 | # | Décision | Statut |
 |---|---|---|
-| 1 | Les 30 premières secondes, minute par minute (§1) | **figé** — A l'a déjà codé dans `Config.Intro`, ce document aligne B et C dessus |
-| 2 | 10 espèces, leurs zones, leur croissance, leur montabilité (§2) | **figé** — c'est le roster que C modélise |
-| 3 | 5 marées + la marée extrême (§3) | **figé** — Phase 1 = Normal + Golden ; Phase 2 = Night, Storm, Rainbow |
+| 1 | Les 30 premières secondes, seconde par seconde (§1) | **figé** — déjà codé par A (`Config.Intro`) et B (`Onboarding`) ; ce document aligne C dessus |
+| 2 | 10 espèces, leurs zones, leur croissance, leur montabilité (§2) | **figé** — c'est exactement `Config.Creatures` ; roster v3 déjà validé par D |
+| 3 | 5 marées + la marée extrême (§3) | **figé** — Phase 1 = `Normal` + `Golden`, déjà dans `Config.Tides`. Les 3 autres sont **Phase 2** |
 | 4 | 5 zones de jeu et leur correspondance avec les 3 anneaux d'A (§4) | **figé** |
 | 5 | 5 paliers de richesse et les 5 monuments du lagon (§5) | **figé** — seuils repris de `Config.LagoonTiers`, monuments repris de `DA_MONDE.md` §2 |
-| 6 | Bassins, **réserve**, dépôt, mutations (§6, §8) | **figé** — la réserve n'existe pas encore dans le code d'A, je la décide ici |
-| 7 | 5 paliers du Codex (§7) | **figé** — `ClaimCodex(tier)` n'a aucune table, je la donne |
-| 8 | Réponses aux 5 questions ouvertes d'A (`ARCHI_SERVEUR_REEF.md` §7) (§9) | **figé** |
-| 9 | Tide Rank / rebirth (§10) | **figé** — il manquait le contenu exact |
+| 6 | Bassins, **réserve**, dépôt, mutations (§6, §8) | **partiel** — bassins et dépôt : figés (= code actuel). **Réserve : proposition Phase 2**, retirée de la Phase 1 par D |
+| 7 | 5 paliers du Codex (§7) | **Phase 2** — le Codex de Phase 1 est automatique, sans palier |
+| 8 | Réponses aux questions ouvertes d'A (§9) | **figé**, mais ancré sur le contrat v2.1, pas sur l'archi périmée |
+| 9 | Tide Rank / rebirth (§10) | **Phase 2** — absent du contrat v2.1 |
 | 10 | Ce que B doit savoir (§11), ce que C doit savoir (§12) | **figé** |
 
 ---
@@ -27,7 +41,9 @@ Base : branche `claude/e-gdd-reef`, tirée du commit `06f2f54` (dernier état de
 
 **Le moment le plus important du jeu.** Objectif, dans l'ordre : (1) « attends, c'est Roblox ça ? » ; (2) attraper un animal vivant ; (3) avoir **peur** de la vague ; (4) vouloir y retourner immédiatement.
 
-La séquence est **entièrement pilotée par le serveur** (`IntroService` + `Config.Intro`) : elle est identique pour les 8 joueurs d'un serveur, et elle ne peut pas se passer « à moitié ». Si le joueur est déjà arrivé à 2 captures, le tutoriel saute, mais la vague d'intro reste.
+La séquence est **entièrement pilotée par le serveur** (`IntroService` + `Config.Intro`) : elle est **individuelle par joueur**, pas scriptée pour les 8 d'un coup. Elle rejoue tant qu'elle n'est pas terminée — vérifié dans `DataService` : l'intro se déclenche sur `isNew or introStep == 0`, et si le joueur part avant la fin, `IntroService` la **rejoue à la prochaine connexion** au lieu de la sauter. Il n'existe **aucun** saut de tutoriel sur un nombre de captures.
+
+> **Conséquence pour B et C** : ne construisez rien qui suppose une intro « jouée une fois pour toutes » au premier clic. Si le joueur se déconnecte à 12 s, il la revoit depuis le début.
 
 ### 1.1 Minutage
 
@@ -83,7 +99,7 @@ Règles de lecture (issues de `CREATURES_ART.md`, contraignantes) : vrais animau
 
 - **`bornAt` est fixé à la CAPTURE, pas au dépôt** (décision E, répond à `ARCHI_SERVEUR_REEF.md` §2.3). Le temps que tu portes une créature compte. C'est le risque du sac.
 - Croissance **hors ligne comprise et sans plafond** : elle est calculée, donc gratuite. **Seul le revenu est plafonné** (§9).
-- **Sac** : de 2 à 9 places (`Config.Upgrades.Bag`). Une capture au sac plein est refusée proprement (`Notify`), pas écrasée.
+- **Sac** : de **2 à 10** places (`Config.Upgrades.Bag` : `base = 2`, `step = 1`, `maxLevel = 8` → 2 + niveau). Une capture au sac plein est refusée proprement (`Notify`), pas écrasée.
 - **Espacement au sol** : `Config.CreatureSpacing = 7` studs, rayon de prise 6 studs. Les créatures ne se superposent jamais.
 
 ### 2.2 Modèles montables (spécification pour A, B et C)
@@ -113,7 +129,7 @@ Une marée est tirée **au début de chaque cycle de calme**, côté serveur (`W
 | `Storm` | **STORM TIDE** | 2 | Désaturée −0,25, plus sombre, Atmosphère grise dense +0,15 | `Storm` 6 %, `Night` 5 %, `Golden` 1 % | 1/16, après Night |
 | `Rainbow` | **RAINBOW TIDE** | 2 | Normale, + irisation nacrée dans l'eau | `Rainbow` 2 %, `Golden` 8 % | 1/16, après Storm |
 
-- **Phase 1 = `Normal` + `Golden` uniquement.** C'est déjà le cas dans `Config.Tides` : **A n'a rien à coded**. J'ajoute en Phase 2 trois entrées et une rotation qui s'allonge (`Config.TideSchedule.rotation = { "Golden", "Night", "Storm", "Rainbow" }`, `every = 8`).
+- **Phase 1 = `Normal` + `Golden` uniquement.** C'est déjà le cas dans `Config.Tides` : **A n'a rien à coder**. J'ajoute en Phase 2 trois entrées et une rotation qui s'allonge (`Config.TideSchedule.rotation = { "Golden", "Night", "Storm", "Rainbow" }`, `every = 8`).
 - **Annonce** : au début du calme, une ligne en bas d'écran (« GOLDEN TIDE — 25 MIN »), et la **boussole de B** prend la couleur de la marée pendant tout le cycle.
 - **Rien n'est jamais garanti** : une `Golden Tide` donne 30 % de mutations, pas 100 %. Le joueur doit **oser** la plage pendant une Golden Tide.
 
@@ -183,31 +199,25 @@ Le joueur doit être **riche de loin** : on doit le reconnaître à 100 studs sa
 - De **5 à 10** cuvettes (`Config.Upgrades.Slots`, `Config.MaxSlots = 10`), nomées `PedestalN` avec l'attribut `Slot`. **A ne les renomme pas**, le serveur en dépend.
 - Chaque bassin affiche la **créature posée** : espèce, mutation, **stade courant** (qui change tout seul, calculé). Le joueur voit sa créature **grandir** dans l'eau. C'est le premier «wow » du jeu.
 - **Dépôt automatique** dès que le joueur entre dans sa propre base. Une créature **dans le sac** passe dans le premier bassin libre.
-- **Le joueur peut réorganiser** (`MoveCreature`) et vendre une créature posée (`SellCreature`). Servi par le serveur.
+- **Réorganiser / vendre une créature posée** (`MoveCreature`, `SellCreature`) : **Phase 2**, ces deux remotes ont été retirés de la Phase 1 avec la réserve. En Phase 1, le joueur dépose, le serveur range — point.
 
-### 6.2 La règle de remplacement — et pourquoi j'ajoute une réserve
+### 6.2 Le dépôt — et pourquoi une réserve est proposée plus tard
 
-Le code actuel de A (`Stats.Deposit`) fait ceci : bassin libre d'abord ; **lagon plein → la nouvelle remplace la plus faible si elle vaut plus ; sinon elle est relâchée (vendue)**.
+**Phase 1 : c'est le code de A, tel quel. Rien à demander.** `Stats.Deposit` fait : bassin libre d'abord ; **lagon plein → la nouvelle remplace la plus faible si elle vaut plus ; sinon elle est relâchée contre des pièces** au prix `Stats.ReleaseValue`. C'est exactement ce que D a validé le 09/10.
 
-**Problème** : une Titan Golden que tu n'as pas envie de poser, et que tu ne veux pas vendre non plus, n'a nulle part où aller. Le joueur est forcé de choisir entre « je la perds » et « je la vends à 20× ». C'est un mauvais choix dans les deux cas, et ça décourage de garder une belle capture.
+**Ma réserve est une objection de design, pas une tâche.** Le problème est réel : une Titan Golden que tu ne veux ni poser ni vendre à 20× n'a nulle part où aller, et le joueur est forcé entre « je la perds » et « je la vends ». Mais **D a tranché le 09/10 : pas de réserve en Phase 1**. Je respecte l'arbitrage et je garde la proposition pour plus tard, avec les valeurs que je recommande.
 
-**Décision E — la réserve (le « stock ») :**
-
-| Paramètre | Valeur | Raison |
-|---|---|---|
-| Taille | **10 emplacements fixes** | Assez pour un palier 2–3 complet, trop pour être un deuxième lagon. |
-| Revenu | **25 %** du revenu normal de la créature | Ce n'est pas gratuit : la réserve est une **palette de rangement**, pas une extension du lagon. 10 × 25 % < 5 bassins × 100 %, donc elle ne cannibalise jamais les bassins. |
-| Croissance | **oui**, comme un bassin | Sinon les créatures de réserve finissent obsolètes et le joueur ne les veut pas. |
-| Montable / volable | **non, jamais** | Simplifie `MoveCreature`, le vol et l'anti-triche. |
-| Grandit avec le jeu | **non** | Si elle grossit, elle remplace le lagon et le jeu se vide de sa tension. |
-| Débordement | **vente** au prix `Stats.ReleaseValue` | Inchangé. |
-
-→ **A** : il faut ajouter `Config.Storage = { slots = 10, incomeMult = 0.25 }` et l'insérer entre `Stats.Deposit` et la libération. C'est le seul ajout de logique dont A a besoin pour cette partie.
-
-### 6.3 Ce qu'on ne fait pas
-
-- **Jamais d'écrasement** : une créature posée et surveillée n'est jamais écrasée par une nouvelle.
-- **Jamais de vente automatique** : hors lagon plein **et** réserve pleine, on ne vend rien d'office.
+> **Phase 2 — proposition E (pas de code attendu cette semaine)**
+>
+> | Paramètre | Valeur proposée | Raison |
+> |---|---|---|
+> | Taille | **10 emplacements fixes** | Assez pour un palier 2–3 complet, trop pour être un deuxième lagon. |
+> | Revenu | **25 %** du revenu normal | Palette de rangement, pas une extension du lagon. 10 × 25 % < 5 bassins × 100 %, donc elle ne cannibalise jamais les bassins. |
+> | Croissance | **oui**, comme un bassin | Sinon les créatures de réserve obsolètes ne servent plus à rien. |
+> | Montable / volable | **non, jamais** | Simplifie le vol et l'anti-triche. |
+> | Grandit avec le jeu | **non** | Si elle grossit, elle remplace le lagon et le jeu perd sa tension. |
+>
+> Quand D la rouvrira, il faudra **aussi** `MoveCreature` et `SellCreature` — les deux ont été retirés de la Phase 1 avec la réserve. Une réserve sans réorganisation est un piège : on stocke, on ne peut plus rien en faire.
 
 ---
 
@@ -219,21 +229,29 @@ Le Codex est la **seule collection durable** du jeu : il n'est **jamais** remis 
 - **Bonus permanent** : `+5 %` de revenu par **espèce** consignée (`Config.Codex.speciesBonus`), pas par variante. Ça pousse à élargir la collection, pas à farmer la même ligne.
 - **Première capture d'une espèce** : multiplicateur de revenu ×50 sur cette créature (`Config.Codex.newEntryIncomeMult`), une seule fois, affiché en gros. C'est le « NEW SPECIES LOGGED » de `DIRECTION_V2.md`.
 
-### 7.1 Les 5 paliers du Codex (`ClaimCodex(tier)`)
+### 7.1 Les paliers du Codex — **Phase 2, pas de `ClaimCodex` en Phase 1**
 
-`ARCHI_SERVEUR_REEF.md` §4 prévoit le remote `ClaimCodex(tier)` mais **la table des paliers n'existe nulle part**. La voici :
+⚠️ **`ClaimCodex(tier)` n'existe pas dans le contrat v2.1** et D l'a retiré de la Phase 1 le 09/10 : *« Phase 1 sans réserve : pas de `MoveCreature` ni de `ClaimCodex` … Les récompenses du Codex sont automatiques. »*
 
-| Palier | Nom | Condition | Récompense | Effet |
+**Ce qu'A code en Phase 1, et qui est déjà écrit** (`review_context.md`) : à chaque nouvelle case, le joueur reçoit automatiquement **le revenu de base × 50 pièces** (`Config.Codex.newEntryIncomeMult`), et une **ligne d'espèce complète donne +5 % de revenu permanent**. `codexCount` / `codexTotal` sont déjà dans le snapshot. **B n'a donc rien à demander à A pour afficher le Codex : il lit `state.codex`, `codexCount`, `codexTotal` et le Notify `codex`.**
+
+Le tableau ci-dessous est ma **proposition Phase 2**, à réarbitrer par D le moment où le rebirth rouvre (§10). Je le garde ici pour que la décision soit déjà réfléchie — pas pour que quelqu'un le code maintenant.
+
+| Palier | Nom | Condition (lignes de Codex) | Récompense | Effet |
 |---|---|---|---|---|
-| 1 | **LOGGED** | 2 espèces consignées | 500 pièces | Badge « LOGGED » |
-| 2 | **COLLECTOR** | 5 espèces | 2 000 pièces | Badge « COLLECTOR » |
-| 3 | **ARCHIVIST** | 9 espèces | 10 000 pièces | Badge « ARCHIVIST » |
-| 4 | **KEEPER** | 14 espèces | 75 000 pièces | Badge « KEEPER » + aileron de corail sur le lagon (cosmétique) |
-| 5 | **REEF KEEPER** | 10 espèces **+** la variante Golden des 4 premières | 500 000 pièces | Titre « REEF KEEPER » + **jardin de lagon** (le bassin 5 devient un bassin de corail vivant, cosmétique) |
+| 1 | **LOGGED** | **2 lignes** | 500 pièces | Badge « LOGGED » |
+| 2 | **COLLECTOR** | **5 lignes** | 2 000 pièces | Badge « COLLECTOR » |
+| 3 | **ARCHIVIST** | **10 lignes** — les 10 espèces | 10 000 pièces | Badge « ARCHIVIST » |
+| 4 | **KEEPER** | **15 lignes** — les 10 espèces + 5 Golden | 75 000 pièces | Badge « KEEPER » + aileron de corail sur le lagon (cosmétique) |
+| 5 | **REEF KEEPER** | **20 lignes** — les 10 espèces + les 10 Golden | 500 000 pièces | Titre « REEF KEEPER » + **jardin de lagon** (cosmétique) |
 
-- **Paliers réclamables une seule fois** (`codexClaimed[tier]` côté serveur, jamais d'attribution silencieuse : sinon les doublons sont ingérables).
-- **Aucune récompense payante.** Tout est en pièces gagnées en jouant. Pas de badge en Robux, jamais.
-- La récompense du palier 5 est **purement cosmétique** : c'est le but qu'on affiche, pas un multiplicateur. Le multiplicateur, c'est le Tide Rank.
+**Une ligne de Codex = une espèce × une variante**, pas une espèce : le plafond est **20** (10 × 2, §7). Compter en « espèces » rendait les paliers 4 et 5 inatteignables (14 > 10) et identiques. Le décompte se fait sur `codex[speciesId]` (variantes) et `rowComplete` dans le Notify.
+
+> **Point d'attention — ce n'est pas une décision** : le palier 5 exige les 10 variantes Golden, alors qu'une `Normal Tide` n'en tire que **0,5 %**. C'est un but de plusieurs semaines, voulu. Si D le trouve trop loin, le levier le moins cher est d'ajouter une 6ᵉ marée, **pas** de gonfler la chance en Normal — gonfler en Normal rendrait la Golden Tide inutile.
+
+- **Aucune récompense payante**, à aucun palier. Tout en pièces gagnées en jouant, jamais de badge en Robux.
+- Si ces paliers ouvrent un jour, ils seront **réclamables une seule fois** (`codexClaimed[tier]`, jamais d'attribution silencieuse : les doublons sont ingérables).
+- La récompense du palier 5 est **purement cosmétique**. Le multiplicateur de progression, c'est le Tide Rank (§10) — pas le Codex.
 
 ---
 
@@ -258,7 +276,32 @@ Une créature porte **au plus une mutation**, tirée **à son apparition sur la 
 
 ## 9. RÉPONSES AUX 5 QUESTIONS OUVERTES D'A
 
-`docs/ARCHI_SERVEUR_REEF.md` §7 pose cinq questions « pour E via D ». Voici les réponses, definitives.
+`docs/ARCHI_SERVEUR_REEF.md` §7 pose cinq questions « pour E via D ». Voici les réponses — **avec une ligne de séparation entre ce qui est déjà en jeu et ce qui est mort avec l'archi périmée**.
+
+**La demande initiale était de remplir les `[GDD]` du §7.** Ils sont remplis, tous les cinq, et les 14 marqueurs `[GDD]` semés dans les §2.1 à §2.6 aussi.
+
+| Marqueur dans `ARCHI_SERVEUR_REEF.md` | Réponse | Où l'appliquer |
+|---|---|---|
+| §7 q1 — revenu hors ligne | 50 %, plafond 8 h, résumé > 60 s | §9.1 · `Config.Offline` **existe déjà** |
+| §7 q2 — stades et multiplicateurs | 4 stades ×1/×2/×4/×8, durées par rareté | §9.2 · `Config.Stages` + `GrowthMinutes` **existent déjà** |
+| §7 q3 — taille de la réserve, grandit-elle | **question annulée** : D a retiré la réserve de la Phase 1 | §6.2 · ⛔ **pas de `Config.Storage`** |
+| §7 q4 — poids des marées, mutations | table §3.1 | §3.1 · `Config.Tides` **existe déjà** |
+| §7 q5 — contenu exact du rebirth | §10 | §10 · ⛔ **absent du contrat v2.1** |
+| §2.1 — `growTime`, `stages` | §9.2 | `Config.GrowthMinutes` |
+| §2.2 — `pools` nombre de départ / max | 5 → 10 | §6.1 · `Config.Upgrades.Slots` + `MaxSlots` |
+| §2.2 — dépôt auto ou manuel | **automatique** en entrant dans la base | §6.1 · `Stats.Deposit` |
+| §2.2 — réserve `storage`, max | **annulée en Phase 1** | §6.2 · proposition Phase 2 |
+| §2.3 — `OFFLINE_CAP` | 8 h de revenu versé | §9.1 · `Config.Offline` |
+| §2.3 — croissance max hors ligne | **aucun plafond** (elle est calculée, donc gratuite) | §9.1 |
+| §2.3 — la réserve grandit ? | **sans objet**, elle n'existe pas | §6.2 |
+| §2.4 — poids et effets des marées | §3.1 | `Config.Tides` |
+| §2.4 — `mutationChance` | §3.1, par marée | `Config.Tides[t].odds` |
+| §2.5 — paliers du Codex | **annulés** — récompenses automatiques en Phase 1 | §7.1 · proposition Phase 2 |
+| §2.6 — condition du Léviathan | **jamais définie**, et absente du contrat | §14 nº 1 · `[À DÉFINIR]` |
+| §2.6 — ce que le Tide Rank remet à zéro | §10 | §10 · Phase 2 |
+
+> ### Ce qu'A doit faire, en une ligne
+> **Rien pour la Phase 1.** Tout ce que ce document fige existe déjà dans `Config.lua` et tourne. Les blocs du §13 sont **tous des propositions Phase 2** — aucun n'est une tâche de cette semaine. Si A cherche quoi implémenter ici, la réponse est : **rien**, et c'est un résultat, pas un oubli.
 
 ### 9.1 « Revenu hors ligne : oui/non, taux, plafond. »
 **Oui. 50 % du revenu normal, plafonné à 8 heures, écran de résumé au-dessus de 60 secondes.**
@@ -283,8 +326,8 @@ Durées jusqu'à Adult / Elder / Titan, en minutes cumulées **depuis la capture
 **Temps réel de la première Titan Legendary : 20 h.** C'est le but du jeu, et c'est censé prendre plusieurs jours avec les paliers de rang.
 
 ### 9.3 « Taille de la réserve ; la réserve grandit-elle ? »
-**10 emplacements fixes, revenu à 25 %, elle ne grandit jamais.** Voir §6.2 pour la raison.
-→ **A doit ajouter** `Config.Storage = { slots = 10, incomeMult = 0.25 }` et un palier dans `Stats.Deposit` : `bassin libre → bassin plus faible (si la nouvelle vaut plus) → réserve libre → vente`.
+**Sans objet en Phase 1.** D a retiré la réserve du périmètre le 09/10 (« Phase 1 sans réserve »). `Stats.Deposit` fait donc exactement ce qu'il fait aujourd'hui : bassin libre → plus faible remplacée si la nouvelle vaut mieux → relâchée contre des pièces.
+Ma réponse pour le jour où D la rouvrira : **10 emplacements fixes, revenu à 25 %, elle ne grandit jamais** (§6.2). ⛔ **A n'ajoute rien cette semaine.**
 
 ### 9.4 « Poids des marées et chances de mutation. »
 Voir **§3.1** : `Normal` 7/8 avec `Golden` 0,5 % ; `Golden` 1 cycle sur 8 avec `Golden` 30 % ; `Night`, `Storm`, `Rainbow` en Phase 2 avec les poids et chances du tableau.
@@ -295,7 +338,9 @@ Voir **§10**.
 
 ---
 
-## 10. TIDE RANK (rebirth)
+## 10. TIDE RANK (rebirth) — **Phase 2, hors contrat v2.1**
+
+⚠️ **Rien de tout ce qui suit n'existe.** Le contrat v2.1 n'a ni `rank`, ni `Rebirth()`, ni remise à zéro : D l'a sorti de la Phase 1 avec la réserve. C'est une **proposition de design pour la suite**, à réarbitrer — pas une tâche pour A.
 
 **Ce que le Tide Rank remet à zéro** (c'est la seule question qui comptait) :
 
@@ -339,40 +384,44 @@ Le joueur ne perd donc **jamais sa collection** en rebirthant — il perd son em
 
 ## 12. CE QUE C (MONDE & ART) DOIT SAVOIR
 
-1. **Roster figé, 10 espèces** (§2). Les 3 premières sont **urgentes** : `GhostCrab`, `CushionStar`, `HawksbillTurtle`. C'est le contenu qui manque aujourd'hui.
-2. **La règle de modelisation** : vrai animal, proportions et couleurs crédibles, jamais de gros yeux ni de'air mignon. La rareté se lit par la **taille, le matériau, la lumière et les particules** — **jamais** en peignant l'animal. Gabarit : Juvenile 0,6 / Adult 0,8 / Elder 1,0 / **Titan 1,5** appliqué par le client.
+1. **Roster figé, 10 espèces** (§2). Les 3 premières sont **urgentes** : `GhostCrab`, `CushionStar`, `HawksbillTurtle`. C'est le contenu qui manque aujourd'hui. **L'étoile de mer s'appelle `CushionStar`, pas `SeaStar`** (§14, incohérence 4) : le dossier est `Assets.Creatures.CushionStar`.
+2. **La règle de modelisation** : vrai animal, proportions et couleurs crédibles, jamais de gros yeux ni de'air mignon. La rareté se lit par la **taille, le matériau, la lumière et les particules** — **jamais** en peignant l'animal. Gabarit : Juvenile 0,6 / Adult 0,8 / Elder 1,0 / **Titan 1,5** appliqué par le client. **Les noms de stades sont ceux de `Config.Stages`** : Juvenile / Adult / Elder / **Titan** — pas Baby / Giant.
 3. **Les 5 monuments du lagon** (§5) correspondent exactement aux 5 paliers que A écrit dans `LagoonTier`. Le décor doit poder le chiffre, pas l'inverse.
 4. **Les cuvettes restent des `PedestalN`** avec leur attribut `Slot`. C'est une contrainte serveur non négociable.
 5. **Les 5 zones** (§4) sont des **anneaux autour d'une crique**, pas des bandes en Z. Si tu construis encore des bandes en Z, tu construis le mauvais monde.
 6. **Le récif de marée extrême** doit être **visible depuis la plage** (centre `(0, 0, 335)`, rayon 30). C'est le seul moyen que le joueur sache qu'il peut courir.
-7. **Presets de marée** : `Normal`, `Golden` en Phase 1 ; `Night`, `Storm`, `Rainbow` en Phase 2. Les valeurs sont dans `DA_MONDE.md` §4 et doivent partir de `Assets.FX.TidePresets.<Marée>`.
+7. **Presets de marée** : `Normal`, `Golden` en Phase 1 ; `Night`, `Storm`, `Rainbow` en Phase 2. Les valeurs sont dans `DA_MONDE.md` §4 (`Normal`, `Golden`, `Night`, `Storm`) et doivent partir de `Assets.FX.TidePresets.<Marée>`. **`Rainbow` n'a pas de valeurs** : à proposer par C, Phase 2 (§14).
 8. **Presets de mutation** : `Golden`, `Night`, `Storm`, `Rainbow`, aucun nouveau modèle (table §8).
 
 ---
 
-## 13. BLOCS CONFIG À AJOUTER (pour A)
+## 13. BLOCS CONFIG PROPOSÉS — **aucun n'est une tâche de Phase 1**
+
+> **A : ne code rien de cette section cette semaine.** Tout y est une proposition Phase 2, retirée du périmètre par D le 09/10. Je la garde écrite pour que la décision soit déjà prise quand elle reviendra — pas pour créer du travail.
 
 ```lua
--- Reserve (E, GDD_REEF 6.2) : 10 emplacements fixes, revenu reduit, ne grandit pas
+-- Réserve (E, §6.2) — HORS PHASE 1, D l'a retirée le 09/10
 Config.Storage = { slots = 10, incomeMult = 0.25 }
 
--- Marées Phase 2 (E, GDD_REEF 3.1). Phase 1 : rien a ajouter.
+-- Marées Phase 2 (E, §3.1) — le plus proche du réutilisable, 3 lignes
 Config.Tides.Night   = { label = "Night Tide",   odds = { { "Night", 12 }, { "Golden", 2 } } }
 Config.Tides.Storm   = { label = "Storm Tide",   odds = { { "Storm", 6 }, { "Night", 5 }, { "Golden", 1 } } }
 Config.Tides.Rainbow = { label = "Rainbow Tide", odds = { { "Rainbow", 2 }, { "Golden", 8 } } }
 Config.TideSchedule.rotation = { "Golden", "Night", "Storm", "Rainbow" }
 
--- Renommage d'id (E, GDD_REEF 8) : "Glow" devient "Night", pour coller a CREATURES_ART
+-- Renommage d'id (E, §8) : "Glow" devient "Night". SEUL item de cette liste
+-- qui soit une simple correction de nom, et donc sans risque ni charge.
 Config.Mutations.Glow = nil
 Config.Mutations.Night = { mult = 2, label = "Night" }
 
--- Paliers du Codex (E, GDD_REEF 7.1), pour ClaimCodex(tier)
+-- Paliers du Codex (E, GDD_REEF 7.1), pour ClaimCodex(tier).
+-- Une "ligne" = espece x variante ; plafond 20 (10 especes x {Normal, Golden}).
 Config.CodexTiers = {
-	{ tier = 1, id = "Logged",     species = 2,  coins = 500 },
-	{ tier = 2, id = "Collector",  species = 5,  coins = 2000 },
-	{ tier = 3, id = "Archivist",  species = 9,  coins = 10000 },
-	{ tier = 4, id = "Keeper",     species = 14, coins = 75000 },
-	{ tier = 5, id = "ReefKeeper", species = 20, coins = 500000, goldenFirst = 4 },
+	{ tier = 1, id = "Logged",     lines = 2,  coins = 500 },
+	{ tier = 2, id = "Collector",  lines = 5,  coins = 2000 },
+	{ tier = 3, id = "Archivist",  lines = 10, coins = 10000 },
+	{ tier = 4, id = "Keeper",     lines = 15, coins = 75000 },
+	{ tier = 5, id = "ReefKeeper", lines = 20, coins = 500000 },
 }
 
 -- Tide Rank (E, GDD_REEF 10)
@@ -400,17 +449,27 @@ Config.Ranks = {
 | 4 | Rangs 6+ : courbe | D | Phase 2 |
 | 5 | Prix Robux finaux | Moaad | Lancement |
 
-### Les 3 incohérences que j'ai trouvées en croisant les documents
+### Les 4 incohérences que j'ai trouvées en croisant les documents
 
 Elles sont **réelles** et doivent être tranchées avant que ça coûte du temps :
 
-1. **Hauteur de la vague : 22 ou 30 ?**
-   `DA_MONDE.md` §0 dit « hauteur 22 », `PASSATION.md` aussi, mais **`Config.Wave.height = 30`** et le commentaire dit « plateformes des tours à height + 4 (**34**) ». Or `DA_MONDE.md` §2 et §4 construisent les tours à **Y = 26**. **Si C construit à 26 et que la vague fait 30 de haut, les tours ne sont plus sûres et le jeu est cassé.** → **A confirme `height = 30`, C construit les tours à 34.** C'est le seul choix cohérent.
+1. **Hauteur de la vague : 22 ou 30 ? — DÉJÀ TRANCHÉ par D le 09/10, reste à appliquer par C.**
+   `DA_MONDE.md` §0 et §4 disent encore « hauteur 22, tours à Y = 26 » (et `PASSATION.md` aussi). Mais `Config.Wave.height = 30`, et **D a arbitré explicitement** : *« Hauteur d'environ 30, plateformes des tours d'environ 34 »*. → **La valeur de Config fait foi.** C n'a plus qu'à remonter ses tours à **34** et son corps de vague à **30** dans `DA_MONDE.md` ; le 22/26 est un reste du monde rejeté le 09/10. Tant que C n'a pas fait ça, **les tours ne sont pas sûrs** — un joueur s'y croit à l'abri et se fait prendre.
 
 2. **Noms des stades : deux listes différentes.**
-   `CREATURES_ART.md` §2 dit « Baby 0,6 / Juvenile 0,8 / Adult 1,0 / Giant 1,5 ». `Config.Stages` dit « **Juvenile** 0,6 / **Adult** 0,8 / **Elder** 1,0 / **Titan** 1,5 ». → **Les noms de Config gagnent** (Juvenile, Adult, Elder, Titan). C est B doivent adopter cette liste ; `CREATURES_ART.md` §2 est à corriger.
+   `CREATURES_ART.md` §2 dit « Baby 0,6 / Juvenile 0,8 / Adult 1,0 / Giant 1,5 ». `Config.Stages` dit « **Juvenile** 0,6 / **Adult** 0,8 / **Elder** 1,0 / **Titan** 1,5 ». → **Les noms de Config gagnent** (Juvenile, Adult, Elder, Titan). C et B doivent adopter cette liste ; `CREATURES_ART.md` §2 est à corriger.
 
 3. **Mutation `Glow` vs `Night`.** Cf. §8. C doit renommer son preset, ou A doit renommer sa clé.
+
+4. **`SeaStar` vs `CushionStar` — l'id de l'étoile de mer.**
+   `Config.Creatures` s'appelle **`CushionStar`**, et c'est déjà l'id **validé par D le 09/10** (`TABLEAU.md`). Mais `CREATURES_ART.md` §3 et `SOURCING_C.md` §1 proposent encore **`SeaStar`** (y compris l'asset candidat `5088223335`). → **`CushionStar` gagne.** C range ses modèles dans `Assets.Creatures.CushionStar` et corrige ses deux documents ; s'il garde `SeaStar` en nom de fichier local, il lui faut un alias, sinon `Assets.Creatures` ne résoudra pas à l'exécution.
+
+### Deux valeurs manquantes, signalées plutôt que comblées
+
+| Manque | Où | Pourquoi ce n'est pas tranché ici |
+|---|---|---|
+| **Preset de lumière `RainbowTide`** | `DA_MONDE.md` §4 donne `Normal`, `Golden`, `Night`, `Storm` — **pas `Rainbow`** | `Rainbow` est un ajout d'E (§3.1), C n'a jamais eu de valeurs. C est libre de proposer un écart à partir de `Normal`. **À DÉFINIR par C**, Phase 2, sans urgence. |
+| **Récompense du Léviathan** | §10 | Cf. §14 nº 1. |
 
 ---
 

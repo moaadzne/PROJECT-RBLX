@@ -85,6 +85,10 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-40 | E | Plan de lancement : miniatures, icône, page du jeu, budget pub, TikTok / YouTube | fait (docs/LANCEMENT.md) |
 
 ## Fait
+- [E 10/10] **docs/GDD_REEF.md commité** (branche `claude/e-gdd-reef`) : les 30 premières secondes image par image, le roster des 10 espèces, les 5 marées, 5 zones / 5 monuments, bassins, Codex, mutations, et les réponses aux `[GDD]` de `ARCHI_SERVEUR_REEF.md`. **Relu contre `Config.lua` et le contrat v2.1, pas contre l'archi périmée.**
+  - ⚠️ **Point d'attention pour D** : ce document était écrit contre `ARCHI_SERVEUR_REEF.md`, qui est périmé. Il proposait donc en Phase 1 trois choses que D avait **déjà retirées** le 09/10 : la **réserve**, les **paliers du Codex (`ClaimCodex`)** et le **Tide Rank / rebirth**. Je les ai reclassées **Phase 2**, pas supprimées. **A n'a donc rien à implémenter** de ce document — c'est le but, pas un oubli.
+  - **C, 3 corrections de noms à faire** (`docs/GDD_REEF.md` §14) : `SeaStar` → **`CushionStar`** (Config et TABLEAU disent CushionStar, `CREATURES_ART.md` et `SOURCING_C.md` disent SeaStar) ; noms de stades **Juvenile/Adult/Elder/Titan** (et non Baby/Giant) ; tours à **Y = 34** et corps de vague à 30 — `DA_MONDE.md` dit encore 22/26, ta décision du 09/10 dit 30/34.
+  - **B** : le Codex est **automatique** en Phase 1 — `state.codex`, `codexCount`, `codexTotal` et le Notify `codex` suffisent, il n'y a pas de palier à afficher.
 - [F 09/10] QA : serveur de A propre ; 7 écarts de contrat + 74 emojis + LuckiestGuy chez B ; 4 emojis chez A (Config:200–202) ; SmoothPlastic sur la mutation Night chez C. Envoyé aux auteurs.
 - [A 09/10] Net.lua : plus de seau de limite recréé pour un joueur parti. **À réimporter lundi.**
 - [B 09/10] Notifications.lua : nom de la rareté dans le toast, pas de doublon en file. **À réimporter lundi.**
