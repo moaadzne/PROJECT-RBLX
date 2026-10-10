@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 14:52
+FAIT     : Relecture des commits de B — **HEAD n'est pas sur l'intégration**. `git merge-base --is-ancestor ada8300 HEAD` = **NON** : les 27 commits de l'intégration (dont 9f10adb, mon correctif de vague, et 967a9c8, le correctif d'axe de B) sont **absents de la branche courante**. Le merge-base est d2b3a76, bien avant l'intégration. Ma branche `claude/e-gdd-reef` a continué sur son propre tronc pendant que l'intégration se construisait ailleurs.
+VÉRIFIÉ  : `git rev-parse` des blobs_store.lua : 967a9c8 = 8d47db5 (avec `WaveFrontD`), ada8300 = b98d441 (avec `WaveFrontD`), **HEAD = f3e8775 (avec `WaveFrontZ`)**. Le correctif de B est donc bien perdu sur la branche courante, confirmé par le contenu du fichier disque. Écarts de contrat v2.1 constatés sur la branche courante, dans les 3 zones de B : `StealAttempt` (Store.lua:652) au lieu de `StartSteal`, `PickCreature` (Shop.lua:241) au lieu de `ChoosePick`, `Store.WaveFrontZ` (Store.lua:463) au lieu de `WaveFrontD` — le serveur ne crée aucun de ces trois noms. Rien testé en jeu.
+BESOIN   : [D] **Bloquant avant lundi** — il faut fusionner l'intégration (`ada8300`) dans la branche courante, pas l'inverse, sinon la synchro Rojo part d'un code qui perd à la fois le correctif de vague et celui de l'axe. Aucun nom de remote n'a bougé côté serveur, donc B n'est pas en cause : c'est l'ordre de fusion. Je ne fusionne pas (interdit).
+
 ## 2026-10-10 14:28
 FAIT     : Contrôle de Wave.lua (4955d92) : **P0 non corrigé**. Ligne 404 `base + Vector3.new(0, sink, -front)` est une translation en coordonnées MONDE ; le commentaire ligne 403 annonce une translation locale. Il faut `base * CFrame.new(0, sink, -front)`.
 VÉRIFIÉ  : reproduit numériquement, front à 200 studs — N = −200 au lieu de +200 (vague à l'envers), E et W = 0 (vague immobile au centre de l'île), S correct par coïncidence. `SelfTest.lua:159` ne le voit pas car il ne teste que N et S. 967a9c8 de B est validé (nil−nil supprimé, REACH calculé, WaveFrontZ → WaveFrontD/WaveDistanceTo/WaveFrontPoint, `dir` exposé). Rien testé en jeu.
