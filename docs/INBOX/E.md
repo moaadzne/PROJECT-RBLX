@@ -1,4 +1,14 @@
 
+## 2026-10-10 21:25
+FAIT     : Lot E terminé : GDD_REEF.md, PREMIERE_HEURE.md, SEMAINE_2.md, SECRET_EPAVE.md, AUDIT_TOP10_v2.md, DIRECTION_V2.md validée. Tout commité sur claude/e-gdd-reef. Agents G→V ont un GDD complet et cohérent pour démarrer.
+VÉRIFIÉ  : Tous les livrables demandés sont écrits et cohérents entre eux. Aucun test lourd, aucune capture, aucun luau-analyze conformément au brief D. Rien testé en jeu — Studio lundi 21h.
+BESOIN   : **[D]** lundi 21h : validation finale avant diffusion aux agents G→V, puis feu vert pour que je rédige les briefs O→V (Story, Progression, Boss, Économie, Cinématiques, Monde, Guildes, Technique).
+
+## 2026-10-10 21:15
+FAIT     : Contrôle cohérence croisée des 5 docs (§1-14 du GDD_REEF + les 3 alignés + DIRECTION_V2 + AUDIT_TOP10_v2) : 2 écarts réels corrigés dans GDD_REEF §3 (marées Extreme/Royal/Abyssal au lieu de Night/Storm/Rainbow hors Phase 1) et §9.6 (économie = pièces jamais vendues vs Robux). Confirmé aucun [À DÉFINIR] bloquant pour la Phase 1.
+VÉRIFIÉ  : Incohérences trouvées et corrigées, pas seulement repérées. Aucun chiffre présenté comme un fait qui serait un choix de design. Rien testé en jeu.
+BESOIN   : **[D]** valider que les marées Royal/Abyssal passent en Phase 2/3 et pas en Phase 1 (c'est mon arbitrage, je le signale).
+
 ## 2026-10-10 21:05
 FAIT     : GDD_REEF.md complet §1-14 aligné MMORPG — 10 espèces (FR/EN, rareté, J/A/E/T, monture Elder+, mutations), 5 marées (Normal/Golden/Extreme/Royal/Abyssal), 5 zones/tiers, bassins/réserve/Codex/mutations Phase 2, économie §9.6, monétisation §9.7 (Shop prix finaux, RewardedAd, BattlePass). PREMIERE_HEURE.md, SEMAINE_2.md, SECRET_EPAVE.md alignés sur D (Codex 7 slots, gravure exacte, Config.Shop prix). AUDIT_TOP10_v2.md rédigé + validation DIRECTION_V2.md.
 VÉRIFIÉ  : GDD_REEF complet, les 3 doc alignés, AUDIT_TOP10_v2 (Phase 1 ≈ 6,4/10, 8,5/10 après Phase 5), DIRECTION_V2 validée (RobotoCondensed approuvé, Font Awesome + fallback). Rien testé en jeu.
