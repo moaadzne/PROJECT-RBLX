@@ -96,3 +96,56 @@ Config.Shop = {
 Moaad → donne les 6 IDs Creator Hub → je mets à jour Config.Shop → boutique active lundi.
 
 Tout le reste est codé, testé (simulation 200k récifs), prêt.
+
+---
+
+## 7. CROSS-PLATEFORME MOBILE / PC — OBLIGATOIRE
+
+**Roblox = 70%+ mobile/tablette.** Le jeu DOIT être natif sur les deux.
+
+### Interface (B, H, L)
+- **Touch-first** : zones de toucher ≥ 44×44 pts (iOS) / 48×48 dp (Android)
+- **Pas de hover-only** : toute action accessible au tap
+- **Joystick virtuel** natif Roblox (pas de joystick custom qui casse sur mobile)
+- **HUD responsive** : se replie en bas d'écran sur mobile, latéral sur PC
+- **Police** : RobotoCondensed lisible à 12pt minimum sur téléphone
+- **Icônes** : 32×32 minimum, Font Awesome scale auto
+
+### Performance (N, K)
+- **GraphicsQuality** : 3 niveaux (Auto / High / Low) — défaut Auto
+- **LOD créatures** : 3 niveaux (near / mid / far) — suppression mesh > 200 studs
+- **Particules** : max 50 simultanées sur mobile, 200 sur PC
+- **Ombres** : ShadowMap sur PC, désactivées sur mobile (ou Distance=100)
+- **Eau** : WaveSize/Transparency réduits sur mobile
+- **Target FPS** : 60 sur PC récent, 30+ sur mobile 3 ans
+
+### Onboarding (L)
+- **Mobile** : pas de flèche clavier, indication tap "Appuie pour avancer"
+- **PC** : indication "WASD / Flèches"
+- **Détection auto** : `UserInputService.TouchEnabled` → branche mobile
+
+### Vague (client Wave.lua)
+- **Calcul identique** serveur/client (déjà fait)
+- **Rendu adaptatif** : segments de vague = 30 sur PC, 15 sur mobile
+
+### Config (Config.lua)
+```lua
+Config.CrossPlatform = {
+	TouchTargetMin = 44, -- pixels
+	MobileFPS = 30,
+	PCFPS = 60,
+	LODDistances = { Near = 80, Mid = 160, Far = 300 },
+	MaxParticlesMobile = 50,
+	MaxParticlesPC = 200,
+	ShadowsMobile = false,
+	ShadowsPC = true,
+	WaterQualityMobile = 0.5,
+	WaterQualityPC = 1.0,
+}
+```
+
+**Responsables** :
+- B/H/L : Interface responsive + touch
+- N : Performance + qualité graphique
+- K : LOD créatures + particules
+- L : Onboarding détection plateforme
