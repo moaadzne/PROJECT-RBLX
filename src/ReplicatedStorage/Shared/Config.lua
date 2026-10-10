@@ -84,6 +84,10 @@ Config.Offline = { incomeRate = 0.5, maxHours = 8, minSeconds = 60 }
 -- Palier visuel du lagon (attribut LagoonTier 1..5) : revenu/s minimal de chaque palier (E, GDD v3)
 Config.LagoonTiers = { 0, 30, 200, 5000, 100000 }
 
+-- Bassins creusés (SUNK_POOLS, decision D 09/10, accord direct A 10/10) : decalage vertical
+-- des PedestalN (cylindres des bassins) sous le niveau du lagon. Utilise par C dans build_lagoon.
+Config.SunkPoolOffset = -3.5
+
 -- Epave : inscription gravee cote serveur (ref pour le client / C)
 Config.WreckInscription = "Quand la mer recule, l'ancien roi revient. La maree extreme reveille ce qu'elle a pris."
 
@@ -152,7 +156,7 @@ Config.Shop = {
 	-- aleatoire, probabilites affichees AVANT achat ; cache si ArePaidRandomItemsRestricted
 	TideEgg = { id = 0, price = 199, chances = { Common = 60, Uncommon = 25, Rare = 10, Epic = 4, Legendary = 1 } },
 	-- choix direct, montre a la place du Tide Egg si l'aleatoire est restreint
-	PickCreature = { id = 0, price = 399 },
+	PickCreature = { id = 0, price = 399, species = { "GhostCrab", "CushionStar", "HawksbillTurtle", "Lionfish", "BlueRingedOctopus", "LeopardRay" } },
 	-- Rewarded Video Ads (2025) : 1 TideEgg gratuit/jour, cooldown 24h
 	RewardedAd = { enabled = true, reward = "TideEgg", cooldownHours = 24 },
 }
