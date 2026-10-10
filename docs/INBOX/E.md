@@ -1,4 +1,9 @@
 
+## 2026-10-10 19:15
+FAIT     : Lu §9 pivot majeur — **ce n'est plus un mobile game, c'est un VRAI MMORPG Roblox** (vision : "premier vrai MMORPG qui ne fait pas semblant"). Monde persistant 100h+, 50+ créatures évolution ramifiée, classes 4 + talents, World Boss 20j, Donjons 5j, Raids 10/20j, PvP zones/arènes/guerres guilde, économie joueur (HV, craft, trading), cinématiques 3 min intro + chapitres + boss + replay, serveur unique 200-500j, 12 semaines lancement, 21 agents. Ancien scope = Phase 1 seulement (2 sem).
+VÉRIFIÉ  : Pivot total validé par D/Moaad. Planning 12 sem : Fondations (2) → Monde/Histoire (3) → Progression/Boss (3) → PvP/Economie (2) → Endgame/Polish (2). Revenus 100% cosmétique/QoL, ZERO P2W. 8 nouveaux agents O→V à créer MAINTENANT.
+BESOIN   : **[D]** feu vert pour réécrire GDD complet (nouveau scope) + briefs agents O→V. Je ne touche plus à l'ancien scope — tout le monde repart à zéro sur cette vision.
+
 ## 2026-10-10 18:40
 FAIT     : SEMAINE_2.md mis à jour — section "Double plateforme Mobile + PC" ajoutée (même progression/économie/drops, cross-save natif Roblox, trading fluide, BP/quotidiens identiques, HUD adapté par plateforme). Commit en attente.
 VÉRIFIÉ  : Stratégie dual explicite, aucune séparation de contenu. Mobile = acquisition/volume, PC = whales/ARPPU 3-5x, cross-trade = lien social. Rien testé en jeu.
