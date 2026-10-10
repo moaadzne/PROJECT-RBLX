@@ -199,6 +199,34 @@ Config.Island = {
 	spawnYMax = 16,
 	towerRadius = 16, -- pas d'apparition si pres d'une tour (Center ; PlatformRadius + 4 si plus grand)
 }
+-- Cross-platform (D 10/10 directive) : LOD, ombres, eau, particules, performance cible
+Config.CrossPlatform = {
+	-- LOD distances (studs) : mobile 80/160/300, PC 120/250/500
+	LOD = {
+		mobile = { 80, 160, 300 },
+		pc = { 120, 250, 500 },
+	},
+	-- Ombres : ShadowMap PC, desactives mobile
+	ShadowsMobile = false,
+	-- Eau : WaveSize/Transparency mobile 0.5x, PC 1.0x
+	WaterQualityMobile = 0.5,
+	-- Particules : max 50 mobile / 200 PC
+	MaxParticles = { mobile = 50, pc = 200 },
+	-- Performance cible
+	TargetFPS = { mobile = 30, pc = 60 },
+	-- Device min mobile : 3 ans (A12 / Snapdragon 855 equivalent)
+	MinMobileTier = 3,
+	-- Touch targets minimum
+	TouchTargetMin = 44,
+}
+-- Streaming (Phase 1 MMORPG) : chunks 300 studs, streaming 200-600
+Config.Streaming = {
+	Enabled = true,
+	ChunkSize = 300,
+	MinRadius = 200,
+	MaxRadius = 600,
+	TargetRadius = 400,
+}
 -- Direction dans laquelle AVANCE la vague "venue du" nord, de l'est... (N = venue de -Z, avance vers +Z)
 Config.WaveTravel = {
 	N = Vector3.new(0, 0, 1),
@@ -271,6 +299,19 @@ Config.Eggs = {
 }
 Config.MaxEquippedPets = 3
 Config.MaxPetInventory = 40
+
+-- Cross-platform LOD & quality (DECISIONS_MARCHE.md §7) — distances différenciées Mobile/PC
+Config.CrossPlatform = {
+	LODDistancesMobile = { Near = 80, Mid = 160, Far = 300 }, -- suppression mesh >200 studs mobile
+	LODDistancesPC = { Near = 120, Mid = 250, Far = 500 },
+	MaxParticlesMobile = 50,
+	MaxParticlesPC = 200,
+	ShadowsMobile = false,
+	ShadowsPC = true,
+	WaterQualityMobile = 0.5,
+	WaterQualityPC = 1.0,
+	GraphicsQuality = { "Auto", "High", "Low" }, -- Settings.lua persiste le choix
+}
 
 Config.PickupRadius = 6
 Config.CreatureSpacing = 7 -- ecart minimal entre deux creatures au sol (studs)
