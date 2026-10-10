@@ -59,6 +59,8 @@ local alertIcon: GuiObject? = nil
 local alertPlate: Frame
 local alertToken = 0
 local actionBar: Frame
+local walletGroup: CanvasGroup? = nil
+local tideGroup: CanvasGroup? = nil
 local actions: { [string]: any } = {}
 local boardGroup: CanvasGroup
 local boardTitle: TextLabel
@@ -292,6 +294,89 @@ local function buildActions()
 	})
 	Theme.List(actionBar, Enum.FillDirection.Horizontal, 12, Enum.HorizontalAlignment.Right, Enum.VerticalAlignment.Bottom)
 	Theme.GetScale(actionBar)
+end
+
+------------------------------------------------ Plateforme (mobile / PC / console)
+-- Detection unique, partagee par tout le HUD (AGENTS + DECISIONS_MARCHE §7-§8).
+local UIS = game:GetService("UserInputService")
+
+local Platform = {}
+function Platform.IsTouch(): boolean
+	return UIS.TouchEnabled and not UIS.KeyboardEnabled
+end
+function Platform.IsPC(): boolean
+	return UIS.KeyboardEnabled and not UIS.TouchEnabled
+end
+function Platform.IsConsole(): boolean
+	return not UIS.TouchEnabled and not UIS.KeyboardEnabled
+end
+-- Zone de toucher minimum : 48 px partout (iOS 44, Android 48 -> on prend le plus grand)
+Platform.TargetMin = 48
+local safeAreaInsets = Vector2.zero
+
+local function applyLayout()
+	if not hudRoot then return end
+	local isMobile = Platform.IsTouch()
+	local bottomBar = isMobile or Platform.IsConsole()
+
+	-- Portefeuille + colonne d'etats : barre du bas sur mobile, colonne laterale droite sur PC
+	if walletGroup then
+		if bottomBar then
+			walletGroup.AnchorPoint = Vector2.new(0.5, 1)
+			walletGroup.Position = UDim2.new(0.5, 0, 1, -safeAreaInsets.Y - 12)
+			walletGroup.Size = UDim2.fromOffset(240, 100)
+		else
+			walletGroup.AnchorPoint = Vector2.new(1, 0)
+			walletGroup.Position = UDim2.new(1, -24 + safeAreaInsets.X, 0, 12)
+			walletGroup.Size = UDim2.fromOffset(240, 100)
+		end
+	end
+	if leftColumn then
+		if bottomBar then
+			leftColumn.AnchorPoint = Vector2.new(0, 1)
+			leftColumn.Position = UDim2.new(0, 12, 1, -safeAreaInsets.Y - 118)
+			leftColumn.Size = UDim2.fromOffset(240, 260)
+		else
+			leftColumn.AnchorPoint = Vector2.new(1, 0)
+			leftColumn.Position = UDim2.new(1, -24 + safeAreaInsets.X, 0, 118)
+			leftColumn.Size = UDim2.fromOffset(240, 260)
+		end
+	end
+	-- Bandeau de maree : haut centre des deux cotes
+	if tideGroup then
+		tideGroup.AnchorPoint = Vector2.new(0.5, 0)
+		tideGroup.Position = UDim2.new(0.5, 0, 0, safeAreaInsets.Y + 6)
+	end
+	if alertGroup then
+		alertGroup.AnchorPoint = Vector2.new(0.5, 0)
+		alertGroup.Position = UDim2.new(0.5, 0, 0, safeAreaInsets.Y + 128)
+	end
+	-- Barre d'actions : bas droite partout, plus haute au-dessus du joystick/portefeuille sur mobile
+	if actionBar then
+		actionBar.AnchorPoint = Vector2.new(1, 1)
+		if bottomBar then
+			actionBar.Position = UDim2.new(1, -24 + safeAreaInsets.X, 1, -safeAreaInsets.Y - 118)
+		else
+			actionBar.Position = UDim2.new(1, -24 + safeAreaInsets.X, 1, -24)
+		end
+	end
+end
+
+-- Reagit a la rotation et aux encoches (telephone) : on relit l'inset et on replace le HUD.
+local function connectResize()
+	local GuiService = game:GetService("GuiService")
+	local function readInsets()
+		local inset = GuiService:GetGuiInset()
+		safeAreaInsets = Vector2.new(math.max(0, inset.X), math.max(0, inset.Y))
+	end
+	readInsets()
+	local cam = workspace.CurrentCamera
+	if cam then
+		cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+			readInsets()
+			applyLayout()
+		end)
+	end
 end
 
 -- Classement de la Marée Royale : place reservee a gauche, sous le porte-monnaie
@@ -739,6 +824,11 @@ function Hud.Init(ctx)
 	buildActions()
 	buildLeftColumn()
 	buildLeaderboard()
+	-- placement final selon la plateforme (mobile = bas, PC = lateral) + safe area
+	connectResize()
+	applyLayout()
+	-- expose la detection plateforme aux autres modules (StealHud, Onboarding, Settings)
+	Hud.Platform = Platform
 	-- boutons d'action, crees caches (StealHud, MountButton, Shop les pilotent)
 	Hud.SetAction("mount", { icon = "ride", label = "Ride", color = Theme.Colors.Lagoon, order = 2, hotkey = "R", visible = false })
 	Hud.SetAction("lock", { icon = "lock", label = "Lock", color = Theme.Colors.Warning, order = 1, hotkey = "L", visible = false })

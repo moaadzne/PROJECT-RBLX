@@ -1,8 +1,11 @@
 -- Shop : boutique de lancement (GDD v2 §9, contrat v2.1). Style console. S'ouvre seulement sur demande
 -- (jamais de pop-up), aucun compte a rebours, prix fixes, « Everything here is optional ».
 --   - Tide Egg (aleatoire) : probabilites de Config.Shop.TideEgg affichees AVANT l'achat ;
+--     odds par rarete (60/25/10/4/1) + pity counter (50 -> garantie Legendary) ;
 --     remplace par Pick a Creature (achat direct, RF ChoosePick avant l'achat) si state.shop.randomAllowed est faux.
 --   - Gamepasses de Config.Shop.Passes ; « OWNED » d'apres state.passes.
+--   - Bundle StarterPack (VIP + Speed + Bag) valeur percue 327 -> prix 249
+--   - Rewarded Ad : opt-in 1 TideEgg/jour, cooldown 24h, bouton "Regarder pour recompense"
 --   - id = 0 dans Config : produit pas encore cree, carte affichee mais achat coupe (« SOON »).
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
@@ -16,11 +19,20 @@ local CARD_H = 300
 local PASS_W = 150
 local RANDOM_W = 260
 
--- Textes des gamepasses (6 mots au plus par ligne) ; prix et ids viennent de Config.Shop.Passes
+-- Gamepasses + Bundle (6 mots max par ligne)
 local PASS_INFO = {
-	{ key = "FastGrowth", name = "Fast Growth", icon = "ride", lines = { "Creatures grow", "2x faster" } },
-	{ key = "BigNet", name = "Big Net", icon = "net", lines = { "Catch radius", "x1.5" } },
 	{ key = "VIPRider", name = "VIP Rider", icon = "crown", lines = { "+10% coins", "+10% ride speed", "VIP title" } },
+	{ key = "SpeedBoost", name = "Speed Boost", icon = "ride", lines = { "Wave speed", "+15%", "GoHome -30% cd" } },
+	{ key = "BagExpand", name = "Bag Expansion", icon = "net", lines = { "+10 slots", "inventory" } },
+}
+
+-- Bundle StarterPack (valeur percue 327 -> 249)
+local BUNDLE_INFO = {
+	key = "StarterPack",
+	name = "Starter Pack",
+	icon = "chest",
+	lines = { "VIP Rider", "Speed Boost", "Bag Expansion" },
+	valueLines = { "Value 327", "Price 249" },
 }
 
 local Util, Theme, Components, Store, Hud, Notifications, Config, Sfx
@@ -49,35 +61,170 @@ end
 
 ---------------------------------------------------------------- Cartes
 local function passCard(info, order: number)
-	local cfg = (shopConfig().Passes or {})[info.key]
-	local id = cfg and tonumber(cfg.id) or 0
-	local price = cfg and tonumber(cfg.price)
-	local owned = Store.Get().passes[info.key] == true
-	local sellable = id > 0 and not owned
-	local card = Components.Card({
-		Name = info.key,
+		local cfg = (shopConfig().Passes or {})[info.key]
+		local id = cfg and tonumber(cfg.id) or 0
+		local price = cfg and tonumber(cfg.price)
+		local owned = Store.Get().passes[info.key] == true
+		local sellable = id > 0 and not owned
+		local card = Components.Card({
+			Name = info.key,
+			Size = UDim2.fromOffset(PASS_W, CARD_H),
+			Icon = info.icon,
+			Title = info.name,
+			Lines = info.lines,
+			Color = Theme.Colors.Lagoon,
+			ButtonText = if owned then "Owned" elseif id > 0 then priceText(price) else "Soon",
+			ButtonColor = if sellable then Theme.Colors.Lagoon else Theme.Colors.Disabled,
+			LayoutOrder = order,
+		})
+		card.Instance.Parent = cardsFrame
+		card.Button.Activated:Connect(function()
+			if owned then
+				return
+			elseif not sellable then
+				soon()
+				return
+			end
+			MarketplaceService:PromptGamePassPurchase(player, id)
+		end)
+	end
+
+	-- Bundle StarterPack card (grande, accent Gold)
+	local function bundleCard(order: number)
+		local cfg = shopConfig()
+		local bundle = cfg.Passes and cfg.Passes.StarterPack
+		local id = bundle and tonumber(bundle.id) or 0
+		local price = bundle and tonumber(bundle.price)
+		local owned = Store.Get().passes.StarterPack == true
+		local sellable = id > 0 and not owned
+		local card = Components.Glass({
+			Name = "StarterPack",
+			Size = UDim2.fromOffset(RANDOM_W, CARD_H),
+			Accent = Theme.Colors.Gold,
+			Strong = true,
+			LayoutOrder = order,
+		})
+		card.Parent = cardsFrame
+		Theme.Title({
+			Name = "Title",
+			Position = UDim2.fromOffset(0, 12),
+			Size = UDim2.new(1, 0, 0, 28),
+			Text = BUNDLE_INFO.name,
+			TextSize = Theme.TextSize.Large,
+			TextColor3 = Theme.Colors.Gold,
+			ZIndex = 2,
+			Parent = card,
+		})
+		local list = Theme.Create("Frame", {
+			Name = "List",
+			BackgroundTransparency = 1,
+			Position = UDim2.fromOffset(14, 50),
+			Size = UDim2.new(1, -28, 1, -112),
+			ZIndex = 2,
+			Parent = card,
+		})
+		Theme.List(list, Enum.FillDirection.Vertical, 4)
+		-- Includes
+		for i, line in BUNDLE_INFO.lines do
+			Theme.Text({
+				Size = UDim2.new(1, 0, 0, 20),
+				Text = line,
+				TextSize = Theme.TextSize.Small,
+				FontFace = Theme.Fonts.Medium,
+				TextColor3 = Theme.Colors.Text,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				LayoutOrder = i,
+				ZIndex = 3,
+				Parent = list,
+			})
+		end
+		-- Value
+		for i, line in BUNDLE_INFO.valueLines do
+			Theme.Text({
+				Size = UDim2.new(1, 0, 0, 20),
+				Text = line,
+				TextSize = Theme.TextSize.Small,
+				FontFace = Theme.Fonts.Title,
+				TextColor3 = Theme.Colors.Gold,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				LayoutOrder = 10 + i,
+				ZIndex = 3,
+				Parent = list,
+			})
+		end
+		local buy = Theme.Button({
+			Name = "Buy",
+			AnchorPoint = Vector2.new(0.5, 1),
+			Position = UDim2.new(0.5, 0, 1, -10),
+			Size = UDim2.new(1, -20, 0, 42),
+			Color = Theme.Colors.Gold,
+			Parent = card,
+		})
+		buy.ZIndex = 2
+		Theme.SetButtonText(buy, if sellable then priceText(price) else "Soon")
+		Theme.SetButtonColor(buy, if sellable then Theme.Colors.Gold else Theme.Colors.Disabled)
+		buy.Activated:Connect(function()
+			if owned then return elseif not sellable then soon() return end
+			MarketplaceService:PromptGamePassPurchase(player, id)
+		end)
+	end
+
+-- Rewarded Ad card (opt-in 1 TideEgg/jour)
+local function rewardedAdCard(order: number)
+	local state = Store.Get()
+	local cfg = shopConfig()
+	local ad = cfg.RewardedAd
+	if not ad or not ad.enabled then return end
+	
+	local card = Components.Glass({
+		Name = "RewardedAd",
 		Size = UDim2.fromOffset(PASS_W, CARD_H),
-		Icon = info.icon,
-		Title = info.name,
-		Lines = info.lines,
-		Color = Theme.Colors.Lagoon,
-		ButtonText = if owned then "Owned" elseif id > 0 then priceText(price) else "Soon",
-		ButtonColor = if sellable then Theme.Colors.Lagoon else Theme.Colors.Disabled,
+		Accent = Theme.Colors.Lagoon,
+		Strong = true,
 		LayoutOrder = order,
 	})
-	card.Instance.Parent = cardsFrame
-	card.Button.Activated:Connect(function()
-		if owned then
-			return
-		elseif not sellable then
-			soon()
+	card.Parent = cardsFrame
+	Theme.Title({
+		Name = "Title",
+		Position = UDim2.fromOffset(0, 12),
+		Size = UDim2.new(1, 0, 0, 28),
+		Text = "Free Tide Egg",
+		TextSize = Theme.TextSize.Large,
+		TextColor3 = Theme.Colors.Lagoon,
+		ZIndex = 2,
+		Parent = card,
+	})
+	Theme.Text({
+		Name = "Desc",
+		Position = UDim2.fromOffset(14, 50),
+		Size = UDim2.new(1, -28, 0, 60),
+		Text = "Watch a short ad\nGet 1 Tide Egg\nOnce per day",
+		TextSize = Theme.TextSize.Small,
+		FontFace = Theme.Fonts.Medium,
+		TextColor3 = Theme.Colors.Text,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ZIndex = 3,
+		Parent = card,
+	})
+	local watch = Theme.Button({
+		Name = "Watch",
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -10),
+		Size = UDim2.new(1, -20, 0, 42),
+		Color = Theme.Colors.Lagoon,
+		Text = "Watch for Reward",
+		TextSize = Theme.TextSize.Small,
+		Parent = card,
+	})
+	watch.ZIndex = 2
+	watch.Activated:Connect(function()
+		if state.lastRewardedAd and (Store.Now() - state.lastRewardedAd) < (ad.cooldownHours or 24) * 3600 then
+			Notifications.Push({ text = "COME BACK TOMORROW", color = Theme.Colors.Warning, icon = "clock", key = "shop" })
 			return
 		end
-		MarketplaceService:PromptGamePassPurchase(player, id)
+		MarketplaceService:PromptProductPurchase(player, ad.id or 0)
 	end)
 end
-
--- Grande carte : Tide Egg (probabilites completes) ou Pick a Creature (choix de l'espece)
 local function randomCard(randomAllowed: boolean)
 	local cfg = shopConfig()
 	local card = Components.Glass({
@@ -177,6 +324,21 @@ local function randomCard(randomAllowed: boolean)
 					Parent = list,
 				})
 			end
+			-- Pity counter (Legendary guaranteed at 50)
+			local state = Store.Get()
+			local pity = state.tideEggPity or 0
+			Theme.Text({
+				Name = "Pity",
+				Size = UDim2.new(1, 0, 0, 20),
+				Text = "PITY: " .. pity .. " / 50 (LEGENDARY GUARANTEED)",
+				TextSize = Theme.TextSize.Small,
+				FontFace = Theme.Fonts.Title,
+				TextColor3 = if pity >= 45 then Theme.Colors.Danger else Theme.Colors.Gold,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				LayoutOrder = 100,
+				ZIndex = 2,
+				Parent = list,
+			})
 		end
 		local id = type(egg) == "table" and tonumber(egg.id) or 0
 		local sellable = (id or 0) > 0 and hasOdds
@@ -245,7 +407,8 @@ local function gridKey(state): string
 	for _, info in PASS_INFO do
 		table.insert(owned, if state.passes[info.key] then "1" else "0")
 	end
-	return (if state.shop.randomAllowed then "egg" else "pick") .. table.concat(owned)
+	local bundle = state.passes.StarterPack and "1" or "0"
+	return (if state.shop.randomAllowed then "egg" else "pick") .. table.concat(owned) .. bundle
 end
 
 local function buildCards()
@@ -261,9 +424,11 @@ local function buildCards()
 		end
 	end
 	randomCard(state.shop.randomAllowed)
+	bundleCard(0)
 	for i, info in PASS_INFO do
 		passCard(info, i)
 	end
+	rewardedAdCard(99)
 end
 
 ---------------------------------------------------------------- Panneau

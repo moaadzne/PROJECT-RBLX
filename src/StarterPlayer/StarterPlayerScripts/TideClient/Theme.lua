@@ -53,9 +53,10 @@ Theme.Colors.Sunset = Theme.Colors.Warning
 Theme.Colors.GoldDark = Color3.fromRGB(176, 128, 30)
 Theme.Colors.Sand = Color3.fromRGB(226, 208, 170)
 
+-- Panneaux sombres translucides (BG 0.15 transp), coins 6-10 px, police RobotoCondensed,
 Theme.Transparency = {
-	Plate = 0.22, -- panneau sombre translucide
-	PlateStrong = 0.08,
+	Plate = 0.15, -- panneau sombre translucide
+	PlateStrong = 0.05,
 	Line = 0.86,
 	TextStroke = 0.55,
 }
@@ -68,10 +69,12 @@ local CONDENSED_BOLD = (Enum.Font :: any).RobotoCondensedBold or CONDENSED
 -- Texte courant : Builder Sans (bible §5), garde en famille pour conserver le gras et le medium.
 local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
 Theme.Fonts = {
-	Title = CONDENSED_BOLD,
-	Number = CONDENSED_BOLD,
-	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
-	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
+	Title = CONDENSED_BOLD,    -- RobotoCondensed Bold
+	Number = CONDENSED_BOLD,   -- RobotoCondensed Bold
+	Body = Font.new(BUILDER, Enum.FontWeight.Medium),  -- Builder Sans Medium
+	Caption = Font.new(BUILDER, Enum.FontWeight.Regular), -- Builder Sans Regular
+	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),    -- Builder Sans Bold (legacy)
+	Medium = Font.new(BUILDER, Enum.FontWeight.Medium), -- Builder Sans Medium (legacy)
 }
 
 Theme.Radius = 8 -- coins de 6 a 10 px

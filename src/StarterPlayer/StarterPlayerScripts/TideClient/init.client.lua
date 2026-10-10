@@ -8,7 +8,7 @@ local player = Players.LocalPlayer
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 
 -- Ordre de chargement : les briques d'abord, les ecrans ensuite (un module absent est saute)
-local FOUNDATION = { "Glyph", "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components" }
+local FOUNDATION = { "Util", "Theme", "Glyph", "IconResolver", "Settings", "Store", "Sfx", "Fx", "Components" }
 local SCREENS = {
 	"Notifications",
 	"Hud",
