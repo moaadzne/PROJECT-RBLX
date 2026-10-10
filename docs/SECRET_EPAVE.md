@@ -32,9 +32,16 @@ La mer se retire plus loin que d'habitude. **L'épave bascule** : elle est posé
 
 ### Temps 3 — la gravure (le vrai secret)
 
-Au fond de la cale, **une gravure sur la quille**, que l'eau masque presque. Pas de texte, **une silhouette immense et arrondie** sous l'île, et une série de lignes qui montent vers la surface.
+Au fond de la cale, **une gravure sur la quille**, avec le **texte exact** (décision finale, `DECISIONS_MARCHE.md` §3) :
 
-C'est le plot twist de `GDD.md` §6 bis : **la mer n'est pas vide, les tsunamis ne sont pas naturels, chaque vague est une respiration.** Le joueur ne lit rien — il voit une forme. Il ne compris pas ce qu'il vient de regarder, et c'est exactement ce qu'il faut.
+> **« Quand la mer recule, l'ancien roi revient.**
+> **La marée extrême révèle ce qu'elle a prise. »**
+
+Lisible en **3 secondes**, compréhensible de 10 à 30 ans. 10 ans = marée basse + gros monstre ; 20 ans = lien mécanique horaire ; 30 ans = lore Léviathan / Whale Shark.
+
+**Empreinte lumineuse** au sol (particule) qui pulse au rythme des marées : le joueur la voit, la photographie, la partage → viralité organique TikTok / Shorts = acquisition gratuite.
+
+**Pas de spoil** : la gravure ne dit pas « Whale Shark » ni « Deep Dive ». Le joueur découvre en jouant.
 
 > **⚠️ Point de conception à respecter absolument.** Cette gravure **ne donne aucun pouvoir, aucune créature, aucune pièce**. Elle est purement narrative. Un secret qui récompense est un secret qui se vengera quand on le nerf : ici il n'y a rien à nerfer, donc il peut rester gratuit pour toujours. C'est aussi la règle « aucun secret payant, aucun secret indispensable » de §6 bis.
 
@@ -45,7 +52,7 @@ C'est le plot twist de `GDD.md` §6 bis : **la mer n'est pas vide, les tsunamis 
 | `LeopardRay` | Rare | Elle vit par petits groupes dans les épaves. C'est **biologiquement vrai**, donc ça ne sonne pas comme un loot-hoard posé là. |
 | `GiantPacificOctopus` | Epic | Même raison : un poulpe géant s'installe dans une coque de bateau. |
 
-Ce sont les deux espèces que `GDD_REEF.md` §14 nº 2 a assignées à l'épave, et **les deux sont déjà dans `Config.Creatures`** — A n'a rien à ajouter, C a deux modèles à faire. C'est le lot de la semaine 2 le plus honnête qu'on puisse sortir : il rend un POI déjà visible suddenly vivant, avec le contenu exact que le design prévoyait.
+Ce sont les deux espèces que `GDD_REEF.md` §14 nº 2 a assignées à l'épave, et **les deux sont déjà dans `Config.Creatures`** — A n'a rien à ajouter, C a deux modèles à faire. C'est le lot de la semaine 2 le plus honnête qu'on puisse sortir : il rend un POI déjà visible soudain vivant, avec le contenu exact que le design prévoyait.
 
 **Elles repartent avec la mer.** Comme celles du récif (`Config.ExtremeTide`), le serveur les retire à la fin de la fenêtre. Personne ne peut camper l'épave.
 

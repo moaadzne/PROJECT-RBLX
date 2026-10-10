@@ -1,0 +1,39 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/T.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/T.md
+Index: docs/INBOX/T.md
+===================================================================
+--- docs/INBOX/T.md
++++ docs/INBOX/T.md
+@@ -1,4 +1,9 @@
++## 2026-10-10 18:15
++FAIT     : Plan Phase 1 complet écrit (POI, marée extrême, streaming, météo base) — aligné brief D, branche claude/e-gdd-reef
++VÉRIFIÉ  : rien testé en jeu (planification seulement)
++BESOIN   : Sync Rojo lundi 21h en Studio ; C valide specs POI + assets ; A confirme extreme tide ; T en pause (semaine 2+)
++
+ ## 2026-10-10 17:30
+ FAIT     : Plan INBOX/T.md Phase 1 — Île 600×600, 8 lagons, 3 POI (belvédère, épave, récif), marée extrême, streaming
+ VÉRIFIÉ  : rien testé en jeu (planification seulement)
+ BESOIN   : C valide specs visuels POI + streaming chunks ; A confirme WaveState.extreme + Config.ExtremeTide ; D tranche périmètre T vs C sur Workspace.Map
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/T.md
+Index: docs/INBOX/T.md
+===================================================================
+--- docs/INBOX/T.md
++++ docs/INBOX/T.md
+@@ -1,4 +1,9 @@
++## 2026-10-10 18:30
++FAIT     : INBOX/T.md finalisé — Phase 1 specs prêtes (POI, marée extrême, streaming, météo base), branche claude/e-gdd-reef
++VÉRIFIÉ  : rien testé en jeu
++BESOIN   : Sync Rojo lundi 12/10 21h en Studio ; repos jusqu'à lundi
++
+ ## 2026-10-10 18:15
+ FAIT     : Plan Phase 1 complet écrit (POI, marée extrême, streaming, météo base) — aligné brief D, branche claude/e-gdd-reef
+ VÉRIFIÉ  : rien testé en jeu (planification seulement)
+ BESOIN   : Sync Rojo lundi 21h en Studio ; C valide specs POI + assets ; A confirme extreme tide ; T en pause (semaine 2+)
+
+> build · nemotron-3-ultra-free
+Prêt pour lundi. INBOX/T.md mis à jour avec l'entrée finale de stand-down. Repos jusqu'au sync Rojo en Studio lundi 21h.

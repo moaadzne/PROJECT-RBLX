@@ -1,0 +1,12 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/Q.md
+Wrote file successfully: docs/INBOX/Q.md
+> build · nemotron-3-ultra-free
+Done. Written `docs/INBOX/Q.md` with the 3-line entry aligned to the pivot:
+
+- **Phase 1 = no boss raids** (launch scope only)
+- **Week 2+**: World Boss weekly (Leviathan/Kraken/Hydra, 20 players) synced to `Config.ExtremeTide` hourly cycle + `WaveService` phases
+- **Dungeons 5j** (Normal/Heroic/Mythic) + **Raids 10/20j** (Temple des Marées, Abysse du Roi, Cathédrale d'Écume) via instancing
+- **Rewards = cosmetics only** (skins, trails, titles, mounts) — zero power sold, per monetization finalization
+- **Dependencies**: A (server hooks/remotes), C (boss assets/arenas), E (lore/cinematic drops), D (scope validation)

@@ -1,0 +1,275 @@
+[0m
+> build · space-bunny-free
+[0m→ [0mRead docs/DIRECTIVE_NIVEAU.md 
+> build · space-bunny-free
+Directive lue et comprise. Le point dur est immédiat : **je n'ai pas Studio**, donc je ne peux pas produire une vraie capture Roblox. Je vérifie d'abord ce que D a produit, et de quoi je dispose pour rendre la géométrie réelle.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && ls -la tools/world/*.svg 2>/dev/null; echo "=== libs dispo ==="; python3 -c "
+for m in ['PIL','numpy','matplotlib','cairo']:
+    try:
+        __import__(m); print('  OK', m)
+    except ImportError: print('  --', m, 'absent')
+"
+-rw-r--r--  1 admin  staff   7366 Oct 10 14:40 tools/world/island_map.svg
+-rw-r--r--  1 admin  staff  22495 Oct 10 14:42 tools/world/island_plan.svg
+=== libs dispo ===
+  -- PIL absent
+  -- numpy absent
+  -- matplotlib absent
+  -- cairo absent
+> build · space-bunny-free
+`island_map.svg` existe bien. Je le lis pour vérifier mes positions contre celui de D, comme demandé.
+[0m→ [0mRead tools/world/island_map.svg 
+> build · space-bunny-free
+La carte de D et la mienne concordent sur les chiffres du code. Une divergence importante apparaît sur le récif — je la vérifie.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && python3 - <<'EOF'
+# Verifie la position du recif sur les deux cartes (repere SVG y = px, nord vers le haut)
+# island_map.svg : centre (450,500), echelle deducee des reperes -300..300
+# reperes : x=450 -> 0 ; x=770.42 -> +300  => 320.42 px pour 300 studs
+sx = (770.4172876304024 - 450.0) / 300.0
+print("echelle island_map : %.4f px/stud"%sx)
+# recif trace : cy=857.80, r=32.04
+cy = 857.799304520616
+d = (cy - 500.0) / sx
+print("recif D : distance au centre = %.0f studs vers le SUD (+Z)"%d)
+print("recif D : rayon = %.0f studs"%(32.04172876304024/sx))
+# ma carte : recif (0,0,335) r=30 lu dans Config
+print("recif Config.ExtremeTide.reef : (0,0,335) rayon 30")
+print("=> meme valeur, D l'a lue dans le meme Config. Pas de desaccord.")
+EOF
+echelle island_map : 1.0681 px/stud
+recif D : distance au centre = 335 studs vers le SUD (+Z)
+recif D : rayon = 30 studs
+recif Config.ExtremeTide.reef : (0,0,335) rayon 30
+=> meme valeur, D l'a lue dans le meme Config. Pas de desaccord.
+> build · space-bunny-free
+Positions concordantes. Maintenant le vrai problème : **je n'ai pas Studio**, donc je ne peux pas produire une vraie capture Roblox. Je ne vais pas te livrer une fausse. Ce que je peux faire, c'est rendre la géométrie **réelle** — les vraies hauteurs du terrain — en image. C'est un fait vérifiable, pas une maquette inventée.
+[0m← [0mWrite tools/world/render_island_png.py
+Created file successfully: tools/world/render_island_png.py
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && time python3 tools/world/render_island_png.py 2>&1
+ecrit : /Users/admin/Documents/claude code/tide-rush/tools/world/island_heightmap.png (700x700, 2.0 studs/px)
+geometrie reelle : ile 600, crique r=70, lagons r=18x8, vague h=30
+NOTE : projection de hauteurs. PAS une capture Roblox, PAS un rendu du jeu.
+python3 tools/world/render_island_png.py 2>&1  4.22s user 0.18s system 29% cpu 14.775 total
+> build · space-bunny-free
+Je ne livre pas une image que je n'ai pas regardée. Je la vérifie.
+[0m⚙ [0mexecute {"code":"const r = await tools.browser.preview({path: \"/Users/admin/Documents/claude code/tide-rush/tools/world/island_heightmap.png\"});\nreturn r;\n"} 
+> build · space-bunny-free
+[0m→ [0mRead tools/world/island_heightmap.png 
+> build · space-bunny-free
+Le rendu a révélé deux bugs visuels que la carte 2D ne montrait pas. Je les corrige.
+
+Le plus grave : **la falaise et les brèches sont invisibles**. Sur l'image, les lagons flottent sur du sable plat — la crête de 30 studs n'apparaît nulle part.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && python3 - <<'EOF'
+import math
+COVE=70; CLIFF_OUTER=74; CLIFF_H=30; BREACH=10; SEA_Y=0
+N=8
+angs=[(i-1)*2*math.pi/N for i in range(1,N+1)]
+def in_breach(x,z,r):
+    if r<0.01: return False
+    a=math.atan2(z,x); ha=math.atan2(BREACH,r)
+    return any(abs(math.atan2(math.sin(a-la),math.cos(a-la)))<ha for la in angs)
+def height_at(x,z):
+    r=math.hypot(x,z)
+    if r>300: return SEA_Y-3
+    if r<COVE:
+        t=r/COVE; return SEA_Y-2+t*2
+    if r<=CLIFF_OUTER:
+        return SEA_Y+1 if in_breach(x,z,r) else SEA_Y+CLIFF_H
+    roll=math.sin(x*0.02)*2+math.cos(z*0.018)*2
+    base=SEA_Y+2+roll
+    base=min(base,16-2); base=max(base,-2+1)
+    if r>300:
+        t=(r-300)/150; base=base*(1-t)+(SEA_Y-3)*t
+    return base
+print("=== la crete existe-t-elle vraiment ? ===")
+for deg in range(0,360,10):
+    a=math.radians(deg); r=(COVE+CLIFF_OUTER)/2
+    x,z=math.cos(a)*r,math.sin(a)*r
+    print(f"  {deg:3}deg  h={height_at(x,z):5.1f}  breach={in_breach(x,z,r)}")
+EOF
+=== la crete existe-t-elle vraiment ? ===
+    0deg  h=  1.0  breach=True
+   10deg  h= 30.0  breach=False
+   20deg  h= 30.0  breach=False
+   30deg  h= 30.0  breach=False
+   40deg  h=  1.0  breach=True
+   50deg  h=  1.0  breach=True
+   60deg  h= 30.0  breach=False
+   70deg  h= 30.0  breach=False
+   80deg  h= 30.0  breach=False
+   90deg  h=  1.0  breach=True
+  100deg  h= 30.0  breach=False
+  110deg  h= 30.0  breach=False
+  120deg  h= 30.0  breach=False
+  130deg  h=  1.0  breach=True
+  140deg  h=  1.0  breach=True
+  150deg  h= 30.0  breach=False
+  160deg  h= 30.0  breach=False
+  170deg  h= 30.0  breach=False
+  180deg  h=  1.0  breach=True
+  190deg  h= 30.0  breach=False
+  200deg  h= 30.0  breach=False
+  210deg  h= 30.0  breach=False
+  220deg  h=  1.0  breach=True
+  230deg  h=  1.0  breach=True
+  240deg  h= 30.0  breach=False
+  250deg  h= 30.0  breach=False
+  260deg  h= 30.0  breach=False
+  270deg  h=  1.0  breach=True
+  280deg  h= 30.0  breach=False
+  290deg  h= 30.0  breach=False
+  300deg  h= 30.0  breach=False
+  310deg  h=  1.0  breach=True
+  320deg  h=  1.0  breach=True
+  330deg  h= 30.0  breach=False
+  340deg  h= 30.0  breach=False
+  350deg  h= 30.0  breach=False
+> build · space-bunny-free
+La crête est bien là (30 studs, 8 brèches correctes) — c'est mon rendu qui l'effaçait. Le bug : mon ombrage de relief ne capte pas une falaise verticale, et le rock #3B3633 est trop sombre sur fond sombre.
+[0m← [0mEdit tools/world/render_island_png.py
+Index: tools/world/render_island_png.py
+===================================================================
+--- tools/world/render_island_png.py
++++ tools/world/render_island_png.py
+@@ -99,35 +99,43 @@
+     return (int(lerp(47, 13, min(1, d / 4))), int(lerp(184, 48, min(1, d / 4))), int(lerp(179, 76, min(1, d / 4))))
+ def rock():
+     return (59, 54, 51)
+ 
+-def pixel(x, z, wave_x):
++def pixel(x, z):
+     h = height_at(x, z)
+     r = math.hypot(x, z)
+     # materiaux
+-    if r <= CLIFF_OUTER and r > COVE and not in_breach(x, z, r):
++    is_rock = (COVE < r <= CLIFF_OUTER) and not in_breach(x, z, r)
++    if is_rock:
+         base = rock()
+     elif h <= SEA_Y:
+         return water_depth(h)
+     else:
+         base = sand(h)
+-    # ombrage de relief : derivee de hauteur, lumiere venant du nord-ouest (comme le couchant du DA)
++
++    # Ombrage de relief. Le premier essai ne montrait PAS la crete : une derivee centrale
++    # sur 2 studs ne voit pas une falaise verticale de 30 studs. On fait donc deux choses :
++    #  - un eclairage par FACETTE (pente) qui accentue les fronts ;
++    #  - un eclairage par EXPOSITION : si le point est cache par une hauteur devant lui
++    #    (ici, plus au nord-ouest, la lumiere du couchant), on l'assombrit franchement.
+     d = 2.0
+     hx = height_at(x + d, z) - height_at(x - d, z)
+     hz = height_at(x, z + d) - height_at(x, z - d)
+-    # normale approximee
+-    shade = max(0.0, min(1.0, 0.5 + 0.5 * (hx * 0.7 + hz * 0.7)))
+-    light = 0.65 + 0.35 * shade
++    slope = max(0.0, min(1.0, 0.5 + 0.5 * (hx * 0.7 + hz * 0.7)))
++
++    # exposition : on marche vers la lumiere (-X, -Z) et on cherche ce qui depasse
++    occ = 0.0
++    for step in range(1, 14):
++        for ox, oz in ((-step, 0), (0, -step), (-step, -step)):
++            if height_at(x + ox, z + oz) > h + 0.5:
++                occ = max(occ, min(1.0, (height_at(x + ox, z + oz) - h) / 12.0))
++    shadow = 1.0 - 0.55 * occ
++
++    light = (0.55 + 0.45 * slope) * shadow
++    # la crete est aussi plus claire sur son sommet (elle prend le ciel)
++    if is_rock:
++        light = max(light, 0.9) * 1.15
+     col = tuple(min(255, int(c * light)) for c in base)
+-    # vague : mur d'eau turquoise sombre, avec une crete claire
+-    if wave_x is not None and abs(x - wave_x) < 20:
+-        t = abs(x - wave_x) / 20.0
+-        if t < 0.25:  # front
+-            col = (238, 245, 242)  # ecume
+-        elif t < 0.6:
+-            col = (86, 200, 199)
+-        else:
+-            col = (30, 120, 135)
+     return col
+ 
+ def write_png(path, w, h, rows):
+     raw = b"".join(b"\x00" + bytes(row) for row in rows)
+
+> build · space-bunny-free
+Now let me fix the render loop and make the wave a proper tall wall with foam, not a flat stripe.
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit tools/world/render_island_png.py
+Index: tools/world/render_island_png.py
+===================================================================
+--- tools/world/render_island_png.py
++++ tools/world/render_island_png.py
+@@ -149,36 +149,37 @@
+     open(path, "wb").write(png)
+ 
+ # --- Rendu ---
+ W = 700
+-STEP = 2.0  # studs par pixel
++STEP = 1.6  # studs par pixel
+ world_w = W * STEP
+ x0, z0 = -world_w / 2, -world_w / 2
+ 
+-# vague : venue du N, son FRONT a z = -60 (elle traverse l'ile). Affichee a mi-parcours.
++# La vague : venue du N, elle avance vers +Z. Son FRONT est a z = -60, en plein travers
++# de l'ile. On la dessille comme un mur d'eau : ecume au front, corps turquoise derriere.
+ wave_z = -60.0
++WAVE_T = 20.0   # epaisseur du mur visible, en studs
+ 
+ rows = []
+ for py in range(W):
+     z = z0 + (py + 0.5) * STEP
+     row = bytearray()
+     for px in range(W):
+         x = x0 + (px + 0.5) * STEP
+-        # la vague avance dans +Z ; on la trace comme une bande (elle est orientee X) ?
+-        # Non : "venue du N" = avance vers +Z, donc le front est une bande en X, a z = wave_z.
+-        wave_x = None
+-        if abs(z - wave_z) < 20:
+-            wave_x = x  # on passe x pour que pixel() sache qu'il y a la vague
+-        r, g, b = pixel(x, z, None)
+-        # application de la vague ici (bande en Z fixe)
+-        if wave_x is not None:
+-            t = abs(z - wave_z) / 20.0
+-            if t < 0.25:
+-                r, g, b = 238, 245, 242
+-            elif t < 0.6:
+-                r, g, b = 86, 200, 199
++        r, g, b = pixel(x, z)
++
++        d = abs(z - wave_z)
++        if d < WAVE_T:
++            t = d / WAVE_T
++            if t < 0.18:
++                r, g, b = 238, 245, 242      # ecume du front
++            elif t < 0.55:
++                r, g, b = 150, 226, 224     # corps clair
+             else:
+-                r, g, b = 30, 120, 135
++                r, g, b = 30, 120, 135      # corps profond
++            # lisere sombre juste derriere le front : donne du volume au mur
++            if 0.18 <= t < 0.30:
++                r, g, b = int(r * 0.72), int(g * 0.78), int(b * 0.80)
+         row += bytes((r, g, b))
+     rows.append(row)
+ 
+ write_png(OUT, W, W, rows)
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && time python3 tools/world/render_island_png.py 2>&1
+ecrit : /Users/admin/Documents/claude code/tide-rush/tools/world/island_heightmap.png (700x700, 1.6 studs/px)
+geometrie reelle : ile 600, crique r=70, lagons r=18x8, vague h=30
+NOTE : projection de hauteurs. PAS une capture Roblox, PAS un rendu du jeu.
+python3 tools/world/render_island_png.py 2>&1  7.88s user 0.25s system 66% cpu 12.313 total
+> build · space-bunny-free
+[91m[1mError: [0mRate limit exceeded. Please try again later.

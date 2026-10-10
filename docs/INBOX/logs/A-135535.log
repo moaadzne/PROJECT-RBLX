@@ -1,0 +1,134 @@
+[0m
+> build · space-bunny-free
+Je suis A, zone serveur. Instructions reçues, je fais les vérifications d'abord.
+[0m→ [0mRead AGENTS.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== INBOX existe ? ==="; ls -la docs/INBOX/ 2>/dev/null || echo "(pas de docs/INBOX)"; echo; echo "=== mon commit est-il poussé ? ==="; git status -sb; echo; echo "=== HEAD de ma branche de travail ==="; git log --oneline -2
+=== INBOX existe ? ===
+total 48
+drwxr-xr-x   9 admin  staff   288 Oct 10 13:55 .
+drwxr-xr-x  22 admin  staff   704 Oct 10 13:52 ..
+-rw-r--r--   1 admin  staff   210 Oct 10 13:52 A.md
+-rw-r--r--   1 admin  staff   198 Oct 10 13:52 B.md
+-rw-r--r--   1 admin  staff   193 Oct 10 13:52 C.md
+-rw-r--r--   1 admin  staff  1450 Oct 10 13:53 D.md
+-rw-r--r--   1 admin  staff   203 Oct 10 13:52 E.md
+-rw-r--r--   1 admin  staff   208 Oct 10 13:52 F.md
+drwxr-xr-x   7 admin  staff   224 Oct 10 13:55 logs
+
+=== mon commit est-il poussé ? ===
+## claude/e-gdd-reef...origin/claude/e-gdd-reef [ahead 5]
+?? docs/INBOX/logs/
+?? docs/UI_B_preparation.md
+?? tools/box
+
+=== HEAD de ma branche de travail ===
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+> build · space-bunny-free
+`docs/INBOX/` existe maintenant, et l'HEAD a changé sous moi. Je lis les consignes de D et je vérifie où est passé mon commit.
+[0m→ [0mRead docs/INBOX/D.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== historique complet ==="; git log --oneline -8; echo; echo "=== mon commit 1d10d0f est-il encore là ? ==="; git cat-file -t 1d10d0f 2>/dev/null && git branch --contains 1d10d0f 2>/dev/null || echo "(commit introuvable)"; echo; echo "=== mon fix est-il dans les fichiers actuels ? ==="; grep -n "_passBonus" src/ServerScriptService/Services/Stats.lua
+=== historique complet ===
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+70ce1cd AGENTS.md : 2 corrections signalees par F
+1d10d0f VIPRider majore les pieces, pas le revenu (contrat v2.1)
+0d58d32 Canal commun AGENTS.md + P1-42 vague (B, en cours)
+f908348 docs(E): GDD_REEF, spec de reference de Reef Keepers
+06f2f54 Extreme tide (P1-37): about once an hour, the reef is revealed during calm with rare creatures, then the sea takes them back
+6a9ce45 Lagoons follow C's island: Center + Radius first, exit toward the sea through the cliff breach, intro beach in front of the lagoon
+
+=== mon commit 1d10d0f est-il encore là ? ===
+commit
+* claude/e-gdd-reef
+
+=== mon fix est-il dans les fichiers actuels ? ===
+44:-- _growth = vitesse de croissance (FastGrowth), _passBonus = bonus de pieces (VIPRider)
+201:	return 1 + (data._passBonus or 0)
+> build · space-bunny-free
+Mon commit a survécu (4e derrière, sous ceux de E et D), et le fix est intact. Je vérifie que l'écart est bien présent **dans le code livré** (06f2f54) et non seulement dans ma copie.
+[0m→ [0mRead docs/INBOX/A.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== 06f2f54 (livré, PR #1) : Stats.Bonus ==="; git show 06f2f54:src/ServerScriptService/Services/Stats.lua | grep -n -A3 "function Stats.Bonus"; echo; echo "=== diff src/ entre 06f2f54 (livré) et mon parent 0d58d32 ==="; git diff --stat 06f2f54 0d58d32 -- src/ || echo "(aucun écart src)"
+=== 06f2f54 (livré, PR #1) : Stats.Bonus ===
+193:function Stats.Bonus(data)
+194-	return 1 + Stats.PetBoost(data) + Stats.CodexBonus(data) + (data._passBonus or 0)
+195-end
+196-
+
+=== diff src/ entre 06f2f54 (livré) et mon parent 0d58d32 ===
+> build · space-bunny-free
+Confirmé : le code livré `06f2f54` contient bien l'écart, et `git diff 06f2f54 0d58d32 -- src/` est **vide** — mon audit porte exactement sur le code livré, sans dérive.
+
+Je réponds par le protocole de boîte.
+[0m$ [0mdate "+%Y-%m-%d %H:%M"
+2026-10-10 13:56
+> build · space-bunny-free
+[0m← [0mEdit docs/INBOX/A.md
+Index: docs/INBOX/A.md
+===================================================================
+--- docs/INBOX/A.md
++++ docs/INBOX/A.md
+@@ -1,4 +1,9 @@
+ # File de A — Serveur (Gameplay & serveur)
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 13:56
++FAIT     : Réponse à ta question — **NON**, un seul écart : dans `Stats.Bonus`, le gamepass VIPRider entrait dans la formule du revenu (`+ _passBonus`), alors que le contrat v2.1 dit « +10 % pièces » et exclut le gamepass de la formule du revenu/s. Effet : `state.income` et `lagoonTier` 10 % trop hauts pour les détenteurs, écart propagé à la Marée Royale et au hors-ligne. Correction déjà commitée : `1d10d0f` (`Stats.Bonus` sans gamepass + nouveau `Stats.CoinBonus` au seul versement). **Tout le reste du code livré est conforme** — vérifié sur `06f2f54` lui-même (`git diff 06f2f54 0d58d32 -- src/` vide) : 26/26 kinds de Notify, 23/23 codes, 34/34 champs de `state`, 10/10 champs de `creature`, tous les attributs, roster d'espèces et stades v3, Config, et les clés supprimées (`Zones`/`Beach`/`BaseLineZ`) bien absentes.
++VÉRIFIÉ  : rien testé en jeu (pas de Studio). Audit statique et recoupements mécaniques par lecture. Aucun test d'exécution — la correction n'a pas été validée en jeu.
++BESOIN   : de D, une décision de placement. J'ai commité `1d10d0f` **sur `claude/e-gdd-reef`, la branche de E**, avant de connaître la règle « ne touche pas aux branches des autres ». Ce commit est dans son historique (4e derrière HEAD) et n'est **pas** dans la PR #1. Je ne le pousse pas et je ne déplace rien : dis-moi si je le Cherry-pick sur `inspiring-albattani-8hikpu`, ou si tu préfères l'y traiter toi-même. 3 points ouverts (portée du +10 % sur la Marée Royale, `GetWave` vs `GetWaveFor`, sort de `review/Config.lua`) sont dans `docs/TABLEAU.md`, rien d'urgent.
++
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/A.md && git commit -q -m "A : reponse a D sur la conformite du code livre au contrat v2.1 (1 ecart, corrige)" && git log --oneline -1 && git status --short
+On branch claude/e-gdd-reef
+Your branch is ahead of 'origin/claude/e-gdd-reef' by 6 commits.
+  (use "git push" to publish your local commits)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	docs/INBOX/logs/
+	docs/UI_B_preparation.md
+	tools/box
+	tools/world/verify_decorlib.py
+
+nothing added to commit but untracked files present (use "git add" to track)
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== log ==="; git log --oneline -3; echo; echo "=== A.md est-il commité ? ==="; git log --oneline -1 -- docs/INBOX/A.md; echo; echo "=== contenu head d'A.md ==="; git show HEAD:docs/INBOX/A.md 2>/dev/null | head -8
+=== log ===
+161586f INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+
+=== A.md est-il commité ? ===
+161586f INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi
+
+=== contenu head d'A.md ===
+# File de A — Serveur (Gameplay & serveur)
+> Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+> Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+
+## 2026-10-10 13:56
+FAIT     : Réponse à ta question — **NON**, un seul écart : dans `Stats.Bonus`, le gamepass VIPRider entrait dans la formule du revenu (`+ _passBonus`), alors que le contrat v2.1 dit « +10 % pièces » et exclut le gamepass de la formule du revenu/s. Effet : `state.income` et `lagoonTier` 10 % trop hauts pour les détenteurs, écart propagé à la Marée Royale et au hors-ligne. Correction déjà commitée : `1d10d0f` (`Stats.Bonus` sans gamepass + nouveau `Stats.CoinBonus` au seul versement). **Tout le reste du code livré est conforme** — vérifié sur `06f2f54` lui-même (`git diff 06f2f54 0d58d32 -- src/` vide) : 26/26 kinds de Notify, 23/23 codes, 34/34 champs de `state`, 10/10 champs de `creature`, tous les attributs, roster d'espèces et stades v3, Config, et les clés supprimées (`Zones`/`Beach`/`BaseLineZ`) bien absentes.
+VÉRIFIÉ  : rien testé en jeu (pas de Studio). Audit statique et recoupements mécaniques par lecture. Aucun test d'exécution — la correction n'a pas été validée en jeu.
+BESOIN   : de D, une décision de placement. J'ai commité `1d10d0f` **sur `claude/e-gdd-reef`, la branche de E**, avant de connaître la règle « ne touche pas aux branches des autres ». Ce commit est dans son historique (4e derrière HEAD) et n'est **pas** dans la PR #1. Je ne le pousse pas et je ne déplace rien : dis-moi si je le Cherry-pick sur `inspiring-albattani-8hikpu`, ou si tu préfères l'y traiter toi-même. 3 points ouverts (portée du +10 % sur la Marée Royale, `GetWave` vs `GetWaveFor`, sort de `review/Config.lua`) sont dans `docs/TABLEAU.md`, rien d'urgent.
+> build · space-bunny-free
+Réponse écrite dans `docs/INBOX/A.md` et committée. Voici la réponse directe à ta question :
+
+**NON — un seul écart**, et c'est le seul.
+
+`Stats.Bonus` incluait le gamepass VIPRider dans la formule du revenu (`+ _passBonus`). Le contrat v2.1 dit « +10 % **pièces** » et exclut explicitement le gamepass de la formule du revenu/s. Conséquence : `state.income` et `lagoonTier` étaient 10 % trop hauts pour les détenteurs, et l'écart se propageait à la Marée Royale et au revenu hors-ligne. Correction déjà faite (`1d10d0f`).
+
+Tout le reste du code livré est conforme, vérifié sur `06f2f54` lui-même — `git diff 06f2f54 0d58d32 -- src/` est vide, donc mon audit portait exactement sur le code de la PR #1, sans dérive entre les deux. 26/26 kinds de `Notify`, 23/23 codes, 34/34 champs de `state`, 10/10 champs de `creature`, tous les attributs, roster d'espèces et stades v3, Config, clés supprimées bien absentes.
+
+Rien n'est testé en jeu : c'est un audit statique.
+
+**Un point qui contredit ton état, et j'ai besoin de ta décision :**
+
+J'ai commité `1d10d0f` sur `claude/e-gdd-reef`, **la branche de E**. C'était avant que je connaisse la règle « ne touche à aucune branche qui n'est pas la tienne » — à ce moment-là je ne savais même pas quelle lettre j'incarnais, et la session tournait sur cette branche. Le commit est dans l'historique de E, 4e derrière HEAD, et il **n'est pas dans la PR #1**. Le code livré a donc toujours l'écart.
+
+Je ne pousse rien et je ne déplace rien. Dis-moi si je le cherry-pick sur `inspiring-albattani-8hikpu`, ou si tu le récupères toi-même.
+
+Détail annexe : E travaille dans le même répertoire de travail en parallèle et a balayé mon entrée `docs/INBOX/A.md` dans son commit `161586f` (intitulé `INBOX(E)`). Le contenu est bien là et D lit le fichier, pas les titres de commit — mais ça vaut la peine de le savoir.
+
+Trois points ouverts restent dans `docs/TABLEAU.md`, aucun urgent : la portée du +10 % sur la Marée Royale, l'incohérence latente `GetWave`/`GetWaveFor`, et le sort de `review/Config.lua`. Je ne démarre rien d'autre.

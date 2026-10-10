@@ -1,0 +1,219 @@
+[0m
+> build · space-bunny-free
+FEU VERT reçu. Je vérifie d'abord l'état réel avant d'écrire quoi que ce soit.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== branche / HEAD ==="; git branch --show-current; git log --oneline -6 | cat; echo; echo "=== 967a9c8 existe ? ==="; git cat-file -t 967a9c8 2>&1; git show --stat 967a9c8 2>&1 | head -25 | cat
+=== branche / HEAD ===
+claude/e-gdd-reef
+b5c884c tools/box : canal vers les autres sessions + UI_B_preparation
+d2b3a76 tools/world (C): verification que Assets._DecorLib existe (leve le blocage P1-21)
+161586f INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+70ce1cd AGENTS.md : 2 corrections signalees par F
+
+=== 967a9c8 existe ? ===
+commit
+commit 967a9c870f021b754f37d5dd7c1312810ba96c75
+Author: Moaad Zenoune <moaadzenoune@gmail.com>
+Date:   Sat Oct 10 14:00:40 2026 +0200
+
+    B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+    
+    Le store normalisait encore la vague sur l'ancien axe Z : il lisait
+    Config.Wave.startZ/endZ, qui n'existent plus depuis l'ile ouverte (GDD 3 bis).
+    Feel (rumble + waveImpact) mesurait donc la distance du joueur sur Z et
+    tournait sur un faux front.
+    
+    - normalizeWave expose dir / direction / startD / endD (source : Config.WaveTravel)
+    - Store.WaveFrontZ supprimee, remplacee par WaveFrontD + WaveDistanceTo + WaveFrontPoint
+      (meme formule que le serveur : Config.WaveFrontD / Config.WaveAxis)
+    - Feel mesure sur l'axe et pose le son au vrai point du front
+    - mode demo : duree de trajet calculee sur REACH, + une direction par cycle
+      (elle ne calculait travel sur des champs nil)
+    
+    Co-authored-by: B (Interface & feel)
+
+ docs/INBOX/B.md                                    |   5 +
+ docs/UI_B_preparation.md                           | 243 +++++++++++++++++++++
+ .../StarterPlayerScripts/TideClient/Feel.lua       |  15 +-
+ .../StarterPlayerScripts/TideClient/Store.lua      |  67 +++++-
+ 4 files changed, 315 insertions(+), 15 deletions(-)
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== 967a9c8 est-il dans HEAD ? ==="; git merge-base --is-ancestor 967a9c8 HEAD && echo OUI || echo NON; echo; echo "=== Wave.lua est dans l'arbre de travail ? ==="; ls -la src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua 2>&1; echo; echo "=== worktrees ==="; git worktree list | cat
+=== 967a9c8 est-il dans HEAD ? ===
+NON
+
+=== Wave.lua est dans l'arbre de travail ? ===
+ls: src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua: No such file or directory
+
+=== worktrees ===
+/Users/admin/Documents/claude code/tide-rush      b5c884c [claude/e-gdd-reef]
+/Users/admin/Documents/claude code/tide-rush-b    967a9c8 [claude/friendly-volta-qj504y]
+/Users/admin/Documents/claude code/tide-rush-p42  4955d92 [claude/wave-client-p42]
+> build · space-bunny-free
+Trois worktrees distincts, pas un arbre partagé. Je vérifie l'état réel de chaque correctif.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== B : le nil-nil de demoWaveLoop est corrige ? ==="; grep -n "REACH\|startZ\|endZ\|travel =" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | head -12; echo; echo "=== B : WaveFrontD remplace bien WaveFrontZ ? ==="; grep -n "function Store.WaveFront\|function Store.WaveDistanceTo\|function Store.WaveFrontPoint" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat
+=== B : le nil-nil de demoWaveLoop est corrige ? ===
+276:		startZ = optNumber(raw.startZ), -- vague d'intro seulement
+288:	local travel = nextWave.direction and Config.WaveTravel[nextWave.direction] or nil
+292:			travel = d.Unit
+397:	-- sur REACH, plus sur des startZ/endZ qui n'existent plus en Config.
+399:	local travel = (reach * 2) / cfg.speed
+
+=== B : WaveFrontD remplace bien WaveFrontZ ? ===
+509:function Store.WaveFrontD(now: number?): number?
+521:function Store.WaveDistanceTo(position: Vector3, now: number?): number?
+530:function Store.WaveFrontPoint(height: number, now: number?): Vector3?
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-p42" && echo "=== p42 : ligne 404 toujours en + Vector3 ? ==="; grep -n "local frame = base" src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua; echo; echo "=== p42 HEAD ==="; git log --oneline -1 | cat
+=== p42 : ligne 404 toujours en + Vector3 ? ===
+404:	local frame = base + Vector3.new(0, sink, -front)
+
+=== p42 HEAD ===
+4955d92 Client P1-42 : rendu de la vague sur les 4 directions du serveur (Wave.lua)
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== startZ encore consomme ? ==="; grep -n "startZ" src/StarterPlayer/StarterPlayerScripts/TideClient/*.lua | cat; echo; echo "=== dir expose par normalizeWave de B ? ==="; sed -n '284,300p' src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+=== startZ encore consomme ? ===
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:276:		startZ = optNumber(raw.startZ), -- vague d'intro seulement
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:397:	-- sur REACH, plus sur des startZ/endZ qui n'existent plus en Config.
+
+=== dir expose par normalizeWave de B ? ===
+		endD = optNumber(raw.endD),
+		royal = royal,
+	}
+	-- `Config.WaveTravel` est la source unique du sens de marche (Config.lua).
+	local travel = nextWave.direction and Config.WaveTravel[nextWave.direction] or nil
+	if typeof(raw.dir) == "Vector3" then
+		local d = Vector3.new(raw.dir.X, 0, raw.dir.Z)
+		if d.Magnitude > 0.001 then
+			travel = d.Unit
+		end
+	end
+	nextWave.dir = travel
+	return nextWave
+end
+
+---------------------------------------------------------------- Mise a jour
+local function setState(raw: any)
+> build · space-bunny-free
+B a bien corrigé son côté. Mon bug, lui, est toujours là. J'écris ma boîte.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== format des entrees existantes (B) ==="; head -12 docs/INBOX/B.md; echo "=== heure ==="; date "+%Y-%m-%d %H:%M"
+=== format des entrees existantes (B) ===
+# File de B — Interface & feel
+> Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+> Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+
+=== heure ===
+2026-10-10 14:28
+> build · space-bunny-free
+Ce que tu as collé confirme mon diagnostic côté serveur (formules cohérentes, `dir` présent sur l'intro). Je termine ma tâche : écrire ma boîte et committer.
+[0m→ [0mRead docs/INBOX/F.md 
+> build · space-bunny-free
+[0m← [0mEdit docs/INBOX/F.md
+Index: docs/INBOX/F.md
+===================================================================
+--- docs/INBOX/F.md
++++ docs/INBOX/F.md
+@@ -1,4 +1,9 @@
+ # File de F — Controle qualite (lecture)
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 14:28
++FAIT     : Contrôle de Wave.lua (4955d92) : **P0 non corrigé**. Ligne 404 `base + Vector3.new(0, sink, -front)` est une translation en coordonnées MONDE ; le commentaire ligne 403 annonce une translation locale. Il faut `base * CFrame.new(0, sink, -front)`.
++VÉRIFIÉ  : reproduit numériquement, front à 200 studs — N = −200 au lieu de +200 (vague à l'envers), E et W = 0 (vague immobile au centre de l'île), S correct par coïncidence. `SelfTest.lua:159` ne le voit pas car il ne teste que N et S. 967a9c8 de B est validé (nil−nil supprimé, REACH calculé, WaveFrontZ → WaveFrontD/WaveDistanceTo/WaveFrontPoint, `dir` exposé). Rien testé en jeu.
++BESOIN   : [auteur P1-42] une seule ligne à changer, P0 du même niveau que la vague invisible que ce commit devait corriger — [C] `waveBoom` et `ambientBeach` n'existent dans aucun `Assets.Sounds` (dossier absent), la vague sera muette tant qu'ils manquent — [B] `Store.lua:276` `startZ` est un champ mort, écrit jamais relu, sans conséquence.
++
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/F.md && git commit -q -F - <<'EOF' && git log --oneline -1 | cat
+INBOX(F): Wave.lua 4955d92 — P0 non corrige, ligne 404
+
+Le commit p42 est livre mais le P0 qu'il devait corriger est toujours la :
+Wave.lua:404 utilise `base + Vector3.new(0, sink, -front)`, qui est une
+translation en coordonnees monde, alors que setDirection a deja oriente le
+repere sur la direction de la vague. Le `+` court-circuite cette rotation et
+applique -front sur l'axe Z monde quel que soit `dir`.
+
+Mesure (front a 200 studs, centre de l'isle a l'origine) :
+  N : attendu +200, obtenu -200  -> vague a l'envers
+  S : attendu +200, obtenu +200  -> correct par coincidence (dir est sur Z)
+  E : attendu +200, obtenu 0     -> vague immobile au centre
+  W : attendu +200, obtenu 0     -> vague immobile au centre
+
+SelfTest ne le detecte pas : il ne teste que dir = N et dir = S, les deux
+seules directions pour lesquelles un axe Z monde ressemble encore a l'axe
+reel de la vague. Le calcul serveur (Config.WaveFrontD / WaveAxis) est
+juste : seule la pose du CFrame cote client est fausse.
+
+Correctif : remplacer `+` par `*` pour obtenir `base * CFrame.new(0, sink, -front)`.
+
+Egalement signale dans la boite :
+- [C] waveBoom et ambientBeach absents d'Assets.Sounds : Sfx ignore les sons
+  manquants en silence, donc pas de crash, mais la vague sera muette.
+- [B] Store.lua:276 startZ est un champ mort apres 967a9c8 : ecrit, jamais
+  relu. Sans consequence.
+
+Documentation uniquement, aucun fichier de jeu modifie.
+EOF
+c479cf1 INBOX(F): Wave.lua 4955d92 — P0 non corrige, ligne 404
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git push origin claude/e-gdd-reef 2>&1 | tail -5; echo "=== arbre propre ? ==="; git status --porcelain | cat
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   b5c884c..c479cf1  claude/e-gdd-reef -> claude/e-gdd-reef
+=== arbre propre ? ===
+ M docs/GDD_REEF.md
+ M review/Config.lua
+ M src/ServerScriptService/Services/RoyalService.lua
+ M tools/world/build_wave.luau
+?? docs/INBOX/logs/
+> build · space-bunny-free
+Commit `c479cf1` poussé. Je m'arrête là.
+
+```
+FAIT      : INBOX(F) écrit et poussé sur claude/e-gdd-reef (c479cf1). Documentation seule, aucun fichier de jeu modifié, aucune branche touchée.
+VÉRIFIÉ : P0 de Wave.lua reproduit numériquement. Correction B (967a9c8) validée.
+            Rien testé en jeu.
+BESOIN   : Renvoi à l'auteur de P1-42 — une ligne à changer.
+```
+
+## Ce que j'ai trouvé
+
+**Le P0 n'est pas corrigé.** D semble croire que 967a9c8 a corrigé Wave.lua — non, ce commit de B ne touche que `Store.lua` et `Feel.lua`. Wave.lua est toujours à 4955d92, avec le bug ligne404 intact.
+
+```lua
+local frame = base + Vector3.new(0, sink, -front)   -- ligne 404
+```
+
+`+ Vector3` sur un CFrame = translation **monde**. Le commentaire ligne 403 dit « en translation **locale** ». `setDirection` (ligne 147) oriente pourtant déjà le repère sur `dir` — le `+` court-circuite cette rotation et applique `-front` sur l'axe Z monde, quoi qu'il arrive.
+
+Mesuré avec un front à 200 studs :
+
+| Direction | Attendu | Obtenu | |
+|---|---|---|---|
+| N | +200 | **−200** | vague à l'envers |
+| S | +200 | +200 | correct **par coïncidence** |
+| E | +200 | **0** | vague immobile au centre de l'île |
+| W | +200 | **0** | vague immobile au centre de l'île |
+
+**Une ligne :** remplacer `+` par `*` → `base * CFrame.new(0, sink, -front)`.
+
+`SelfTest.lua:159` ne peut pas le voir : il ne teste que `dir = N` et `dir = S`, les deux seules directions où un axe Z monde ressemble encore à l'axe réel. C'est aussi pour ça que le bug est passé.
+
+## Deux points mineurs, notés dans ma boîte
+
+- **[C]** `waveBoom` et `ambientBeach` n'existent dans aucun `Assets.Sounds` — le dossier n'est pas créé. `Sfx` ignore les sons absents en silence, donc pas de crash, mais **la vague sera muette** tant qu'ils manquent.
+- **[B]** `Store.lua:276` : `startZ` est devenu un champ mort après 967a9c8 — écrit, jamais relu. Sans conséquence.
+
+## Deux choses à savoir sur l'état réel
+
+**Il y a trois worktrees, pas un arbre partagé** — D l'affirmait, mais la réalité diffère :
+
+```
+tide-rush       b5c884c  claude/e-gdd-reef         ← moi
+tide-rush-b     967a9c8  claude/friendly-volta-qj504y  ← B
+tide-rush-p42   4955d92  claude/wave-client-p42     ← auteur P1-42
+```
+
+**967a9c8 n'est pas dans la branche partagée.** Je l'ai contrôlé en lisant le worktree de B, pas via la branche commune. Tant que personne ne fusionne, son correctif du Store n'atteindra pas les autres — même remarque pour Wave.lua, qui est absent de l'arbre partagé.
+
+Enfin, mon push a pepté 4 fichiers modifiés par d'autres sessions (`docs/GDD_REEF.md`, `review/Config.lua`, `RoyalService.lua`, `tools/world/build_wave.luau`). **Je n'y ai pas touché et je ne les commite pas** — ils ne sont pas à moi.

@@ -1,0 +1,60 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/K.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+Done. The cross-platform LOD plan is written to `docs/INBOX/K.md`. Here's the detailed technical breakdown:
+
+---
+
+### **Creature LOD Plan (Cross-Platform)**
+
+| LOD Level | Distance | PC | Mobile |
+|-----------|----------|-----|--------|
+| **Near** | 0–80 studs | Full mesh, all particles, Rthro anim | Full mesh, all particles, Rthro anim |
+| **Mid** | 80–160 studs | Full mesh, reduced particle rate (×0.5), Rthro anim | Simplified mesh (LOD1), particles ×0.5, Rthro anim |
+| **Far** | 160–300 studs | LOD mesh (LOD1), minimal particles, Rthro anim | **Mesh culled** (invisible), only billboard icon |
+| **Culled** | >300 studs | LOD mesh (LOD2), no particles | N/A (already culled at 200) |
+
+### **Mutation Particles Budget**
+| Mutation | PC (max 200) | Mobile (max 50) |
+|----------|--------------|-----------------|
+| Golden | 8 emitters | 2 emitters (rate ×0.25) |
+| Night (Glow) | 6 emitters + PointLight | 2 emitters, no PointLight |
+| Storm | 5 emitters + Beam arcs | 2 emitters, no arcs |
+| Rainbow | 3 emitters + HueCycle | 1 emitter, no HueCycle |
+
+### **Hero Titan (Golden Titan Mountable)**
+| Effect | PC | Mobile |
+|--------|-----|--------|
+| PointLight (Glow) | Range 12, Brightness 1 | **Disabled** |
+| ParticleEmitter (HeroTrail) | Rate 8 | Rate 2 |
+| Core/Halo Beams | Full | **Disabled** |
+| Scale 1.5 | Yes | Yes (mesh only) |
+
+### **Config Keys (already in DECISIONS_MARCHE.md §7)**
+```lua
+Config.CrossPlatform = {
+	LODDistances = { Near = 80, Mid = 160, Far = 300 },
+	MaxParticlesMobile = 50,
+	MaxParticlesPC = 200,
+	ShadowsMobile = false,
+	ShadowsPC = true,
+	WaterQualityMobile = 0.5,
+	WaterQualityPC = 1.0,
+}
+```
+
+### **Implementation Tasks for Monday**
+| Task | Owner |
+|------|-------|
+| Add `GraphicsQuality` enum (Auto/High/Low) + `Settings.lua` persistence | N |
+| Implement LOD switching in `CreatureRenderer.onRenderStepped` (distance-based) | K |
+| Add `Model.LOD` or `MeshPart.RenderFidelity` = `Automatic` on imported meshes | C |
+| Mobile culling: `model.Parent = nil` beyond 200 studs (or `LocalTransparencyModifier=1`) | K |
+| Particle budget enforcer: clamp `ParticleEmitter.Rate` per platform in `applyMutation` | K |
+| Hero Titan mobile reduction: check `UserInputService.TouchEnabled` | K |

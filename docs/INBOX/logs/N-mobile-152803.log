@@ -1,0 +1,30 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/N.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/N.md
+Index: docs/INBOX/N.md
+===================================================================
+--- docs/INBOX/N.md
++++ docs/INBOX/N.md
+@@ -4,5 +4,10 @@
+ 
+ ## 2026-10-10 16:15
+ FAIT     : Mission N lue et specs validées — Lighting Future + Atmosphere (Density=0.3, Haze=2, Glare=1), Bloom 0.5, ColorCorrection (Sat=1.1, Contrast=0.1) ; Eau #1a7aa6 Transp=0.4 WaveSize=0.8 WaveSpeed=8 ; Lagon fond #e8d5b7, barrière corail #ff6b35, ponton bois ; 5 zones palettes distinctes ; Créatures ShadowMap + LOD ; Vague houle 55 studs, crête 30, tours 34 safe, spray particules ; Sons waveBoom, ambientBeach, footSand/Water/Rock, caught ; Hero shot caméra (-112,14,78)→(-60,3,-110) FOV 60 coucher soleil. Scripts tools/world/ audités (build_wave, build_lagoon, build_island_terrain, build_hero_shot).
+ VÉRIFIÉ  : Lecture complète AGENTS.md, TABLEAU.md, DIRECTION_V2.md, DA_MONDE.md, GDD.md, review/review_context.md, SOURCING_C.md. Identifié les écarts specs vs implémentation C actuelle (Atmosphere/Bloom/CC sous-calibrés, eau lagon #2FB8B3 vs #1a7aa6, caméra hero shot décalée).
+-BESOIN   : C — validation SUNK_POOLS (lagons creusés -3.5) par D&A ; _DecorLib importé (palmiers, corail, rochers, phare, radeau) ; build_island_terrain.luau exécuté (île 600×600, falaise, breches, 8 lagons) AVANT build_lagoon. B — police condensée, panneaux sombres, sans emojis alignés DIRECTION_V2. A — Config.Wave.height=30 figé, Config.Island.* (center, size, coveRadius) figés. Moaad — Lighting.Technology=Future (manuel).
+\ No newline at end of file
++BESOIN   : C — validation SUNK_POOLS (lagons creusés -3.5) par D&A ; _DecorLib importé (palmiers, corail, rochers, phare, radeau) ; build_island_terrain.luau exécuté (île 600×600, falaise, breches, 8 lagons) AVANT build_lagoon. B — police condensée, panneaux sombres, sans emojis alignés DIRECTION_V2. A — Config.Wave.height=30 figé, Config.Island.* (center, size, coveRadius) figés. Moaad — Lighting.Technology=Future (manuel).
++
++## 2026-10-10 16:35
++FAIT     : Plan cross-plateforme lu dans docs/DECISIONS_MARCHE.md §7. Spécs retenues : 3 niveaux GraphicsQuality (Auto/High/Low, défaut Auto) ; LOD créatures 3 niveaux (Near=80, Mid=160, Far=300), suppression mesh >200 studs ; Particules max 50 mobile / 200 PC ; Ombres ShadowMap PC, désactivées mobile (ou Distance=100) ; Eau WaveSize/Transparency ×0.5 mobile ; Target 60 FPS PC / 30+ mobile 3 ans. Config.CrossPlatform à ajouter dans Config.lua (table fournie §7). Responsables : N (perf/qualité graphique), K (LOD/particules créatures).
++VÉRIFIÉ  : §7 lu intégralement. Config.CrossPlatform table prête à intégrer. Détection plateforme via UserInputService.TouchEnabled. Rendu vague adaptatif : 30 segments PC / 15 mobile (Wave.lua client). Touch targets ≥44×44 px iOS / 48×48 dp Android — à valider avec B.
++BESOIN   : A — intégrer Config.CrossPlatform dans Config.lua (source unique). N — implémenter GraphicsQuality selector (Auto/High/Low) côté client, hook Lighting/Atmosphere/Particles/LOD selon niveau. K — LOD créatures (near/mid/far) + suppression >200 studs dans CreatureFactory/Client. B — HUD responsive (bas mobile / latéral PC), onboarding tap vs WASD. Test device farm : iPhone 12 / Android mid-range 2021 / PC GTX 1060.
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/N.md 
+> build · nemotron-3-ultra-free
+Fait. L'entrée cross-plateforme est ajoutée dans `docs/INBOX/N.md` (2e entrée datée 16:35) avec le plan complet : GraphicsQuality 3 niveaux, LOD créatures, budgets particules/ombres/eau par plateforme, Config.CrossPlatform à intégrer, et répartition des tâches N/K/B/A.

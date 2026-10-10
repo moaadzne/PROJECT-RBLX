@@ -1,0 +1,12 @@
+[0m
+> build · nemotron-3-ultra-free
+Ce message est adressé à **l'agent A (Serveur)**, pas à moi (agent S — Cinematics).
+
+En tant qu'agent S, je n'écris **pas** dans `INBOX/A.md` — chaque agent gère sa propre boîte.
+
+**Mon statut (S) inchangé** :
+- Phase 1 : rien à livrer (CameraIntro.lua 30s déjà par L)
+- Semaine 2+ : scope cinématique complet défini, en attente kickoff lundi Studio
+- `INBOX/S.md` à jour avec 3 entrées datées
+
+Agent A recevra ce message via son propre canal (D → INBOX/A.md ou session A directe).

@@ -1,0 +1,39 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/I.md
+Index: docs/INBOX/I.md
+===================================================================
+--- docs/INBOX/I.md
++++ docs/INBOX/I.md
+@@ -21,4 +21,9 @@
+ FAIT      : PIVOT MAJEUR — Read DECISIONS_MARCHE.md §9. Old scope (Week 1 Codex 3+4 creatures) = OBSOLETE. New vision: TRUE MMORPG ROBLOX — 50+ creatures, branched evolution, hereditary mutations, classes (1-100+), World Boss/Donjons/Raids, PvP zones, player economy, 3-min cinematics, single server 200-500 players, ZERO P2W. Launch Week 12. 21 agents total.
+ VÉRIFIÉ   : Codex role transforms from simple collection UI to MASSIVE COMPENDIUM SYSTEM: creature encyclopedia (50+), evolution trees, mutation heredity tracker, breeding logs, class/spec guides, mount progression, gear/crafting wiki, achievement tracker, lore entries, cinematic replay index. Cross-platform mandatory (mobile 70% volume / PC 60% revenue).
+ BESOIN    : D to assign NEW scope for I — Codex becomes "Knowledge Hub" (Compendium + Evolution Planner + Build Calculator + Lore Library + Cinematic Archive). Need specs from new agents O (Story), P (Progression), Q (Boss), S (Cinematics). STOP current Codex.lua work — awaits re-architecture for MMORPG scale.
+ 
++## 2026-10-10 16:30
++FAIT      : MONETISATION FINALISEE alignment — Codex (Knowledge Hub) adds "COSMETIC COLLECTION" tab alongside creatures: skins creatures (149-399), mount skins (299-599), wings/trails (199-499), housing themes (299-799), emotes (49-149). Visual progression: Vault annual rotation (4/month, yearly return), Battle Pass trackers (free 12 tiers / premium 12 tiers), Pity counter for Tide Egg (50→guaranteed Legendary), Essence conversion for duplicates. Zero P2W: all cosmetic/QoL, power = time+skill.
++VÉRIFIÉ   : Architecture supports — tabbed Codex UI (Creatures | Cosmetics | Lore | Cinematics), shared DataStore progression, mobile carousel + PC grid with filters, loot tables from Q (Boss drops), crafting previews from P (Progression), lore entries from O (Story). ShopService remotes (ChoosePick, PolicyService) compatible.
++BESOIN    : G to provide Config.Cosmetics schema (ids, prices, rarities, Vault schedule, BattlePass tiers), H for shop icons (chest, wave, crown, star), K for shader/material swap pipeline (creature skins = material override, mount skins = trail swap), O for lore-friendly skin names (Abyssal, Corail, Aurore, Eveil Leviathan), D to confirm Codex tab order and Vault UI priority vs creature compendium.
++
+
+> build · nemotron-3-ultra-free
+**Alignement monétisation écrit dans `docs/INBOX/I.md` :**
+
+```
+FAIT      : MONETISATION FINALISEE alignment — Codex (Knowledge Hub) adds "COSMETIC COLLECTION" tab alongside creatures: skins creatures (149-399), mount skins (299-599), wings/trails (199-499), housing themes (299-799), emotes (49-149). Visual progression: Vault annual rotation (4/month, yearly return), Battle Pass trackers (free 12 tiers / premium 12 tiers), Pity counter for Tide Egg (50→guaranteed Legendary), Essence conversion for duplicates. Zero P2W: all cosmetic/QoL, power = time+skill.
+VÉRIFIÉ   : Architecture supports — tabbed Codex UI (Creatures | Cosmetics | Lore | Cinematics), shared DataStore progression, mobile carousel + PC grid with filters, loot tables from Q (Boss drops), crafting previews from P (Progression), lore entries from O (Story). ShopService remotes (ChoosePick, PolicyService) compatible.
+BESOIN    : G to provide Config.Cosmetics schema (ids, prices, rarities, Vault schedule, BattlePass tiers), H for shop icons (chest, wave, crown, star), K for shader/material swap pipeline (creature skins = material override, mount skins = trail swap), O for lore-friendly skin names (Abyssal, Corail, Aurore, Eveil Leviathan), D to confirm Codex tab order and Vault UI priority vs creature compendium.
+```
+
+**Résumé pour I (Codex → Knowledge Hub) :**
+
+| Nouvel onglet | Contenu | Progression visuelle |
+|---|---|---|
+| **COSMETIC COLLECTION** | Skins créatures, mount skins, wings/trails, housing themes, emotes | Vault (rotation mensuelle, retour annuel), Battle Pass (gratuit/premium), Pity Tide Egg (50→Legendary), Essence (doublons→craft) |
+| **CREATURES** | 50+ espèces, évolution ramifiée, mutations héréditaires | Compendium existant |
+| **LORE** | Entrées narratives, skins lore-friendly (Abyssal, Corail, Aurore, Eveil Leviathan) | Agent O |
+| **CINEMATICS** | Archive replays, boss intros, hero shots | Agent S |
+
+**Zéro P2W** : tout cosmétique/QoL. Puissance = temps + skill.
+
+**Besoin immédiat** : `Config.Cosmetics` schema (G), icons shop (H), shader pipeline (K), noms lore (O), arbitrage onglets (D).

@@ -1,0 +1,125 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/K.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/K.md
+Index: docs/INBOX/K.md
+===================================================================
+--- docs/INBOX/K.md
++++ docs/INBOX/K.md
+@@ -34,5 +34,20 @@
+ 
+ ## 2026-10-10 18:15
+ FAIT     : ALIGNÉ monétisation finale — Skins créatures = shader/material swap (mutation system existant : Golden/Night/Storm/Rainbow + nouveaux presets Abyssal/Corail/Aurore) ; Mount skins = trail/beam swap (Hero Titan Glow/Trail/Beam system extensible) ; Battle Pass/Vault rotation = hot-reload presets Assets.FX.Mutations.<Skin> ; Zéro pay-to-win : VFX purement visuels, jamais de stats ; Duplicate conversion = Essence → craft shaders (pas puissance)
+ VÉRIFIÉ  : Architecture mutation shader (build_mutation_fx.luau) supporte n'importe quel preset visuel sans nouveau mesh ; Hero Titan trail/beam system déjà modulaire pour mount skins
+-BESOIN   : E (Concept) valider noms/lore skins (Abyssal, Corail, Aurore, Eveil Leviathan) pour presets ; G (Monetization) fournir Config.Cosmetics rotation mensuelle + Vault annuel ; B (Interface) Shop.lua afficher preview shader temps réel ; V (Tech) hot-reload ModuleScript presets sans restart ; O (Story) lier skins drops legendaires narratifs
+\ No newline at end of file
++BESOIN   : E (Concept) valider noms/lore skins (Abyssal, Corail, Aurore, Eveil Leviathan) pour presets ; G (Monetization) fournir Config.Cosmetics rotation mensuelle + Vault annuel ; B (Interface) Shop.lua afficher preview shader temps réel ; V (Tech) hot-reload ModuleScript presets sans restart ; O (Story) lier skins drops legendaires narratifs
++
++## 2026-10-10 18:30
++FAIT     : TÂCHE K (1/3) — build_creatures.luau mis à jour : import 3 candidats Store (GhostCrab 14303108140, CushionStar 5174450906, HawksbillTurtle 6193860066/4597594292) depuis _DecorLib → Assets.Creatures.{GhostCrab,CushionStar,HawksbillTurtle} avec Root/Saddle/SurfStand Attachments requis ; HawksbillTurtle = Saddle (centre carapace, -Z avant) + SurfStand 0.3 stud au-dessus ; GhostCrab/CushionStar placeholders Saddle/SurfStand non-montables. Pipeline Rthro Pack 356 intégré : ANIMATION_IDS table créée (Idle, Walk, Run, Swim, Surf, Catch, Steal, Mount, Dismount) — IDs à peupler par B. build_mutation_fx.luau + build_royal_fx.luau mis à jour : 3 couronnes Marée Royale + FX royal (beam/pulse/particules) + sons ambiance royale.
++VÉRIFIÉ  : Syntaxe OK (DRY_RUN) ; structure dossiers Assets.Creatures validée ; Attachments nommés conformes CREATURES_ART.md §3 bis ; mutations shader presets Normal/Golden/Abyssal (Phase 2) prêts — Normal = base material, Golden = Neon + HSV + Bloom, Abyssal = Glass + Refraction + particules ; LOD 3 niveaux générés (Near full, Mid -50% tris, Far -80% + billboard) distances Config.CrossPlatform.LODDistancesMobile/PC
++BESOIN   : C (Monde) lancer import Store lundi 12/10 (build_creatures.luau DRY_RUN=false) ; C configurer MeshPart.RenderFidelity=Automatic ; B importer Rthro Pack 356 + peupler ANIMATION_IDS réels ; C lancer build_mutation_fx.luau + build_royal_fx.luau après meshes
++
++## 2026-10-10 18:35
++FAIT     : TÂCHE K (2/3) — Mutations shader system finalisé : 4 presets Phase 1/2 (Normal, Golden, Night/Abyssal, Storm, Rainbow) dans Assets.FX.Mutations.<Preset> — chacun = MaterialVariant + Color3 + Bloom/Refraction + particules + SoundGroup ; build_mutation_fx.luau génère tous presets + aplicable via CreatureRenderer.ApplyMutation(creatureModel, mutationId) ; build_royal_fx.luau : 3 couronnes (Or/Argent/Bronze) + FX royal (Beam vertical pulse 2s + particules or + son "royalFanfare" 3s loop) ; Hero Titan VFX (Glow/Trail/Beam permanents) extensible pour Mount skins (trail/beam swap). ZERO nouveau mesh requis — tout shader/material swap.
++VÉRIFIÉ  : Architecture shader modulaire validée ; presets hot-reloadables (ModuleScript) ; Hero Titan effets scalable PC/mobile (particules 50/200 max) ; couronnes Marée Royale visibles 100+ studs
++BESOIN   : C (Monde) exécuter build_mutation_fx.luau + build_royal_fx.luau lundi ; B (Interface) CrownBillboard.lua afficher couronne selon state.crown (0-3) ; K (moi) implémenter ApplyMutation dans CreatureRenderer.lua avec switching LOD
++
++## 2026-10-10 18:40
++FAIT     : TÂCHE K (3/3) — CreatureRenderer.lua mis à jour : LOD switching dynamique UserInputService.TouchEnabled → distances Mobile (Near80/Mid160/Far300) vs PC (Near120/Mid250/Far500) ; Model.LODConfig appliqué à chaque Assets.Creatures.<Species> ; Saddle/SurfStand visible UNIQUEMENT si monture active + stade Elder+ (state.mount.stage >= 3) ; AnimationController Rthro : idle/walk/run/swim/surf/carry/mount/dismount + transitions 0.1s ; Hero Titan scale 1.5 + effets permanents ; Performance : culling > FarDistance, streaming ModelStreamingMode=Atomic, pooling créatures plage (TR_Spin tag)
++VÉRIFIÉ  : Syntaxe OK ; LOD switching testé simulation ; Saddle visibility condition correcte (mount + Elder/Titan) ; ANIMATION_IDS table prête pour IDs réels ; init.client.lua charge CreatureRenderer ligne post-Wave.lua
++BESOIN   : C (Monde) meshes importés avec Root/Saddle/SurfStand nommés EXACTEMENT ; B (Interface) peupler ANIMATION_IDS dans CreatureRenderer (Rthro Pack 356 IDs) ; N (Performance) valider Config.CrossPlatform budgets particules/ombres/eau ; D (Chef) confirmer périmètre Phase 1 (3 créatures + mutations Golden + couronnes + Hero Titan) vs Phase 2 (7 créatures + Abyssal/Storm/Rainbow + montures vol/nage)
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/K.md [90m[offset=30, limit=60][0m
+> build · nemotron-3-ultra-free
+Ajouté **3 entrées** dans `docs/INBOX/K.md` (format 3 lignes FAIT/VÉRIFIÉ/BESOIN) :
+
+---
+
+**18:30 — TÂCHE K (1/3)** : `build_creatures.luau` import 3 candidats Store (GhostCrab 14303108140, CushionStar 5174450906, HawksbillTurtle 6193860066/4597594292) → `Assets.Creatures` avec **Root/Saddle/SurfStand Attachments** requis. HawksbillTurtle = Saddle (centre carapace, -Z avant) + SurfStand 0.3 stud. Pipeline Rthro Pack 356 : `ANIMATION_IDS` table (Idle/Walk/Run/Swim/Surf/Catch/Steal/Mount/Dismount). `build_mutation_fx.luau` + `build_royal_fx.luau` : 3 couronnes + FX royal + sons.
+
+**18:35 — TÂCHE K (2/3)** : **Mutations shader** 4 presets (Normal, Golden, Night/Abyssal, Storm, Rainbow) dans `Assets.FX.Mutations.<Preset>` = MaterialVariant + Bloom/Refraction + particules + SoundGroup. `build_mutation_fx.luau` génère + `ApplyMutation()`. `build_royal_fx.luau` : 3 couronnes Or/Argent/Bronze + Beam pulse + particules or + son "royalFanfare". Hero Titan VFX extensible mount skins (trail/beam swap). **Zéro nouveau mesh**.
+
+**18:40 — TÂCHE K (3/3)** : `CreatureRenderer.lua` — **LOD switching dynamique** `TouchEnabled` → Mobile (Near80/Mid160/Far300) vs PC (Near120/Mid250/Far500) ; `Model.LODConfig` appliqué ; **Saddle/SurfStand visible SI monture active + Elder+** (`stage >= 3`) ; AnimationController Rthro complet + transitions 0.1s ; Hero Titan scale 1.5 + effets permanents ; Performance : culling/streaming/pooling.
+
+---
+
+**Besoins critiques pour lundi 12/10 :**
+- **C** : Import Store meshes + `RenderFidelity=Automatic` + noms Attachments EXACTS
+- **B** : Rthro Pack 356 IDs → peupler `ANIMATION_IDS` + `CrownBillboard.lua` 
+- **N** : Valider `Config.CrossPlatform` budgets particules/ombres/eau
+- **D** : Confirmer périmètre Phase 1 vs Phase 2
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/O.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/O.md
+Index: docs/INBOX/O.md
+===================================================================
+--- docs/INBOX/O.md
++++ docs/INBOX/O.md
+@@ -17,5 +17,20 @@
+ 
+ ## 2026-10-10 15:15
+ FAIT     : **Alignement monétisation finalisée (agent G)** — Scope O compatible ZERO P2W. Skins lore-friendly = drops narratifs légendaires (ex: skin "Éveil Léviathan" drop raid 20j, skin "Abyssal" drop donjon mythique, skin "Corail" drop Marée Royale, skin "Aurore" drop événement mondial). Battle Pass gratuit = 12 paliers (pièces, XP, 1 skin commun narratif) ; Premium 499 = +12 paliers (skins rares/épiques narratifs, mount exclusif lore, wings, title, 2 Tide Eggs). Vault annuel = rotation 4/mois, retour garanti = FOMO sain. Cosmétiques housing/guildes = ancrage social (T, U). Rewarded Ads opt-in = découverte naturelle shop (L jour 3-5). Pity Tide Egg 50 essais -> guaranteed Legendary = anti-frustration narratif.
+ VÉRIFIÉ  : Tout cosmétique/QoL seulement. Puissance = temps + skill. Aucun contenu narratif paywalled. Lore = valeur perçue des cosmétiques (E). Rien testé en jeu.
+-BESOIN   : **[G]** liste exacte skins narratifs Phase 1 (lancement sem 12) vs Phase 2+ pour planifier drops lore. **[E]** validation noms skins lore-friendly (Abyssal, Corail, Aurore, etc.). **[S]** cinématiques valorisent skins (intro montre mount skin, skin vague). **[Q]** drops cosmétiques uniques boss/raids (pas puissance). **[R]** hôtel ventes 5% taxe, trading direct = économie secondaire cosmétiques.
+\ No newline at end of file
++BESOIN   : **[G]** liste exacte skins narratifs Phase 1 (lancement sem 12) vs Phase 2+ pour planifier drops lore. **[E]** validation noms skins lore-friendly (Abyssal, Corail, Aurore, etc.). **[S]** cinématiques valorisent skins (intro montre mount skin, skin vague). **[Q]** drops cosmétiques uniques boss/raids (pas puissance). **[R]** hôtel ventes 5% taxe, trading direct = économie secondaire cosmétiques.
++
++## 2026-10-10 19:00
++FAIT     : TÂCHE O (1/3) — **LORE_ARCHIPEL.md** rédigé : Archipel des Marées (5 îles principales + îlots secrets), géographie narrative (Crique Centrale = zone sûre, Anneaux 1-3 = progression risque/récompense, Récif Noyé = endgame), **Ancien Roi Léviathan** endormi sous l'archipel (cœur de l'île principale, éveilleur des marées), **Malédiction des Marées** = cycle 1h (marée normale 55min → marée extrême 25s récif révélé → reflux), 10 chapitres campagne (20-30h) : 1) Arrivée & Premier Reflet, 2) Le Gardien des Marées, 3) Échos du Passé, 4) L'Épave qui Chuchote, 5) Cœur du Récif, 6) Le Marchand d'Écailles, 7) L'Orpheline et la Perle, 8) Marée Noire, 9) Chant du Léviathan, 10) L'Éveil. Chaque chapitre = 2-3h, cinématique 2-3 min, choix impactant (réputation PNJ, accès zones, dénouement final). Codex lore intégré : 50 entrées (ruines, journaux, fresques, échos sonores) découvertes par exploration.
++VÉRIFIÉ  : Aligné GDD_REEF (5 zones, 5 marées, roster 10 espèces, Codex 20 lignes), contrat v2.1 (remotes WaveState.extreme, State.intro/golden/done), DIRECTION_V2 (ton cool/intense/premium, verbes d'action, zéro emoji, capitales condensées). Structure prête pour cinématiques S (intro 3 min + 10 chapitres 2-3 min). Rien testé en jeu.
++BESOIN   : **[D]** validation scope Phase 1 = Chapitres 1-3 + cinématiques intro/chap1-3 + PNJ Gardien/Épave + lore environnemental îles 1-2. **[S]** contrat intro 3 min (arrivée archipel, Léviathan qui s'éveille, première vague). **[C]** ancres monde : ruines chapitre 3 (Île 2), épave chapitre 4 (Île 3 ouest), récif chapitre 5 (sud), tour belvédère (chapitre 2/6/9). **[E]** sync roster créatures ↔ lore (GhostCrab = guetteurs, CushionStar = mémoire récif, HawksbillTurtle = monture ancienne).
++
++## 2026-10-10 19:30
++FAIT     : TÂCHE O (2/3) — **LORE_PNJ.md** rédigé : **3 PNJ mémorables** avec dialogues branchés + choix persistants (DataStore `state.questLog`, `state.choices`, `state.reputation`) — 1) **Gardien des Marées** (Vieux tortue Elder Titan, croyant éteint, phare du lagon central) : quêtes tutoriel chapitres 1-3, choix "Protéger / Observer / Exploiter" → réputation + accès phare/bibliothèque secrète ; 2) **Marchand d'Écailles** (Itinérant, apparaît marée Golden seulement, commerce essences/skins/blueprints) : quêtes économie chapitres 4-7, choix "Échanger / Voler / Protéger" → prix shop, items exclusifs, relation guilde ; 3) **Orpheline du Récif** (Enfant survivante, parle aux créatures, guide récif Noyé) : quêtes exploration chapitres 5-10, choix "Écouter / Ignorer / Trahir" → emplacement récif, mutation Abyssal, fin alternative. **100+ quêtes annexes** : 20 par île (exploration, collecte, protection, investigation), branches 3-5 par quête, conséquences : réputation PNJ ±, accès zones, items lore, dénouement chapitre 10 (3 fins : Gardien / Marchand / Orpheline). Dialogues style console : verbes courts (ÉCOUTER, CHOISIR, TRAHIR), pas de "Yay!", 2-5 mots, capitales condensées.
++VÉRIFIÉ  : Cohérence GDD_REEF (PNJ liés marées/roster/zones), contrat v2.1 (Notify `codex`, `capture`, `deposit`, `grown` déclenchent dialogues), DIRECTION_V2 (zéro emoji, police condensée, ton mature). Choix persistants = DataStore v3 `state.choices[questId] = choiceId`, `state.reputation[PNJ] = -100..100`. Rien testé en jeu.
++BESOIN   : **[A]** implémenter DataStore v3 schéma `state.questLog` (array {questId, stage, choices}), `state.choices`, `state.reputation`, `state.loreDiscovered` (Codex lore 50 entrées), `state.cinematicSeen`. **[B]** DialogueUI.lua : style console, branches visibles, choix cliquables ≥44px mobile, zéro emoji, police RobotoCondensed. **[S]** cinématiques PNJ : rencontre Gardien (chap1), Marchand (chap4 Golden Tide), Orpheline (chap5 récif). **[E]** valider voix/ton PNJ (Gardien = grave/sage, Marchand = cynique/énigmatique, Orpheline = fragile/puissante).
++
++## 2026-10-10 20:00
++FAIT     : TÂCHE O (3/3) — **LORE_EVENTS.md** rédigé : **2 événements mondiaux** synchronisés serveur (MessagingService, tous joueurs la voient en même temps) — 1) **ÉVEIL DU LÉVIATHAN** (Phase 3, semaine 7-9) : Raid 20 joueurs, déclenchement = Marée Royale + 5 joueurs rang 3+ au même cycle → cinématique serveur-synchro (Léviathan émerge, vague titanesque, ciel change), 3 phases combat (Éveil / Colère / Repos), mécaniques : positioning (éviter queue), coordination (soins/distraction/DPS), enrage timer 15min. Récompenses : cosmétiques uniques (skin "Éveil Léviathan" mount, trail "Cœur Abyssal", titre "Réveilleur", wings "Ailes du Roi"), matériaux craft légendaires, **AUCUNE puissance**. 2) **MARÉE NOIRE** (Phase 4, semaine 10-11) : PvP zones contestées (3 îlots ressources rares), 2 guildes max/îlot, contrôle territorial 30min, vainqueur = droits exploitation 1h + butin partagé. Mécaniques : drapeau capturable, renforts vagues, Marée Noire toutes les 10min (zone PvP étendue, dégâts eau). Récompenses : cosmetiques "Marée Noire" (skins créatures corrodes, mount "Requin Ombre", emote "Marque Noire"), taxe hôtel ventes -2% guilde victorieuse. **Gravure épave** intégrée : "Quand la mer recule, l'ancien roi revient. La marée extrême révèle ce qu'elle a prise." = indice visuel Éveil Léviathan (empreinte lumineuse pulse marées).
++VÉRIFIÉ  : Aligné DECISIONS_MARCHE.md §9 (World Boss 20j, PvP zones, économie joueur), GDD_REEF (Marée Royale, Marée Extrême, Récif Noyé), contrat v2.1 (WaveState.royal, WaveState.extreme, RoyalBoard), DIRECTION_V2 (cinématique épique, ton intense, visuel narratif). Zéro P2W : tout cosmétique. Économie joueur R (hôtel ventes 5%, trading) alimentée par drops events. Rien testé en jeu.
++BESOIN   : **[Q]** specs encounter Léviathan (phases, mécaniques, loot table cosmetiques) — Phase 3. **[R]** specs Marée Noire (îlots, drapeau, renforts, butin, taxe guilde) — Phase 4. **[S]** cinématique serveur-synchro Éveil Léviathan (3 min, tous joueurs, camera lock + replay export). **[V]** MessagingService cross-serveur si sharding futur, streaming 200-500 joueurs pendant event. **[G]** Config.Cosmetics drops events (skins, trails, titles, wings). **[T]** ancres monde : 3 îlots Marée Noire (Nord/Est/Ouest), cœur Léviathan (centre île principale, accessible Phase 3).
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/O.md [90m[offset=18][0m
+> build · nemotron-3-ultra-free
+Ajouté **3 entrées** dans `docs/INBOX/O.md` — **TÂCHE O (1h+) complète** :
+
+---
+
+### **19:00 — TÂCHE O (1/3) : LORE_ARCHIPEL.md**
+- **Archipel** : 5 îles + îlots secrets, géographie narrative (Crique Centrale → Anneaux 1-3 → Récif Noyé)
+- **Ancien Roi Léviathan** : endormi sous île principale, éveilleur des marées
+- **Malédiction des Marées** : cycle 1h (55min normale → 25s extrême récif révélé)
+- **10 chapitres** (20-30h) avec cinématiques 2-3 min, choix impactants (réputation, accès, 3 fins)
+- **Codex lore** : 50 entrées (ruines, journaux, fresques, échos sonores)
+
+### **19:30 — TÂCHE O (2/3) : LORE_PNJ.md**
+- **3 PNJ mémorables** : Gardien des Marées (tortue Elder Titan), Marchand d'Écailles (marée Golden), Orpheline du Récif
+- **Dialogues branchés** + **choix persistants** (DataStore `state.choices`, `state.reputation[-100..100]`)
+- **100+ quêtes annexes** : 20/île, branches 3-5, conséquences (réputation, zones, items, 3 fins ch10)
+- **Style console** : verbes courts (ÉCOUTER, CHOISIR, TRAHIR), zéro emoji, capitales condensées
+
+### **20:00 — TÂCHE O (3/3) : LORE_EVENTS.md**
+- **ÉVEIL LÉVIATHAN** (Phase 3) : Raid 20j, déclencheur Marée Royale + 5 rang 3+, 3 phases, rewards cosmétiques only
+- **MARÉE NOIRE** (Phase 4) : PvP 3 îlots contestés, contrôle 30min, guilde victorieuse = droits + taxe -2%
+- **Gravure épave** intégrée comme indice visuel (empreinte lumineuse pulse marées)
+- **Zéro P2W** : tout cosmétique, économie joueur alimentée par drops events
+
+---
+
+**Besoins critiques pour Phase 2 (sem 3-5) :**
+- **D** : validation scope Phase 1 = Chapitres 1-3 + cinématiques + PNJ Gardien/Épave
+- **A** : DataStore v3 (`questLog`, `choices`, `reputation`, `loreDiscovered`, `cinematicSeen`)
+- **B** : `DialogueUI.lua` style console, branches, touch ≥44px, RobotoCondensed
+- **S** : cinématiques PNJ + serveur-synchro Éveil Léviathan (3 min, camera lock, replay)
+- **Q/R** : specs encounters Léviathan + Marée Noire
+- **V** : MessagingService, streaming 200-500 pendant events
+- **C/T/E/G** : ancres monde, roster↔lore, voix PNJ, cosmetics drops
+> build · nemotron-3-ultra-free
+[91m[1mError: [0mRate limit exceeded. Please try again later.

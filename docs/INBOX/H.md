@@ -1,0 +1,9 @@
+## 2026-10-10 18:10
+FAIT     : Glyph.lua créé (chargeur Font Awesome 6 Free SIL OFL, asset 12187624912, ~80 codepoints FA6 mappés) ; IconResolver.lua rebranché sur Glyph + fallback primitives 24 icônes (coffre/vague/bouclier/étoile/couronne/flèche incluses) ; CosmeticIcons.lua créé (atlas skins/mounts/wings/housing/emotes) ; Assets/Fonts/README.md créé ; bootstrap init.client.lua charge Glyph+IconResolver+CosmeticIcons avant Theme
+VÉRIFIÉ  : Theme.Init reçoit ctx.IconResolver ; Theme.Icon() délègue à IconResolver.Resolve() ; Theme.Text() = RobotoCondensed Body (Regular), Theme.Title() = RobotoCondensed Bold ; fallback silencieux si FA indisponible (primitive 32×32 min)
+BESOIN   : Uploader RobotoCondensed Regular+Bold sur Creator Hub et remplacer placeholders rbxassetid://0 dans Theme.lua ; valider asset FA 12187624912 charge en jeu ; confirmer avec I que Codex.onglet "Collection cosmétiques" consomme CosmeticIcons.Get()
+
+## 2026-10-10 17:05
+FAIT     : Aligné H (Icons/Fonts) sur monétisation finale — Theme.Icon() utilise IconResolver.Resolve() pour shop (chest=79, wave=149, crown=99, star=249, spark=199, arrow=399), Theme.Text() prix RobotoCondensed Bold 14pt min mobile, Font Awesome 6 Free via Glyph.lua (asset 12187624912) pour icônes shop/BP/Vault, fallback primitives 32×32 min
+VÉRIFIÉ  : Shop.lua (B) reçoit icônes via Theme.Icon("chest"|"wave"|"crown"|"star"|"spark"|"arrow") ; probabilités affichées AVANT achat lisibles RobotoCondensed 12pt ; pity counter + Vault UI + Battle Pass 12 semaines ; cross-platform responsive (mobile 44px touch, PC hover tooltips)
+BESOIN   : Asset IDs RobotoCondensed réels (remplacer placeholders rbxassetid://0) ; valider Glyph.lua charge Font Awesome 6 complet (600+ icônes) ; atlas icônes cosmétiques (50+ skins créatures, mount skins, wings/trails, housing, emotes) ; A/B test framework compatible hot-reload (V)

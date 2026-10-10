@@ -148,17 +148,23 @@ Config.Royal = {
 -- Prix finaux alignes sur l'etude top 50 (docs/DECISIONS_MARCHE.md).
 Config.Shop = {
 	Passes = {
-		VIPRider      = { id = 0, price = 79,   name = "VIP Rider",      coinBonus = 0.10, mountSpeedBonus = 0.10, priorityQueue = true, exclusiveEmote = true },
+		VIPRider      = { id = 0, price = 79,   name = "VIP Rider",      coinBonus = 0.10, mountSpeedBonus = 0.10, priorityQueue = true, exclusiveEmote = true, priceVariants = { { price = 79, weight = 0.5, label = "A" }, { price = 99, weight = 0.25, label = "B" }, { price = 129, weight = 0.25, label = "C" } } },
 		SpeedBoost    = { id = 0, price = 149,  name = "Speed Boost",    waveSpeedBonus = 0.15, homeCooldownMult = 0.70 },
 		BagExpand     = { id = 0, price = 99,   name = "Bag Expansion",  extraSlots = 10 },
 		StarterPack   = { id = 0, price = 249,  name = "Starter Pack",   includes = { "VIPRider", "SpeedBoost", "BagExpand" } },
 	},
 	-- aleatoire, probabilites affichees AVANT achat ; cache si ArePaidRandomItemsRestricted
-	TideEgg = { id = 0, price = 199, chances = { Common = 60, Uncommon = 25, Rare = 10, Epic = 4, Legendary = 1 } },
+	TideEgg = { id = 0, price = 199, chances = { Common = 60, Uncommon = 25, Rare = 10, Epic = 4, Legendary = 1 }, goldenChance = 10, pity = 50 },
 	-- choix direct, montre a la place du Tide Egg si l'aleatoire est restreint
 	PickCreature = { id = 0, price = 399, species = { "GhostCrab", "CushionStar", "HawksbillTurtle", "Lionfish", "BlueRingedOctopus", "LeopardRay" } },
+	-- Deep Dive (semaine 2) : tirage premium en Pearls
+	DeepDive = { id = 0, price = 399, currency = "Pearls", enabled = false },
 	-- Rewarded Video Ads (2025) : 1 TideEgg gratuit/jour, cooldown 24h
-	RewardedAd = { enabled = true, reward = "TideEgg", cooldownHours = 24 },
+	RewardedAd = { enabled = true, reward = "TideEgg", cooldownHours = 24, price = 0 },
+	-- Battle Pass (12 semaines)
+	BattlePass = { enabled = true, price = 499, durationWeeks = 12, freeTiers = 12, premiumTiers = 12 },
+	-- Cosmetiques rotatifs (mensuels)
+	CosmeticRotation = { enabled = true, intervalDays = 30, vaultReturnDays = 365 },
 }
 
 -- Verification serveur de la vitesse reelle (anti speed hack) : distance horizontale sur `window` s

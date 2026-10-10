@@ -1,0 +1,43 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md [90m[offset=150][0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/K.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+Done. New plan written to `docs/INBOX/K.md` (3 lines per protocol).
+
+---
+
+### **K Role Pivot Summary: Mobile Collection Game → MMORPG VFX Lead**
+
+| **OLD SCOPE (obsolete)** | **NEW SCOPE (MMORPG)** |
+|--------------------------|------------------------|
+| 10 creatures, linear stages | **50+ creatures**, branched evolution, hereditary mutations |
+| Wave = central mechanic | Wave = **one event among many** |
+| Hero Titan = visual peak | **World Bosses** (Leviathan, Kraken, Hydra) 20-player |
+| Rthro 6 animations | **Full animation trees** per creature class (idle/combat/special/mount/fly/swim) |
+| Mutation shaders (4) | **Hereditary mutation system** + boss phase VFX |
+| 120-stud culling | **Streaming 200-500 players**, aggressive LOD, instanced dungeons/raids |
+| Mobile-first 30 FPS | **PC/Console parity**, 60 FPS target, cinematic 30 FPS locked |
+| Phase 1 = 3 creatures | **Phase 1 = Foundation** (server, netcode, streaming, base combat) |
+
+### **New K Deliverables (12 weeks)**
+
+| Pillar | Deliverable | Dependencies |
+|--------|-------------|--------------|
+| **Créatures (50+)** | Pipeline: base mesh → evolution branches (3-5 per species) → hereditary mutation blending | O (lore), P (progression trees) |
+| **Boss/Raids (Q)** | Leviathan/Kraken/Hydra VFX: phase transitions, telegraphed mechanics, arena effects, 20-player sync | Q (mechanics design), V (netcode) |
+| **Cinématiques (S)** | Boss intros (30s), world events (server-synced), replay system VFX export | S (cinematic engine), V (performance) |
+| **Montures** | Flight/swim/land trees with unique VFX per progression tier | P (mount progression) |
+| **Tech** | Streaming LOD for 500 players, instanced VFX pooling, GraphicsQuality Auto/High/Low | V (technical lead) |
+
+### **Immediate Blockers (require D arbitration)**
+1. **8 new agents** (O,P,Q,R,S,T,U,V) must be recruited before K can scale
+2. **Creature pipeline architecture** needs O (lore) + P (progression) specs
+3. **Boss VFX specs** need Q (encounter design) first
+4. **Cinematic VFX pipeline** needs S (cinematic engine) specs
+
+**No code until dependencies defined.** The old `build_creatures.luau` / `CreatureRenderer` are now prototype-only.

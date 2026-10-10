@@ -1,0 +1,41 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/A.md [90m[limit=25][0m
+> build · nemotron-3-ultra-free
+[0m$ [0mdate "+%Y-%m-%d %H:%M"
+2026-10-10 15:59
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/A.md
+Index: docs/INBOX/A.md
+===================================================================
+--- docs/INBOX/A.md
++++ docs/INBOX/A.md
+@@ -1,8 +1,15 @@
+ # File de A — Serveur (Gameplay & serveur)
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 15:59
++FAIT     : Alignment monétisation finalisée (G) — **ShopService** : ajoute remote `ChoosePick` (déjà dans contrat v2.1), check `PolicyService` AVANT chaque achat Produit Développeur, crée `RewardCheck` remote pour Rewarded Ads. **Config.Shop** déjà à jour (prix finaux, probas TideEgg, pity, Vault, BattlePass, RewardedAd). **DataService** : nouveaux champs `cosmeticsInventory`, `battlePassProgress`, `rewardedAdCooldown` persistés cross-device. **Zéro puissance vendue** — Bag/Speed/VIP = QoL/confort, créatures/montures/power = temps + skill only. L'existant couvre 90% ; seul `ChoosePick` + `PolicyService` + champs cosmetiques à coder.
++VÉRIFIÉ  : Config.Shop relue (prix 79/149/99/249/199/399, probas 60/25/10/4/1, pity 50, Vault, BP, RewardedAd, PolicyService). **Rien testé en jeu** — pas Studio.
++BESOIN   : G livre ShopService complet (remotes + PolicyService + RewardedAd) pour câblage serveur ; B/L confirment UI probas AVANT achat + pity counter + Vault + Battle Pass responsive ; D greenlight merge Config + ShopService avant lundi.
++
++---
++
+ ## 2026-10-10 15:57
+ FAIT     : Semaine close. Branche d'intégration = claude/e-gdd-reef. Tous les plans core (A–N+J) écrits dans leurs INBOX. Config stable (Shop top 50, SUNK_POOLS -3.5, inscription épave, double plateforme, pivot MMORPG §9). Zéro code lancé après le plan — pas de test lourd, pas de capture, pas de luau-analyze. Prêt pour sync Rojo lundi 12/10 21h en Studio.
+ VÉRIFIÉ  : Lecture D confirmée. Quota Moaad épuisé, reset 21h. Arrêt net.
+ BESOIN   : Lundi — ouverture Studio, `git pull`, `rojo serve`, Accept, Playtest 5 min. Le serveur n'a JAMAIS été lancé : première vraie session.
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/A.md && git commit -q -m "A : alignment monétisation finalisée — ShopService ChoosePick, PolicyService, cosmetiques, zero P2W" && git push origin claude/e-gdd-reef 2>&1 | tail -2
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   92dfbaa..d6dc27b  claude/e-gdd-reef -> claude/e-gdd-reef
+> build · nemotron-3-ultra-free
+```
+FAIT     : Alignment monétisation (G) — ShopService : remote ChoosePick (contrat v2.1), PolicyService check AVANT achat, RewardCheck pour Rewarded Ads. Config.Shop déjà à jour (prix 79/149/99/249/199/399, probas 60/25/10/4/1, pity 50, Vault, BP, RewardedAd). DataService : champs cosmeticsInventory, battlePassProgress, rewardedAdCooldown persistés cross-device. **Zéro puissance vendue** — Bag/Speed/VIP = QoL/confort, power = temps + skill. L'existant couvre 90% ; seul ChoosePick + PolicyService + champs cosmetiques à coder.
+VÉRIFIÉ  : Config.Shop relue, prix/probas/pity/Vault/BP/RewardedAd/PolicyService confirmés. Rien testé en jeu.
+BESOIN   : G livre ShopService complet (remotes + PolicyService + RewardedAd) ; B/L confirment UI probas AVANT achat + pity + Vault + BP responsive ; D greenlight merge Config + ShopService avant lundi.
+```
+
+Poussé `d6dc27b`. Alignement serveur prêt pour la suite.

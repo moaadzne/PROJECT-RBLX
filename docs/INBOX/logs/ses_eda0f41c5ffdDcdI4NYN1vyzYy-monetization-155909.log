@@ -1,0 +1,30 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/K.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+Done. Alignment written to `docs/INBOX/K.md` (3 lines per protocol).
+
+---
+
+### **K VFX ↔ Monetization Alignment**
+
+| Monetization Item | K VFX Implementation | Status |
+|-------------------|---------------------|--------|
+| **Creature skins (149-399)** | Shader/material swap via `Assets.FX.Mutations.<Skin>` — reuses mutation system (Golden/Night/Storm/Rainbow + new: *Abyssal, Corail, Aurore, Eveil Leviathan*) | ✅ Architecture ready |
+| **Mount skins (299-599)** | Trail/beam swap on Hero Titan system (`HeroGlow`, `HeroTrail`, `Core/Halo` beams) — modular, hot-reloadable | ✅ Architecture ready |
+| **Wings/Trails (199-499)** | ParticleEmitter + Beam presets, attach to mount/avatar | ⚠️ Need mount attachment points |
+| **Battle Pass / Vault rotation** | New presets = drop-in folders in `Assets.FX.Mutations/`, hot-reload via `ModuleScript` | ✅ Supported |
+| **Duplicate → Essence → craft skins** | Essence currency → unlocks shader presets (visual only) | ✅ Zero power impact |
+| **Lore-friendly skins (O)** | *Abyssal* (Night+Storm blend), *Corail* (Golden+pink Foil), *Aurore* (Rainbow+warm HueCycle), *Eveil Leviathan* (unique boss drop) | 🔄 Needs E/O specs |
+
+### **Immediate Dependencies**
+| Need | From | For |
+|------|------|-----|
+| Skin names/lore (Abyssal, Corail, Aurore, Eveil Leviathan) | E (Concept) + O (Story) | Preset naming & visual direction |
+| `Config.Cosmetics` rotation schedule | G (Monetization) | Vault/Monthly pipeline |
+| Shop preview shader (real-time) | B (Interface) | Player sees skin before buy |
+| Hot-reload preset system | V (Tech) | Monthly rotation no restart |
+| Mount attachment points (trail/beam) | P (Progression) + C (Monde) | Mount skin application |

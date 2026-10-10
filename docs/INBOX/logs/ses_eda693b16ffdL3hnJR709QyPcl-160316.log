@@ -1,0 +1,475 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== fichiers actuels ===" && ls src/StarterPlayer/StarterPlayerScripts/TideClient/ && echo "" && echo "=== Theme.lua fonts actuelles ===" && grep -n "Font" src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua | head -15
+=== fichiers actuels ===
+Ambience.lua
+ChatStyle.lua
+Components.lua
+Feel.lua
+Fx.lua
+Glyph.lua
+Hud.lua
+MountButton.lua
+NameTags.lua
+Notifications.lua
+Onboarding.lua
+PoolBillboards.lua
+Prompts.lua
+RoyalHud.lua
+Settings.lua
+Sfx.lua
+Shop.lua
+StealHud.lua
+Store.lua
+Theme.lua
+Util.lua
+Wave.lua
+World.lua
+init.client.lua
+
+=== Theme.lua fonts actuelles ===
+66:local CONDENSED = Enum.Font.RobotoCondensed
+67:local CONDENSED_BOLD = (Enum.Font :: any).RobotoCondensedBold or CONDENSED
+70:Theme.Fonts = {
+73:	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
+74:	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
+245:		FontFace = Theme.Fonts.Bold,
+262:	p.FontFace = props.FontFace or Theme.Fonts.Title
+393:-- props : Name, Size, Position, AnchorPoint, LayoutOrder, Parent, Text, TextSize, Color, Font, Radius
+416:		FontFace = props.Font or Theme.Fonts.Title,
+605:-- sinon Font Awesome si charge, sinon le pictogramme dessine de cette cle, sinon rien.
+640:-- Recolore une icone (image, Font Awesome, ou dessin)
+712:		FontFace = Theme.Fonts.Title,
+> build · nemotron-3-ultra-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -52,11 +52,12 @@
+ Theme.Colors.Sunset = Theme.Colors.Warning
+ Theme.Colors.GoldDark = Color3.fromRGB(176, 128, 30)
+ Theme.Colors.Sand = Color3.fromRGB(226, 208, 170)
+ 
++-- Panneaux sombres translucides (BG 0.15 transp), coins 6-10 px, police RobotoCondensed,
+ Theme.Transparency = {
+-	Plate = 0.22, -- panneau sombre translucide
+-	PlateStrong = 0.08,
++	Plate = 0.15, -- panneau sombre translucide
++	PlateStrong = 0.05,
+ 	Line = 0.86,
+ 	TextStroke = 0.55,
+ }
+ 
+
+> build · nemotron-3-ultra-free
+> build · nemotron-3-ultra-free
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -68,12 +68,14 @@
+ local CONDENSED_BOLD = (Enum.Font :: any).RobotoCondensedBold or CONDENSED
+ -- Texte courant : Builder Sans (bible §5), garde en famille pour conserver le gras et le medium.
+ local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
+ Theme.Fonts = {
+-	Title = CONDENSED_BOLD,
+-	Number = CONDENSED_BOLD,
+-	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
+-	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
++	Title = CONDENSED_BOLD,    -- RobotoCondensed Bold
++	Number = CONDENSED_BOLD,   -- RobotoCondensed Bold
++	Body = Font.new(BUILDER, Enum.FontWeight.Medium),  -- Builder Sans Medium
++	Caption = Font.new(BUILDER, Enum.FontWeight.Regular), -- Builder Sans Regular
++	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),    -- Builder Sans Bold (legacy)
++	Medium = Font.new(BUILDER, Enum.FontWeight.Medium), -- Builder Sans Medium (legacy)
+ }
+ 
+ Theme.Radius = 8 -- coins de 6 a 10 px
+ Theme.RadiusMin, Theme.RadiusMax = 6, 10
+
+> build · nemotron-3-ultra-free
+[0m← [0mWrite /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/IconResolver.lua
+Created file successfully: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/IconResolver.lua
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+@@ -7,9 +7,9 @@
+ local player = Players.LocalPlayer
+ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+ 
+ -- Ordre de chargement : les briques d'abord, les ecrans ensuite (un module absent est saute)
+-local FOUNDATION = { "Glyph", "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components" }
++local FOUNDATION = { "Util", "Theme", "Glyph", "IconResolver", "Settings", "Store", "Sfx", "Fx", "Components" }
+ local SCREENS = {
+ 	"Notifications",
+ 	"Hud",
+ 	"Prompts",
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+@@ -1,9 +1,12 @@
+ -- Shop : boutique de lancement (GDD v2 §9, contrat v2.1). Style console. S'ouvre seulement sur demande
+ -- (jamais de pop-up), aucun compte a rebours, prix fixes, « Everything here is optional ».
+ --   - Tide Egg (aleatoire) : probabilites de Config.Shop.TideEgg affichees AVANT l'achat ;
++--     odds par rarete (60/25/10/4/1) + pity counter (50 -> garantie Legendary) ;
+ --     remplace par Pick a Creature (achat direct, RF ChoosePick avant l'achat) si state.shop.randomAllowed est faux.
+ --   - Gamepasses de Config.Shop.Passes ; « OWNED » d'apres state.passes.
++--   - Bundle StarterPack (VIP + Speed + Bag) valeur percue 327 -> prix 249
++--   - Rewarded Ad : opt-in 1 TideEgg/jour, cooldown 24h, bouton "Regarder pour recompense"
+ --   - id = 0 dans Config : produit pas encore cree, carte affichee mais achat coupe (« SOON »).
+ local MarketplaceService = game:GetService("MarketplaceService")
+ local Players = game:GetService("Players")
+ 
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+@@ -18,15 +18,24 @@
+ local CARD_H = 300
+ local PASS_W = 150
+ local RANDOM_W = 260
+ 
+--- Textes des gamepasses (6 mots au plus par ligne) ; prix et ids viennent de Config.Shop.Passes
++-- Gamepasses + Bundle (6 mots max par ligne)
+ local PASS_INFO = {
+-	{ key = "FastGrowth", name = "Fast Growth", icon = "ride", lines = { "Creatures grow", "2x faster" } },
+-	{ key = "BigNet", name = "Big Net", icon = "net", lines = { "Catch radius", "x1.5" } },
+ 	{ key = "VIPRider", name = "VIP Rider", icon = "crown", lines = { "+10% coins", "+10% ride speed", "VIP title" } },
++	{ key = "SpeedBoost", name = "Speed Boost", icon = "ride", lines = { "Wave speed", "+15%", "GoHome -30% cd" } },
++	{ key = "BagExpand", name = "Bag Expansion", icon = "net", lines = { "+10 slots", "inventory" } },
+ }
+ 
++-- Bundle StarterPack (valeur percue 327 -> 249)
++local BUNDLE_INFO = {
++	key = "StarterPack",
++	name = "Starter Pack",
++	icon = "chest",
++	lines = { "VIP Rider", "Speed Boost", "Bag Expansion" },
++	valueLines = { "Value 327", "Price 249" },
++}
++
+ local Util, Theme, Components, Store, Hud, Notifications, Config, Sfx
+ local player = Players.LocalPlayer
+ local root: Frame
+ local panel: CanvasGroup
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+@@ -60,35 +60,115 @@
+ end
+ 
+ ---------------------------------------------------------------- Cartes
+ local function passCard(info, order: number)
+-	local cfg = (shopConfig().Passes or {})[info.key]
+-	local id = cfg and tonumber(cfg.id) or 0
+-	local price = cfg and tonumber(cfg.price)
+-	local owned = Store.Get().passes[info.key] == true
+-	local sellable = id > 0 and not owned
+-	local card = Components.Card({
+-		Name = info.key,
+-		Size = UDim2.fromOffset(PASS_W, CARD_H),
+-		Icon = info.icon,
+-		Title = info.name,
+-		Lines = info.lines,
+-		Color = Theme.Colors.Lagoon,
+-		ButtonText = if owned then "Owned" elseif id > 0 then priceText(price) else "Soon",
+-		ButtonColor = if sellable then Theme.Colors.Lagoon else Theme.Colors.Disabled,
+-		LayoutOrder = order,
+-	})
+-	card.Instance.Parent = cardsFrame
+-	card.Button.Activated:Connect(function()
+-		if owned then
+-			return
+-		elseif not sellable then
+-			soon()
+-			return
++		local cfg = (shopConfig().Passes or {})[info.key]
++		local id = cfg and tonumber(cfg.id) or 0
++		local price = cfg and tonumber(cfg.price)
++		local owned = Store.Get().passes[info.key] == true
++		local sellable = id > 0 and not owned
++		local card = Components.Card({
++			Name = info.key,
++			Size = UDim2.fromOffset(PASS_W, CARD_H),
++			Icon = info.icon,
++			Title = info.name,
++			Lines = info.lines,
++			Color = Theme.Colors.Lagoon,
++			ButtonText = if owned then "Owned" elseif id > 0 then priceText(price) else "Soon",
++			ButtonColor = if sellable then Theme.Colors.Lagoon else Theme.Colors.Disabled,
++			LayoutOrder = order,
++		})
++		card.Instance.Parent = cardsFrame
++		card.Button.Activated:Connect(function()
++			if owned then
++				return
++			elseif not sellable then
++				soon()
++				return
++			end
++			MarketplaceService:PromptGamePassPurchase(player, id)
++		end)
++	end
++
++	-- Bundle StarterPack card (grande, accent Gold)
++	local function bundleCard(order: number)
++		local cfg = shopConfig()
++		local bundle = cfg.Passes and cfg.Passes.StarterPack
++		local id = bundle and tonumber(bundle.id) or 0
++		local price = bundle and tonumber(bundle.price)
++		local owned = Store.Get().passes.StarterPack == true
++		local sellable = id > 0 and not owned
++		local card = Components.Glass({
++			Name = "StarterPack",
++			Size = UDim2.fromOffset(RANDOM_W, CARD_H),
++			Accent = Theme.Colors.Gold,
++			Strong = true,
++			LayoutOrder = order,
++		})
++		card.Parent = cardsFrame
++		Theme.Title({
++			Name = "Title",
++			Position = UDim2.fromOffset(0, 12),
++			Size = UDim2.new(1, 0, 0, 28),
++			Text = BUNDLE_INFO.name,
++			TextSize = Theme.TextSize.Large,
++			TextColor3 = Theme.Colors.Gold,
++			ZIndex = 2,
++			Parent = card,
++		})
++		local list = Theme.Create("Frame", {
++			Name = "List",
++			BackgroundTransparency = 1,
++			Position = UDim2.fromOffset(14, 50),
++			Size = UDim2.new(1, -28, 1, -112),
++			ZIndex = 2,
++			Parent = card,
++		})
++		Theme.List(list, Enum.FillDirection.Vertical, 4)
++		-- Includes
++		for i, line in BUNDLE_INFO.lines do
++			Theme.Text({
++				Size = UDim2.new(1, 0, 0, 20),
++				Text = line,
++				TextSize = Theme.TextSize.Small,
++				FontFace = Theme.Fonts.Medium,
++				TextColor3 = Theme.Colors.Text,
++				TextXAlignment = Enum.TextXAlignment.Left,
++				LayoutOrder = i,
++				ZIndex = 3,
++				Parent = list,
++			})
+ 		end
+-		MarketplaceService:PromptGamePassPurchase(player, id)
+-	end)
+-end
++		-- Value
++		for i, line in BUNDLE_INFO.valueLines do
++			Theme.Text({
++				Size = UDim2.new(1, 0, 0, 20),
++				Text = line,
++				TextSize = Theme.TextSize.Small,
++				FontFace = Theme.Fonts.Title,
++				TextColor3 = Theme.Colors.Gold,
++				TextXAlignment = Enum.TextXAlignment.Left,
++				LayoutOrder = 10 + i,
++				ZIndex = 3,
++				Parent = list,
++			})
++		end
++		local buy = Theme.Button({
++			Name = "Buy",
++			AnchorPoint = Vector2.new(0.5, 1),
++			Position = UDim2.new(0.5, 0, 1, -10),
++			Size = UDim2.new(1, -20, 0, 42),
++			Color = Theme.Colors.Gold,
++			Parent = card,
++		})
++		buy.ZIndex = 2
++		Theme.SetButtonText(buy, if sellable then priceText(price) else "Soon")
++		Theme.SetButtonColor(buy, if sellable then Theme.Colors.Gold else Theme.Colors.Disabled)
++		buy.Activated:Connect(function()
++			if owned then return elseif not sellable then soon() return end
++			MarketplaceService:PromptGamePassPurchase(player, id)
++		end)
++	end
+ 
+ -- Grande carte : Tide Egg (probabilites completes) ou Pick a Creature (choix de l'espece)
+ local function randomCard(randomAllowed: boolean)
+ 	local cfg = shopConfig()
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+@@ -168,9 +168,64 @@
+ 			MarketplaceService:PromptGamePassPurchase(player, id)
+ 		end)
+ 	end
+ 
+--- Grande carte : Tide Egg (probabilites completes) ou Pick a Creature (choix de l'espece)
++-- Rewarded Ad card (opt-in 1 TideEgg/jour)
++local function rewardedAdCard(order: number)
++	local state = Store.Get()
++	local cfg = shopConfig()
++	local ad = cfg.RewardedAd
++	if not ad or not ad.enabled then return end
++	
++	local card = Components.Glass({
++		Name = "RewardedAd",
++		Size = UDim2.fromOffset(PASS_W, CARD_H),
++		Accent = Theme.Colors.Lagoon,
++		Strong = true,
++		LayoutOrder = order,
++	})
++	card.Parent = cardsFrame
++	Theme.Title({
++		Name = "Title",
++		Position = UDim2.fromOffset(0, 12),
++		Size = UDim2.new(1, 0, 0, 28),
++		Text = "Free Tide Egg",
++		TextSize = Theme.TextSize.Large,
++		TextColor3 = Theme.Colors.Lagoon,
++		ZIndex = 2,
++		Parent = card,
++	})
++	Theme.Text({
++		Name = "Desc",
++		Position = UDim2.fromOffset(14, 50),
++		Size = UDim2.new(1, -28, 0, 60),
++		Text = "Watch a short ad\nGet 1 Tide Egg\nOnce per day",
++		TextSize = Theme.TextSize.Small,
++		FontFace = Theme.Fonts.Medium,
++		TextColor3 = Theme.Colors.Text,
++		TextXAlignment = Enum.TextXAlignment.Left,
++		ZIndex = 3,
++		Parent = card,
++	})
++	local watch = Theme.Button({
++		Name = "Watch",
++		AnchorPoint = Vector2.new(0.5, 1),
++		Position = UDim2.new(0.5, 0, 1, -10),
++		Size = UDim2.new(1, -20, 0, 42),
++		Color = Theme.Colors.Lagoon,
++		Text = "Watch for Reward",
++		TextSize = Theme.TextSize.Small,
++		Parent = card,
++	})
++	watch.ZIndex = 2
++	watch.Activated:Connect(function()
++		if state.lastRewardedAd and (Store.Now() - state.lastRewardedAd) < (ad.cooldownHours or 24) * 3600 then
++			Notifications.Push({ text = "COME BACK TOMORROW", color = Theme.Colors.Warning, icon = "clock", key = "shop" })
++			return
++		end
++		MarketplaceService:PromptProductPurchase(player, ad.id or 0)
++	end)
++end
+ local function randomCard(randomAllowed: boolean)
+ 	local cfg = shopConfig()
+ 	local card = Components.Glass({
+ 		Name = if randomAllowed then "TideEgg" else "PickCreature",
+
+> build · nemotron-3-ultra-free
+[0m✗ [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua failed
+[91m[1mError: [0mCould not find oldString in /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua. It must match exactly, including whitespace and indentation.
+> build · nemotron-3-ultra-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua [90m[limit=80, offset=80][0m
+> build · nemotron-3-ultra-free
+[0m✱ [0mGrep "local function randomCard" [90min /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua · 1 match[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua [90m[offset=225, limit=80][0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua [90m[offset=305, limit=60][0m
+> build · nemotron-3-ultra-free
+[0m✱ [0mGrep "local function gridKey|local function buildCards" [90min /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua · 2 matches[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua [90m[offset=388, limit=50][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+@@ -391,9 +391,10 @@
+ 	local owned = {}
+ 	for _, info in PASS_INFO do
+ 		table.insert(owned, if state.passes[info.key] then "1" else "0")
+ 	end
+-	return (if state.shop.randomAllowed then "egg" else "pick") .. table.concat(owned)
++	local bundle = state.passes.StarterPack and "1" or "0"
++	return (if state.shop.randomAllowed then "egg" else "pick") .. table.concat(owned) .. bundle
+ end
+ 
+ local function buildCards()
+ 	local state = Store.Get()
+@@ -407,11 +408,13 @@
+ 			child:Destroy()
+ 		end
+ 	end
+ 	randomCard(state.shop.randomAllowed)
++	bundleCard(0)
+ 	for i, info in PASS_INFO do
+ 		passCard(info, i)
+ 	end
++	rewardedAdCard(99)
+ end
+ 
+ ---------------------------------------------------------------- Panneau
+ function Shop.Open()
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+@@ -323,8 +323,23 @@
+ 					ZIndex = 2,
+ 					Parent = list,
+ 				})
+ 			end
++			-- Pity counter (Legendary guaranteed at 50)
++			local state = Store.Get()
++			local pity = state.tideEggPity or 0
++			Theme.Text({
++				Name = "Pity",
++				Size = UDim2.new(1, 0, 0, 20),
++				Text = "PITY: " .. pity .. " / 50 (LEGENDARY GUARANTEED)",
++				TextSize = Theme.TextSize.Small,
++				FontFace = Theme.Fonts.Title,
++				TextColor3 = if pity >= 45 then Theme.Colors.Danger else Theme.Colors.Gold,
++				TextXAlignment = Enum.TextXAlignment.Center,
++				LayoutOrder = 100,
++				ZIndex = 2,
++				Parent = list,
++			})
+ 		end
+ 		local id = type(egg) == "table" and tonumber(egg.id) or 0
+ 		local sellable = (id or 0) > 0 and hasOdds
+ 		Theme.SetButtonText(buy, if sellable then priceText(tonumber(egg.price)) else "Soon")
+
+> build · nemotron-3-ultra-free
+[91m[1mError: [0mRate limit exceeded. Please try again later.

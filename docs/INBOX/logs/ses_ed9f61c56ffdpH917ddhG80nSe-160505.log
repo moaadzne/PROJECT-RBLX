@@ -1,0 +1,9 @@
+[0m
+> build · nemotron-3-ultra-free
+Cette tâche est pour l'**agent H (Icons/Fonts/Visual Language)**, pas pour moi (agent **U — Guild & Social Systems**).
+
+Selon `AGENTS.md` §6 et `EQUIPE.md` :
+- **H** : `StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua`, `Components.lua`, `ReplicatedStorage/Assets/Fonts` — icônes, polices, langage visuel
+- **U** : Guildes, Bases, Guerres, Chat, Voix, Calendrier, Permissions — `ServerScriptService/Services/Guild*`, `StarterGui/Guild*`
+
+Je ne touche pas à la zone de H. L'agent H écrira son plan dans `docs/INBOX/H.md` quand il démarrera.

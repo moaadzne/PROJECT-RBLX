@@ -1,0 +1,57 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/F.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/F.md
+Index: docs/INBOX/F.md
+===================================================================
+--- docs/INBOX/F.md
++++ docs/INBOX/F.md
+@@ -1,5 +1,10 @@
+ 
++## 2026-10-10 15:45
++FAIT     : Nouveau plan F selon DECISIONS_MARCHE.md §9 — PIVOT MAJEUR vers VRAI MMORPG ROBLOX (12 sem, 21 agents, lancement Semaine 12). Rôle F change : de "valider vague lundi" à "infrastructure QA pour MMORPG 100+ h, 50+ créatures, World Boss 20j, Donjons 5j, Raids 10/20j, PvP zones, économie joueur, cinématiques 3 min, serveur unique 200-500j". Priorités F : (1) Framework test automatisé cross-platform mobile/PC/Console, (2) Pipeline CI/CD tests serveur unique + streaming + instancing, (3) Métriques QA temps réel (FPS, latence, erreurs, désynchro), (4) Checklist Phase 1 (semaines 1-2) : Netcode interpolation/prediction, ProfileService, GlobalDataStore, StreamingEnabled, combat base. Les 10 vérifs lundi deviennent la baseline Phase 1, pas le livrable final.
++VÉRIFIÉ  : §9 lu intégral (lignes 212-351). Vision "premier vrai MMORPG Roblox qui ne fait pas semblant" comprise. 5 piliers : Histoire/Lore, Progression/Builds, Boss/Raid, PvP/Economie, Cinématiques. 8 nouveaux agents O-V requis.
++BESOIN   : [D] Architecture technique §9 validée (Net.lua étendu, ProfileService, MessagingService, single shard 200-500j). [O-V] Briefs agents créés MAINTENANT. [A] Base combat + Netcode interpolation = fondations QA. [V] Streaming/Instancing/Netcode = priorité technique absolue. Budget 12 sem = critique, pas de dérive.
++
+ ## 2026-10-10 15:30
+ FAIT     : Plan cross-platform lundi — 5 min mobile + 5 min PC à CHAQUE sync Rojo. Checklist 10 points : (1) mouvement joystick/WASD fluide, (2) caméra touch drag+pinch / clic droit+molette, (3) vol mobile→PC et PC→mobile identiques, (4) boutique achat mobile+PC identiques, (5) HUD lisible mobile bas / PC latéral, (6) trading/vol mêmes protections, (7) Marée Royale classement global, (8) Daily Rewards synchro, (9) 0 erreur console les deux, (10) 30+ FPS mobile / 60 FPS PC. Rollback si fail sur l'un des deux.
+ VÉRIFIÉ  : Merge ada8300 validé (Store.lua/StartSteal/ChoosePick, Wave.lua P0 corrigé). Rien testé en jeu.
+ BESOIN   : [D] Lundi = double session Studio (device emulator mobile + PC). [M] build_creatures.luau + build_sounds.luau prêts avant sync.
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/F.md && git commit -q -m "INBOX(F): nouveau plan selon PIVOT MAJEUR §9 — MMORPG 12 sem
+
+Rôle F = infrastructure QA pour vrai MMORPG (100+ h, 50+ créatures,
+World Boss 20j, Donjons, Raids, PvP, économie joueur, cinématiques,
+serveur unique 200-500j). Priorités : framework test auto cross-platform,
+pipeline CI/CD serveur unique, métriques temps réel, checklist Phase 1.
+Les 10 vérifs lundi = baseline Phase 1 seulement.
+
+Documentation uniquement." && git push -q origin claude/e-gdd-reef && git log --oneline -1
+a00fa0f INBOX(F): nouveau plan selon PIVOT MAJEUR §9 — MMORPG 12 sem
+> build · nemotron-3-ultra-free
+Poussé (`a00fa0f`). Écrit dans `docs/INBOX/F.md` — D lit ce fichier.
+
+```
+FAIT      : Nouveau plan F selon §9 — PIVOT MAJEUR vers VRAI MMORPG ROBLOX (12 sem, 21 agents, lancement Semaine 12). Rôle F = infrastructure QA, plus validation vague.
+VÉRIFIÉ  : §9 lu intégral. Vision "premier vrai MMORPG Roblox qui ne fait pas semblant" — 5 piliers : Histoire/Lore (O), Progression/Builds (P), Boss/Raid (Q), PvP/Economie (R), Cinématiques (S). 8 agents O-V requis.
+BESOIN   : [D] Architecture technique validée (Net.lua étendu, ProfileService, single shard 200-500j). [O-V] Briefs créés MAINTENANT. [A] Base combat + Netcode = fondations QA. [V] Streaming/Instancing = priorité absolue. Budget 12 sem = critique.
+```
+
+## Ce qui change radicalement pour F
+
+| Avant (scope vague) | Après (MMORPG §9) |
+|---|---|
+| Valider 10 points lundi | Infrastructure QA pour 12 semaines |
+| Wave.lua = P0 unique | Netcode interpolation/prediction + ProfileService + StreamingEnabled + GlobalDataStore = fondations Phase 1 |
+| 1 session test | Framework test automatisé cross-platform mobile/PC/Console |
+| Checklist manuelle | Pipeline CI/CD + métriques temps réel (FPS, latence, désynchro) |
+| 8 agents G-N | **21 agents total** (G-V) |
+| Lancement "quand prêt" | **Semaine 12 fixe** (3 mois) |
+
+**Les 10 vérifs lundi** deviennent la **baseline Phase 1** (semaines 1-2), pas le livrable final. Le vrai livrable = MMORPG complet à Semaine 12.
+
+Priorité absolue technique : **V (Technical & Performance)** — StreamingEnabled, instancing donjons/raids, netcode single shard 200-500 joueurs. Sans ça, rien d'autre ne tient.

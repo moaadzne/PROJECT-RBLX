@@ -1,0 +1,762 @@
+[0m
+> build · space-bunny-free
+[0m→ [0mRead docs/DIRECTIVE_NIVEAU.md 
+> build · space-bunny-free
+Directive lue. Elle dit l'essentiel en une ligne : **personne n'a jamais vu ce jeu tourner**, et une tâche non visible dans une capture n'est pas terminée.
+
+Je dois donc être direct sur un point avant de commencer : **je ne peux pas exécuter Roblox Studio depuis cette session.** Je ne peux pas faire les10 minutes, ni voir une capture. Par la définition que D vient d'adopter, ma tâche ne peut donc pas être déclarée terminée par moi — elle se termine lundi, quand quelqu'un lance le jeu. Ce que je peux faire, et qui vise exactement « le serveur plante au bout de 4 minutes », c'est traquer à la lecture ce qui peut tuer une boucle serveur.
+
+Et il y a une piste concrète : je relance l'auto-restart que j'ai vu dans `PlotService`.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService" && echo "=== toutes les boucles while true du serveur ==="; grep -rn "while true do" Services/ ; echo; echo "=== lesquelles sont protegees par pcall + relance ? ==="; grep -rn "pcall" Services/ | grep -iE "loop|Start|tick|relaunch"
+=== toutes les boucles while true du serveur ===
+Services/RoyalService.lua:160:		while true do
+Services/CreatureService.lua:345:	while true do
+Services/CreatureService.lua:364:	while true do
+Services/CreatureService.lua:567:		while true do
+Services/CreatureService.lua:574:		while true do
+Services/MountService.lua:277:	while true do
+Services/MountService.lua:321:		while true do
+Services/MountService.lua:330:		while true do
+Services/DataService.lua:765:	while true do
+Services/DataService.lua:778:	while true do
+Services/StealService.lua:313:	while true do
+Services/StealService.lua:371:		while true do
+Services/LagoonService.lua:272:	while true do
+Services/LagoonService.lua:359:		while true do
+Services/PlotService.lua:417:	while true do
+Services/PlotService.lua:477:		while true do
+Services/WaveService.lua:214:	while true do
+Services/WaveService.lua:307:		while true do
+
+=== lesquelles sont protegees par pcall + relance ? ===
+Services/CreatureService.lua:349:				local ok, err = pcall(tickPlayer, player, profile)
+Services/CreatureService.lua:568:			local ok, err = pcall(pickupLoop)
+Services/CreatureService.lua:575:			local ok, err = pcall(spawnLoop)
+Services/MountService.lua:331:			local ok, err = pcall(guardLoop)
+Services/StealService.lua:372:			local ok, err = pcall(tickLoop)
+Services/LagoonService.lua:360:			local ok, err = pcall(tickLoop)
+Services/PlotService.lua:478:			local ok, err = pcall(incomeLoop)
+> build · space-bunny-free
+18 boucles, 6 protégées par `pcall` + relance. **WaveService n'est pas dans la liste** — et c'est la boucle la plus critique du jeu. Je regarde.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService" && echo "=== WaveService:205-235 (boucle principale) ==="; sed -n '205,240p' Services/WaveService.lua; echo; echo "=== WaveService:300-320 ==="; sed -n '300,320p' Services/WaveService.lua
+=== WaveService:205-235 (boucle principale) ===
+
+	publish("warning", departure - W.warningTime, departure, departure)
+	waitUntil(departure)
+
+	local arrival = departure + TRAVEL_TIME
+	publish("wave", departure, arrival, departure)
+	table.clear(caught)
+	table.clear(exposed)
+	local prevFront = -REACH
+	while true do
+		local t = now()
+		local front = WaveService.FrontD(t)
+		checkPlayers(prevFront, front)
+		runHooks(frontHooks, prevFront, front)
+		prevFront = front
+		if t >= arrival then
+			break
+		end
+		task.wait(CATCH_TICK)
+	end
+	rewardSurvivors()
+
+	publish("recede", arrival, arrival + W.recedeTime, departure)
+	waitUntil(arrival + W.recedeTime)
+end
+
+-- Debug : pendant le calme, l'alerte demarre tout de suite
+function WaveService.Force()
+	if wave and wave.phase == "calm" then
+		skipCalm = true
+	end
+	return wave and wave.phase
+end
+
+-- Debug : maree du prochain cycle (Normal, Golden...)
+function WaveService.ForceTide(tide)
+
+=== WaveService:300-320 ===
+function WaveService.Forget(player)
+	caught[player] = nil
+	exposed[player] = nil
+end
+
+function WaveService.Start()
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(runCycle)
+			if not ok then
+				warn("[TideRush] cycle de vague : " .. tostring(err))
+				task.wait(1)
+			end
+		end
+	end)
+end
+
+return WaveService
+> build · space-bunny-free
+Faux négatif de mon grep : `pcall(runCycle)` ne matchait pas mon motif. **WaveService est bien protégé.** Je refais l'inventaire proprement, boucle par boucle.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && python3 - <<'EOF'
+import re, glob
+for f in sorted(glob.glob("*.lua")):
+    lines = open(f, encoding="utf-8").read().split("\n")
+    for i, l in enumerate(lines):
+        if "while true do" in l:
+            # cherche un pcall dans les 12 lignes qui suivent (boucle appelee depuis un task.spawn)
+            after = "\n".join(lines[i+1:i+13])
+            prot = "PROTEGEE (pcall)" if "pcall(" in after else ">>> NON PROTEGEE <<<"
+            ctx = [x.strip() for x in lines[max(0,i-6):i] if x.strip() and not x.strip().startswith("--")]
+            print(f"{f}:{i+1:<4} {prot}")
+            print(f"        contexte: {ctx[-2] if len(ctx)>=2 else ctx}")
+EOF
+CreatureService.lua:345  PROTEGEE (pcall)
+        contexte: end
+CreatureService.lua:364  PROTEGEE (pcall)
+        contexte: timers[i] = 0
+CreatureService.lua:567  PROTEGEE (pcall)
+        contexte: end)
+CreatureService.lua:574  PROTEGEE (pcall)
+        contexte: end)
+DataService.lua:765  PROTEGEE (pcall)
+        contexte: end
+DataService.lua:778  >>> NON PROTEGEE <<<
+        contexte: end
+LagoonService.lua:272  >>> NON PROTEGEE <<<
+        contexte: end
+LagoonService.lua:359  PROTEGEE (pcall)
+        contexte: Net.Handle("LockLagoon", lockLagoon)
+MountService.lua:277  >>> NON PROTEGEE <<<
+        contexte: end
+MountService.lua:321  PROTEGEE (pcall)
+        contexte: end)
+MountService.lua:330  PROTEGEE (pcall)
+        contexte: end)
+PlotService.lua:417  >>> NON PROTEGEE <<<
+        contexte: local function incomeLoop()
+PlotService.lua:477  PROTEGEE (pcall)
+        contexte: Net.Handle("GoHome", goHome)
+RoyalService.lua:160  PROTEGEE (pcall)
+        contexte: end)
+StealService.lua:313  >>> NON PROTEGEE <<<
+        contexte: end
+StealService.lua:371  PROTEGEE (pcall)
+        contexte: end)
+WaveService.lua:214  >>> NON PROTEGEE <<<
+        contexte: table.clear(exposed)
+WaveService.lua:307  PROTEGEE (pcall)
+        contexte: function WaveService.Start()
+> build · space-bunny-free
+Les « NON PROTEGEE » en tête de fonction (PlotService:417, WaveService:214) sont les corps appelés **sous** pcall — architecture correcte. Il reste 4 vraies candidates à vérifier.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && for pair in "DataService:760:790" "LagoonService:265:285" "MountService:270:290" "StealService:305:330"; do f=${pair%%:*}; r=${pair#*:}; a=${r%%:*}; b=${r##*:}; echo "───── $f:$a-$b ─────"; sed -n "${a},${b}p" "$f.lua"; done
+───── DataService:760-790 ─────
+		end
+	end
+end
+
+local function flushLoop()
+	while true do
+		task.wait(FLUSH_EVERY)
+		for player in pairs(dirty) do
+			dirty[player] = nil
+			local ok, err = pcall(push, player)
+			if not ok then
+				warn("[TideRush] envoi d'etat : " .. tostring(err))
+			end
+		end
+	end
+end
+
+local function autosaveLoop()
+	while true do
+		task.wait(AUTOSAVE_EVERY)
+		local list = {}
+		for _, profile in pairs(profiles) do
+			table.insert(list, profile)
+		end
+		for _, profile in ipairs(list) do
+			if profile.loaded and profile.saveEnabled and not profile.leaving then
+				task.spawn(save, profile, false)
+				task.wait(AUTOSAVE_STAGGER)
+			end
+		end
+	end
+───── LagoonService:265-285 ─────
+				end
+			end
+		end
+	end
+end
+
+local function tickLoop()
+	while true do
+		task.wait(TICK)
+		refreshPlots()
+		ejectIntruders()
+	end
+end
+
+-- Verrou gratuit -------------------------------------------------------------------
+
+local function lockLagoon(player)
+	local profile = DataService.Get(player)
+	if not profile or not profile.loaded then
+		return false, "NotLoaded"
+	end
+───── MountService:270-290 ─────
+		profile.movedByServerAt = clock
+		history[player] = nil
+		warn(("[TideRush] vitesse anormale pour %s : %.0f studs en %.1f s"):format(player.Name, (pos - oldest.pos).Magnitude, elapsed))
+	end
+end
+
+local function guardLoop()
+	while true do
+		task.wait(GUARD_TICK)
+		local clock = os.clock()
+		for player, profile in DataService.All() do
+			if profile.loaded and not profile.leaving then
+				guardPlayer(player, profile, clock)
+			end
+		end
+	end
+end
+
+function MountService.Track(player)
+	player.CharacterAdded:Connect(function(character)
+		-- nouveau personnage : plus de monture (mort, reset)
+───── StealService:305-330 ─────
+				-- le reflux est fini : le voleur n'est pas rentre a temps
+				giveBack(thief, "time")
+			end
+		end
+	end
+end
+
+local function tickLoop()
+	while true do
+		task.wait(TICK)
+		tickHolds()
+		tickCarriers()
+	end
+end
+
+-- callback(thief, creature, value) quand un vol reussit (Maree Royale)
+function StealService.OnStolen(callback)
+	table.insert(stolenHooks, callback)
+end
+
+-- Debug : le voleur prend tout de suite une creature du vole, sans les protections
+function StealService.ForceGrab(thief, victim)
+	local profile, victimProfile = DataService.Get(thief), DataService.Get(victim)
+	if not profile or not victimProfile or profile.carrying or thief == victim then
+		return false
+	end
+> build · space-bunny-free
+Voilà le vrai risque. Trois boucles ont un **corps non protégé** : si une seule erreur y remonte, la boucle meurt **définitivement et silencieusement**. Je vérifie comment elles démarrent.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && for f in LagoonService MountService StealService DataService; do echo "───── $f.Start ─────"; sed -n "/^function $f.Start/,/^end/p" "$f.lua"; done
+───── LagoonService.Start ─────
+function LagoonService.Start()
+	setupGroups()
+	for index = 1, Config.MaxPlayersPerServer do
+		if PlotService.GetModel(index) then
+			setupBarrier(index)
+		end
+	end
+	WaveService.OnPhase(function(phase, wave)
+		if phase == "warning" then
+			openRevengePairs(wave)
+		elseif phase == "recede" then
+			closeRevengePairs()
+		end
+		refreshPlots()
+	end)
+	Net.Handle("LockLagoon", lockLagoon)
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(tickLoop)
+			warn("[TideRush] boucle des lagons relancee : " .. tostring(ok and "fin" or err))
+			task.wait(1)
+		end
+	end)
+end
+───── MountService.Start ─────
+function MountService.Start()
+	Net.Handle("Mount", mount)
+	WaveService.OnPhase(function()
+		for player, profile in DataService.All() do
+			if profile.mountUid ~= "" and player.Parent then
+				player:SetAttribute("Surfing", profile.surfing and Net.GetWave().phase == "wave")
+			end
+		end
+	end)
+	task.spawn(function()
+		while true do
+			task.wait(CHECK_TICK)
+			local ok, err = pcall(checkMounts)
+			if not ok then
+				warn("[TideRush] montures : " .. tostring(err))
+			end
+		end
+	end)
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(guardLoop)
+			warn("[TideRush] verification de vitesse relancee : " .. tostring(ok and "fin" or err))
+			task.wait(1)
+		end
+	end)
+end
+───── StealService.Start ─────
+function StealService.Start()
+	Net.Handle("StartSteal", startSteal)
+	-- pris par la vague sur la plage : la creature retourne chez son proprietaire
+	WaveService.OnCaught(function(player)
+		holds[player] = nil
+		giveBack(player, "wave")
+	end)
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(tickLoop)
+			warn("[TideRush] boucle de vol relancee : " .. tostring(ok and "fin" or err))
+			task.wait(1)
+		end
+	end)
+end
+───── DataService.Start ─────
+function DataService.Start()
+	local ok, result = pcall(function()
+		return DataStoreService:GetDataStore(STORE_NAME)
+	end)
+	if ok then
+		store = result
+	else
+		warn("[TideRush] DataStore indisponible : " .. tostring(result))
+	end
+	-- SubscribeAsync peut attendre longtemps (place non publiee) : jamais dans le fil de demarrage
+	task.spawn(function()
+		local subscribed, subErr = pcall(function()
+			MessagingService:SubscribeAsync(RELEASE_TOPIC, onReleaseRequest)
+		end)
+		if not subscribed and not RunService:IsStudio() then
+			warn("[TideRush] abonnement aux demandes de liberation impossible : " .. tostring(subErr))
+		end
+	end)
+	Net.Handle("GetState", function(player)
+		local profile = profiles[player]
+		return profile and DataService.BuildState(profile) or nil, Net.GetWaveFor(player)
+	end, function(player)
+		return nil, Net.GetWaveFor(player)
+	end)
+	task.spawn(flushLoop)
+	task.spawn(autosaveLoop)
+	game:BindToClose(onClose)
+end
+> build · space-bunny-free
+Correction importante : LagoonService, MountService et StealService **sont** protégés — le `pcall` est au point de démarrage, plus loin que ma fenêtre de12 lignes. Après vérification, il ne reste que **deux boucles nues dans tout le serveur**, et ce sont précisément les deux qui touchent à la sauvegarde. Je regarde.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && echo "=== save() : retries + pcall ? ==="; sed -n '/^local function save/,/^end/p' DataService.lua; echo "=== constantes ==="; grep -n "AUTOSAVE_EVERY\|AUTOSAVE_STAGGER\|FLUSH_EVERY\|RETRY\|SAVE_RETRIES\|retry" DataService.lua | head
+=== save() : retries + pcall ? ===
+local function save(profile, release)
+	while profile.saving do
+		task.wait(0.1)
+	end
+	if not store or not profile.saveEnabled or profile.released then
+		return "skipped"
+	end
+	profile.saving = true
+	profile.data.lastSeen = os.time()
+	local snapshot = deepCopy(profile.data)
+	snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
+	snapshot._passBonus = nil
+	local lockLost = false
+	local ok, err = pcall(function()
+		store:UpdateAsync(profile.key, function(record)
+			if type(record) ~= "table" or not ownsLock(record.lock, profile) then
+				lockLost = true
+				return nil
+			end
+			lockLost = false
+			record.data = snapshot
+			record.lock = if release then nil else { s = SESSION_ID, p = profile.token, j = game.JobId, t = os.time() }
+			return record
+		end)
+	end)
+	profile.saving = false
+	if not ok then
+		warn(("[TideRush] sauvegarde %s echouee : %s"):format(profile.key, tostring(err)))
+		return "error"
+	end
+	if lockLost then
+		-- un autre profil a repris ce joueur : on n'ecrit plus jamais par-dessus
+		profile.saveEnabled = false
+		warn(("[TideRush] verrou perdu pour %s : sauvegarde coupee"):format(profile.key))
+		if profile.player.Parent and not profile.leaving then
+			Net.Notify(profile.player, "saveOff", { text = "Your progress is now saved on another server." })
+		end
+		return "lockLost"
+	end
+	if release then
+		profile.released = true
+	end
+	return "ok"
+end
+=== constantes ===
+20:local AUTOSAVE_EVERY = 90
+21:local AUTOSAVE_STAGGER = 0.5
+22:local LOCK_STALE = AUTOSAVE_EVERY + 30 -- s sans rafraichissement : le serveur qui tenait le verrou est mort
+28:local FLUSH_EVERY = 0.1
+766:		task.wait(FLUSH_EVERY)
+779:		task.wait(AUTOSAVE_EVERY)
+787:				task.wait(AUTOSAVE_STAGGER)
+> build · space-bunny-free
+`save()` est bien protégé par `pcall` en interne, et l'autosave est à 90 s comme le contrat. Je vérifie le chargement (3 essais) et `BindToClose`, puis je corrige.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && echo "=== 3 essais de chargement ? ==="; grep -n "range(1, 3)\|range(3)\|tentative\|attempt\|LOAD_TRIES" DataService.lua; echo; echo "=== onClose ==="; sed -n '/^local function onClose/,/^end/p' DataService.lua; echo "=== task.spawn nus (sans pcall) ==="; grep -rn "task.spawn(" *.lua | grep -v "pcall"
+=== 3 essais de chargement ? ===
+19:local LOAD_TRIES = 3
+372:			warn(("[TideRush] chargement %s, essai %d/%d : %s"):format(profile.key, errors, LOAD_TRIES, tostring(result)))
+373:			if errors >= LOAD_TRIES then
+739:		for attempt = 1, FINAL_SAVE_TRIES do
+740:			if save(profile, true) ~= "error" or attempt == FINAL_SAVE_TRIES then
+743:			task.wait(math.min(2 ^ attempt, 4))
+
+=== onClose ===
+local function onClose()
+	for player in pairs(table.clone(profiles)) do
+		task.spawn(DataService.Release, player)
+	end
+	local deadline = os.clock() + SHUTDOWN_TIMEOUT
+	while (next(profiles) ~= nil or pendingLoads > 0) and os.clock() < deadline do
+		task.wait(0.1)
+	end
+end
+=== task.spawn nus (sans pcall) ===
+CreatureService.lua:249:		task.spawn(hook, player, info.species, info.mutation, Stats.BabyIncome(info.species, info.mutation))
+CreatureService.lua:566:	task.spawn(function()
+CreatureService.lua:573:	task.spawn(function()
+DataService.lua:656:		task.spawn(hook, player, profile)
+DataService.lua:754:			task.spawn(function()
+DataService.lua:786:				task.spawn(save, profile, false)
+DataService.lua:795:		task.spawn(DataService.Release, player)
+DataService.lua:813:	task.spawn(function()
+DataService.lua:827:	task.spawn(flushLoop)
+DataService.lua:828:	task.spawn(autosaveLoop)
+IntroService.lua:130:	task.spawn(function()
+LagoonService.lua:358:	task.spawn(function()
+MountService.lua:320:	task.spawn(function()
+MountService.lua:329:	task.spawn(function()
+PlotService.lua:346:		task.spawn(onCharacter, player, player.Character)
+PlotService.lua:476:	task.spawn(function()
+RoyalService.lua:159:	task.spawn(function()
+StealService.lua:271:		task.spawn(hook, thief, mine, value)
+StealService.lua:370:	task.spawn(function()
+WaveService.lua:306:	task.spawn(function()
+> build · space-bunny-free
+`LOAD_TRIES = 3` ✓, sauvegarde finale avec backoff exponentiel ✓, `onClose` borné ✓. Il reste les invocations de hooks, qui peuvent elles aussi sortir une erreur console.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && echo "=== CreatureService:244-252 ==="; sed -n '244,252p' CreatureService.lua; echo "=== StealService:266-275 ==="; sed -n '266,275p' StealService.lua; echo "=== compare : runHooks de WaveService ==="; sed -n '/^local function runHooks/,/^end/p' WaveService.lua
+=== CreatureService:244-252 ===
+		bagMax = bagMax,
+		isNew = isNew,
+		text = ("%s%s (%d/%d)"):format(info.mutation ~= "" and (info.mutation .. " ") or "", def.name, #profile.bag, bagMax),
+	})
+	for _, hook in ipairs(captureHooks) do
+		task.spawn(hook, player, info.species, info.mutation, Stats.BabyIncome(info.species, info.mutation))
+	end
+	local rarity = Config.Rarities[def.rarity]
+	if info.royal then
+=== StealService:266-275 ===
+	})
+	PlotService.RenderDisplay(thief)
+	DataService.MarkDirty(thief)
+	local value = Stats.CreatureIncome(mine, now, speed)
+	for _, hook in ipairs(stolenHooks) do
+		task.spawn(hook, thief, mine, value)
+	end
+end
+
+local function tickHolds()
+=== compare : runHooks de WaveService ===
+local function runHooks(hooks, ...)
+	for _, hook in ipairs(hooks) do
+		local ok, err = pcall(hook, ...)
+		if not ok then
+			warn("[TideRush] crochet de vague : " .. tostring(err))
+		end
+	end
+end
+> build · space-bunny-free
+Voilà une incohérence nette : WaveService protège ses hooks (`runHooks` avec `pcall`), mais **CreatureService et StealService ne le font pas** — un hook qui plante sort une erreur console à chaque capture ou chaque vol, sur les deux chemins les plus fréquents du jeu.
+
+Je vérifie les noms de variables locales avant d'éditer.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && sed -n '218,252p' CreatureService.lua
+rowComplete = rowComplete,
+		text = rowComplete and ("%s complete! +%d%% income"):format(Config.Creatures[species].name, math.floor(Config.Codex.speciesBonus * 100 + 0.5))
+			or ("New in your Reef Codex: %s%s"):format(mutation ~= "" and (mutation .. " ") or "", Config.Creatures[species].name),
+	})
+	return true
+end
+
+local function collect(player, profile, model, info)
+	remove(model, info)
+
+	local d = profile.data
+	table.insert(profile.bag, { species = info.species, mutation = info.mutation, royal = info.royal })
+	d.stats.pickups += 1
+	if info.mutation ~= "" then
+		d.stats.mutationsFound += 1
+	end
+	local isNew = recordCodex(player, profile, info.species, info.mutation)
+
+	local def = Config.Creatures[info.species]
+	local bagMax = Stats.BagMax(d)
+	Net.Notify(player, "capture", {
+		species = info.species,
+		mutation = info.mutation,
+		rarity = def.rarity,
+		position = info.pos,
+		bagCount = #profile.bag,
+		bagMax = bagMax,
+		isNew = isNew,
+		text = ("%s%s (%d/%d)"):format(info.mutation ~= "" and (info.mutation .. " ") or "", def.name, #profile.bag, bagMax),
+	})
+	for _, hook in ipairs(captureHooks) do
+		task.spawn(hook, player, info.species, info.mutation, Stats.BabyIncome(info.species, info.mutation))
+	end
+	local rarity = Config.Rarities[def.rarity]
+	if info.royal then
+> build · space-bunny-free
+Trois modifications, même logique que le code déjà présent, aucune mécanique nouvelle.
+[0m← [0mEdit src/ServerScriptService/Services/CreatureService.lua
+Index: src/ServerScriptService/Services/CreatureService.lua
+===================================================================
+--- src/ServerScriptService/Services/CreatureService.lua
++++ src/ServerScriptService/Services/CreatureService.lua
+@@ -244,10 +244,19 @@
+ 		bagMax = bagMax,
+ 		isNew = isNew,
+ 		text = ("%s%s (%d/%d)"):format(info.mutation ~= "" and (info.mutation .. " ") or "", def.name, #profile.bag, bagMax),
+ 	})
++	-- pcall comme les crochets de WaveService (runHooks) : la capture est le geste le plus
++	-- repete du jeu, un crochet plante ne doit pas laisser une erreur console derriere lui
++	local caughtSpecies, caughtMutation = info.species, info.mutation
++	local caughtValue = Stats.BabyIncome(caughtSpecies, caughtMutation)
+ 	for _, hook in ipairs(captureHooks) do
+-		task.spawn(hook, player, info.species, info.mutation, Stats.BabyIncome(info.species, info.mutation))
++		task.spawn(function()
++			local ok, err = pcall(hook, player, caughtSpecies, caughtMutation, caughtValue)
++			if not ok then
++				warn("[TideRush] crochet de capture : " .. tostring(err))
++			end
++		end)
+ 	end
+ 	local rarity = Config.Rarities[def.rarity]
+ 	if info.royal then
+ 		Net.NotifyAll("info", { text = ("%s caught the Royal %s!"):format(player.DisplayName, def.name) }, player)
+
+> build · space-bunny-free
+[0m← [0mEdit src/ServerScriptService/Services/StealService.lua
+Index: src/ServerScriptService/Services/StealService.lua
+===================================================================
+--- src/ServerScriptService/Services/StealService.lua
++++ src/ServerScriptService/Services/StealService.lua
+@@ -267,9 +267,14 @@
+ 	PlotService.RenderDisplay(thief)
+ 	DataService.MarkDirty(thief)
+ 	local value = Stats.CreatureIncome(mine, now, speed)
+ 	for _, hook in ipairs(stolenHooks) do
+-		task.spawn(hook, thief, mine, value)
++		task.spawn(function()
++			local ok, err = pcall(hook, thief, mine, value)
++			if not ok then
++				warn("[TideRush] crochet de vol : " .. tostring(err))
++			end
++		end)
+ 	end
+ end
+ 
+ local function tickHolds()
+
+> build · space-bunny-free
+[0m← [0mEdit src/ServerScriptService/Services/DataService.lua
+Index: src/ServerScriptService/Services/DataService.lua
+===================================================================
+--- src/ServerScriptService/Services/DataService.lua
++++ src/ServerScriptService/Services/DataService.lua
+@@ -823,10 +823,24 @@
+ 		return profile and DataService.BuildState(profile) or nil, Net.GetWaveFor(player)
+ 	end, function(player)
+ 		return nil, Net.GetWaveFor(player)
+ 	end)
+-	task.spawn(flushLoop)
+-	task.spawn(autosaveLoop)
++	-- Protection identique aux autres boucles longues du serveur : si l'une des deux meurt,
++	-- la sauvegarde automatique disparait pour toute la vie du serveur, en silence total.
++	task.spawn(function()
++		while true do
++			local ok, err = pcall(flushLoop)
++			warn("[TideRush] envoi d'etat : " .. tostring(ok and "fin" or err))
++			task.wait(1)
++		end
++	end)
++	task.spawn(function()
++		while true do
++			local ok, err = pcall(autosaveLoop)
++			warn("[TideRush] sauvegarde automatique : " .. tostring(ok and "fin" or err))
++			task.wait(1)
++		end
++	end)
+ 	game:BindToClose(onClose)
+ end
+ 
+ return DataService
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git diff --stat -- src/ && echo "=== plus aucune boucle longue nue ? ===" && grep -n "task.spawn(flushLoop)\|task.spawn(autosaveLoop)\|task.spawn(hook" src/ServerScriptService/Services/*.lua || echo "(aucune — toutes protégées)"
+src/ServerScriptService/Services/CreatureService.lua | 11 ++++++++++-
+ src/ServerScriptService/Services/DataService.lua     | 18 ++++++++++++++++--
+ src/ServerScriptService/Services/StealService.lua    |  7 ++++++-
+ 3 files changed, 32 insertions(+), 4 deletions(-)
+=== plus aucune boucle longue nue ? ===
+src/ServerScriptService/Services/DataService.lua:656:		task.spawn(hook, player, profile)
+> build · space-bunny-free
+Une dernière invocation nue. Je la regarde.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && sed -n '648,660p' DataService.lua; echo "=== qui enregistre ces crochets ? ==="; grep -rn "OnLoaded\|OnDataLoaded\|loadedHooks" *.lua
+warn(("[TideRush] donnees de %s non chargees (%s) : cette session ne sauvegardera pas"):format(player.Name, tostring(err)))
+	end
+	profile.loaded = true
+	player:SetAttribute("Loaded", true)
+	if profile.saveEnabled and not isNew then
+		payOffline(profile)
+	end
+	for _, hook in ipairs(loadedHooks) do
+		task.spawn(hook, player, profile)
+	end
+	if not profile.saveEnabled then
+		Net.Notify(player, "saveOff", { text = "Your progress can't be saved right now. Rejoin later to keep it." })
+	elseif isNew or profile.data.introStep == 0 then
+=== qui enregistre ces crochets ? ===
+DataService.lua:43:local loadedHooks = {}
+DataService.lua:571:function DataService.OnLoaded(callback)
+DataService.lua:572:	table.insert(loadedHooks, callback)
+DataService.lua:655:	for _, hook in ipairs(loadedHooks) do
+IntroService.lua:200:	DataService.OnLoaded(function(player, profile)
+PlotService.lua:471:	DataService.OnLoaded(function(player)
+ShopService.lua:177:	DataService.OnLoaded(function(player, profile)
+> build · space-bunny-free
+Ces crochets tournent à **chaque connexion** — c'est le chemin « rechargement » que la directive nomme. Je le protège aussi.
+[0m← [0mEdit src/ServerScriptService/Services/DataService.lua
+Index: src/ServerScriptService/Services/DataService.lua
+===================================================================
+--- src/ServerScriptService/Services/DataService.lua
++++ src/ServerScriptService/Services/DataService.lua
+@@ -652,9 +652,14 @@
+ 	if profile.saveEnabled and not isNew then
+ 		payOffline(profile)
+ 	end
+ 	for _, hook in ipairs(loadedHooks) do
+-		task.spawn(hook, player, profile)
++		task.spawn(function()
++			local ok, err = pcall(hook, player, profile)
++			if not ok then
++				warn("[TideRush] crochet de chargement : " .. tostring(err))
++			end
++		end)
+ 	end
+ 	if not profile.saveEnabled then
+ 		Net.Notify(player, "saveOff", { text = "Your progress can't be saved right now. Rejoin later to keep it." })
+ 	elseif isNew or profile.data.introStep == 0 then
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== inventaire final des task.spawn nus ==="; grep -rn "task.spawn(" src/ServerScriptService/Services/*.lua | grep -vE "pcall|Start|^\S+:[0-9]+:\s*task.spawn\(function" || echo "(aucun — tout est protégé)"; echo; echo "=== diff ==="; git diff --stat -- src/
+=== inventaire final des task.spawn nus ===
+src/ServerScriptService/Services/DataService.lua:791:				task.spawn(save, profile, false)
+src/ServerScriptService/Services/DataService.lua:800:		task.spawn(DataService.Release, player)
+src/ServerScriptService/Services/PlotService.lua:346:		task.spawn(onCharacter, player, player.Character)
+
+=== diff ===
+ .../Services/CreatureService.lua                   | 11 +++++++++-
+ src/ServerScriptService/Services/DataService.lua   | 25 +++++++++++++++++++---
+ src/ServerScriptService/Services/StealService.lua  |  7 +++++-
+ 3 files changed, 38 insertions(+), 5 deletions(-)
+> build · space-bunny-free
+Trois restants. Je vérifie si leurs corps peuvent réellement lever — surtout `deepCopy`, qui est récursif et appelé **avant** le `pcall` de `save`.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && echo "=== deepCopy ==="; sed -n '/^local function deepCopy/,/^end/p' DataService.lua; echo "=== Release ==="; sed -n '/^function DataService.Release/,/^end/p' DataService.lua
+=== deepCopy ===
+local function deepCopy(value)
+	if type(value) ~= "table" then
+		return value
+	end
+	local out = {}
+	for k, v in pairs(value) do
+		out[k] = deepCopy(v)
+	end
+	return out
+end
+=== Release ===
+function DataService.Release(player)
+	local profile = profiles[player]
+	if not profile or profile.leaving then
+		return
+	end
+	profile.leaving = true
+	dirty[player] = nil
+	if profile.loaded then
+		for attempt = 1, FINAL_SAVE_TRIES do
+			if save(profile, true) ~= "error" or attempt == FINAL_SAVE_TRIES then
+				break
+			end
+			task.wait(math.min(2 ^ attempt, 4))
+		end
+	end
+	profiles[player] = nil
+end
+> build · space-bunny-free
+`deepCopy` est récursif et appelé **hors** du `pcall` de `save`. Le problème n'est pas le plantage lui-même : c'est que `profile.saving` est mis à `true` juste avant. Si `deepCopy` lève, le drapeau reste à `true` pour toujours — et chaque sauvegarde future tombe dans `while profile.saving do task.wait(0.1) end`, en boucle infinie. Ce joueur **n'est plus jamais sauvegardé, silencieusement**, jusqu'à sa déconnexion.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush/src/ServerScriptService/Services" && grep -n "local function save" DataService.lua && sed -n '/local function save/,/^	local lockLost/p' DataService.lua
+385:local function save(profile, release)
+local function save(profile, release)
+	while profile.saving do
+		task.wait(0.1)
+	end
+	if not store or not profile.saveEnabled or profile.released then
+		return "skipped"
+	end
+	profile.saving = true
+	profile.data.lastSeen = os.time()
+	local snapshot = deepCopy(profile.data)
+	snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
+	snapshot._passBonus = nil
+	local lockLost = false
+> build · space-bunny-free
+[0m← [0mEdit src/ServerScriptService/Services/DataService.lua
+Index: src/ServerScriptService/Services/DataService.lua
+===================================================================
+--- src/ServerScriptService/Services/DataService.lua
++++ src/ServerScriptService/Services/DataService.lua
+@@ -389,14 +389,17 @@
+ 	if not store or not profile.saveEnabled or profile.released then
+ 		return "skipped"
+ 	end
+ 	profile.saving = true
+-	profile.data.lastSeen = os.time()
+-	local snapshot = deepCopy(profile.data)
+-	snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
+-	snapshot._passBonus = nil
+ 	local lockLost = false
++	-- tout ce qui peut lever est DANS le pcall, et `saving` est repositionne apres : si
++	-- deepCopy levait, le drapeau resterait a true et ce joueur tournerait ensuite en
++	-- boucle dans "while profile.saving", donc plus jamais sauvegarde, sans erreur visible
+ 	local ok, err = pcall(function()
++		profile.data.lastSeen = os.time()
++		local snapshot = deepCopy(profile.data)
++		snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
++		snapshot._passBonus = nil
+ 		store:UpdateAsync(profile.key, function(record)
+ 			if type(record) ~= "table" or not ownsLock(record.lock, profile) then
+ 				lockLost = true
+ 				return nil
+
+> build · space-bunny-free
+[0m→ [0mRead src/ServerScriptService/Services/DataService.lua [90m[limit=30, offset=385][0m
+> build · space-bunny-free
+[91m[1mError: [0mRate limit exceeded. Please try again later.

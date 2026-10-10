@@ -1,0 +1,16 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/H.md
+Wrote file successfully: docs/INBOX/H.md
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/H.md 
+> build · nemotron-3-ultra-free
+Done. `docs/INBOX/H.md` written with the 3-line format:
+
+**FAIT** — Theme.lua migrated to RobotoCondensed (Title/Number = Bold, Body = Regular, asset ID placeholders), IconResolver.lua created with Font Awesome 6 Free via Glyph.lua (asset 12187624912) + fallback primitives for chest/wave/shield/star/crown/arrow
+
+**VÉRIFIÉ** — Theme.Icon() delegates to IconResolver.Resolve(); Theme.Text() uses Fonts.Body (RobotoCondensed Regular); Theme.Title() uses Fonts.Title (RobotoCondensed Bold); primitives 32×32 min with device-scale via UIScale
+
+**BESOIN** — Replace placeholder asset IDs (rbxassetid://0) with real RobotoCondensed IDs uploaded to Creator Hub by Moaad; validate Glyph.lua (created by I) loads Font Awesome 6 Free correctly

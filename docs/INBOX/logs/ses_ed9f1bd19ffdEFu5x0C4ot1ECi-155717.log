@@ -1,0 +1,22 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/J.md
+Index: docs/INBOX/J.md
+===================================================================
+--- docs/INBOX/J.md
++++ docs/INBOX/J.md
+@@ -6,4 +6,9 @@
+ FAIT      : Plan Retention J (MMORPG Pivot §9) — Daily Rewards J1-7 identiques mobile/PC (J7 = Tide Egg gratuit), QuestService 3 quêtes/jour rotation (attraper 5, voler 1, surfer 1, visiter 3 lagons), Battle Pass hebdo 7 paliers (gratuit x1 / premium x2 cosmétiques only), Friend invite cross-platform +500 pièces si ami rejoint, Streak protection 1 jour grâce/semaine, Guild events calendar + rappels + participation rewards. Architecture modulaire ServerScriptService/Retention, DataStore ProfileService, Net v2.1, zéro P2W.
+ VÉRIFIÉ  : Schéma retention validé contre DECISIONS_MARCHE.md §9 (5 piliers, économie cosmétique only, progression temps+skill), Config.Shop étendu (DailyReward, QuestService, BattlePass, SocialInvite), compatibilité cross-platform mobile/PC confirmée §7-8.
+ BESOIN   : A pour intégrer DailyReward/QuestService/BattlePass dans DataService (ProfileService, migrations v2→v3), O (Story) pour quêtes narratives chapitres 1-3, U (Guild) pour calendar events + rappels, B/H/L pour UI responsive (panneaux sombres, police condensée, touch targets ≥44px), D pour valider scope Phase 1 (2 sem) vs Phase 2-5.
+ 
++## 2026-10-10 16:42
++FAIT      : Prêt pour lundi 12/10 21h — plan Retention J écrit, branche integration claude/e-gdd-reef, sync Rojo lundi soir. Quota Moaad épuisé, reset 21h.
++VÉRIFIÉ  : Aucun test lourd, aucune capture, aucun luau-analyze effectué. Repos.
++BESOIN   : Lundi en Studio — intégration DataService (A), quêtes narratives (O), guild calendar (U), UI responsive (B/H/L), validation scope Phase 1 (D).
++
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/J.md 
+> build · nemotron-3-ultra-free
+Fait. Entrée de fin de tour écrite dans `docs/INBOX/J.md` — prêt pour lundi 12/10 21h, branche `claude/e-gdd-reef`, sync Rojo, quota reset 21h, repos.

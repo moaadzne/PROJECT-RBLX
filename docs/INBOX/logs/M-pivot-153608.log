@@ -1,0 +1,120 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/M.md
+Index: docs/INBOX/M.md
+===================================================================
+--- docs/INBOX/M.md
++++ docs/INBOX/M.md
+@@ -81,5 +81,10 @@
+ 
+ ## 2026-10-10 17:10
+ FAIT      : Branche intégration confirmée par D = `claude/e-gdd-reef` (merge `ada8300` → `e-gdd-reef` fait par F, code corrigé) ; checklist 20 points validée ; Rojo sync depuis cette branche
+ VÉRIFIÉ   : Point 2 du git pull déjà sur `claude/e-gdd-reef` dans la checklist ; merge F intégré
+-BESOIN    : B — HUD responsive mobile (bas) / PC (latéral) implémenté ; A — DailyRewardService confirmé présent
+\ No newline at end of file
++BESOIN    : B — HUD responsive mobile (bas) / PC (latéral) implémenté ; A — DailyRewardService confirmé présent
++
++## 2026-10-10 18:00
++FAIT      : **PIVOT MAJEUR ACTÉ** — Lu `docs/DECISIONS_MARCHE.md §9` intégral. L'ancien scope "lancement lundi jeu mobile vague+collection" = OBSOLÈTE. Nouveau rôle M = **QA Infrastructure Lead MMORPG** (21 agents, 12 semaines, serveur unique 200-500 joueurs). Plan nouveau ci-dessous.
++VÉRIFIÉ   : §9 vision complète : 5 piliers (Histoire/Lore, Progression/Builds, Boss/Raid, PvP/Économie, Cinématiques) + 8 nouveaux agents (O,V,W,X,Y,Z,α,β) + architecture technique (Single Shard, Streaming, ProfileService, MessagingService) + planning 6 phases Semaine 12 + revenus 100% cosmétique/QoL + ZERO P2W.
++BESOIN    : D — Validation formelle arrêt lancement lundi + nomination 8 nouveaux agents (création onglets O-V) + budget 21 agents 3 mois ; A — Netcode extension pour 500 joueurs (interpolation, prediction, reconciliation) ; V — Spécs techniques streaming/instancing/ProfileService ; Tous — Arrêt travail scope ancien, bascule sur Phase 1 Fondation (2 sem)
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md [90m[offset=80][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/M.md
+Index: docs/INBOX/M.md
+===================================================================
+--- docs/INBOX/M.md
++++ docs/INBOX/M.md
+@@ -86,5 +86,60 @@
+ 
+ ## 2026-10-10 18:00
+ FAIT      : **PIVOT MAJEUR ACTÉ** — Lu `docs/DECISIONS_MARCHE.md §9` intégral. L'ancien scope "lancement lundi jeu mobile vague+collection" = OBSOLÈTE. Nouveau rôle M = **QA Infrastructure Lead MMORPG** (21 agents, 12 semaines, serveur unique 200-500 joueurs). Plan nouveau ci-dessous.
+ VÉRIFIÉ   : §9 vision complète : 5 piliers (Histoire/Lore, Progression/Builds, Boss/Raid, PvP/Économie, Cinématiques) + 8 nouveaux agents (O,V,W,X,Y,Z,α,β) + architecture technique (Single Shard, Streaming, ProfileService, MessagingService) + planning 6 phases Semaine 12 + revenus 100% cosmétique/QoL + ZERO P2W.
+-BESOIN    : D — Validation formelle arrêt lancement lundi + nomination 8 nouveaux agents (création onglets O-V) + budget 21 agents 3 mois ; A — Netcode extension pour 500 joueurs (interpolation, prediction, reconciliation) ; V — Spécs techniques streaming/instancing/ProfileService ; Tous — Arrêt travail scope ancien, bascule sur Phase 1 Fondation (2 sem)
+\ No newline at end of file
++BESOIN    : D — Validation formelle arrêt lancement lundi + nomination 8 nouveaux agents (création onglets O-V) + budget 21 agents 3 mois ; A — Netcode extension pour 500 joueurs (interpolation, prediction, reconciliation) ; V — Spécs techniques streaming/instancing/ProfileService ; Tous — Arrêt travail scope ancien, bascule sur Phase 1 Fondation (2 sem)
++
++---
++
++## NOUVEAU PLAN M — QA INFRASTRUCTURE LEAD MMORPG (12 SEMAINES)
++
++### Mission : Zéro régression, qualité continue, lancement Semaine 12 sans friction
++
++### Semaine 1-2 (Phase 1 : Fondation) — MAINTENANT
++- [ ] **CI/CD Pipeline** : GitHub Actions → build + luau-analyze + unit tests + integration tests auto à chaque PR
++- [ ] **Test Framework** : `TestEZ` / `Roblox-Test` pour unit + integration ; mocks Net.lua, DataStore, Remotes
++- [ ] **Load Test Harness** : Scriptable 500 bots (headless) pour stress serveur unique (Net.lua, Streaming, ProfileService)
++- [ ] **Performance Baseline** : FPS/mémoire/CPU cible par plateforme (Mobile 30 FPS / PC 60 FPS @ 500 joueurs)
++- [ ] **Monitoring/Alerting** : DataDog / Roblox Analytics custom events (erreurs, latency, disconnects, économie)
++- [ ] **Rojo + CI** : `rojo build` + `rojo sourcemap` validation à chaque merge ; `default.project.json` source unique
++
++### Semaine 3-5 (Phase 2 : Monde & Histoire)
++- [ ] **World QA** : Streaming chunks validation (LOD, pop-in), collision, navigation, secrets découverts
++- [ ] **Cinematics QA** : Moteur caméra scriptée, dialogues, choix, verrouillage joueur, replay system
++- [ ] **Quest System QA** : 100+ quêtes, branches, consequences, PNJ, sauvegarde/rechargement état
++- [ ] **Cross-platform continu** : 5 min mobile + 5 min PC à CHAQUE sync (règle absolue maintenue)
++
++### Semaine 6-8 (Phase 3 : Progression & Boss)
++- [ ] **Progression QA** : Niveaux 1-100, XP curves, classes (4), talents (12), respec, gear, craft, enchantement
++- [ ] **Creature System QA** : 50+ espèces, évolution ramifiée, mutations héréditaires, montures (vol/nage/terre)
++- [ ] **Boss/Raid QA** : World Boss 20j (phases, enrage, positioning), Donjon 5j (3 diff), Raid 10/20j
++- [ ] **Loot/Économie QA** : Tables loot, matériaux légendaires, craft, hôtel des ventes, taxes
++
++### Semaine 9-10 (Phase 4 : PvP & Économie)
++- [ ] **PvP QA** : Zones contestées, arènes classées (1v1/2v2/3v3), guerres guilde, anti-cheat basique
++- [ ] **Économie QA** : Trading direct, marché, enchères, contrats, assurance vol, anti-RMT logs
++- [ ] **Guild QA** : Bases, sièges, calendrier, chat/voix, permissions, ressources
++
++### Semaine 11-12 (Phase 5 : Endgame & Polish / LANCEMENT)
++- [ ] **Stress Test Final** : 500 joueurs simultanés, 2h continu, 0 crash, < 1% disconnect
++- [ ] **Regression Suite Complète** : Tous systèmes validés, 0 P0/P1 ouverts
++- [ ] **Launch Checklist** : Feature flags, rollback plan, hotfix procedure, monitoring dashboards live
++- [ ] **Post-Launch** : On-call rotation 21 agents, incident response, A/B test framework actif
++
++### Outils & Standards (immédiats)
++- **Test Pyramid** : 70% unit / 20% integration / 10% E2E (Playwright pour web, Roblox Test pour client)
++- **Quality Gates** : PR blocked si luau-analyze warn + test coverage < 80% (nouveau code) + performance regression > 5%
++- **Documentation** : `docs/QA/` vivant — test plans, runbooks, incident postmortems, checklists par phase
++- **Communication** : Daily standup 15 min (async via INBOX), Weekly QA Sync 30 min (tous leads), Incident Slack
++
++### Rollback / Hotfix (adapté MMORPG)
++- **Feature Flags** : Tous nouveaux systèmes derrière flag (lancement progressif par % joueurs)
++- **Data Migration** : ProfileService versioning, migrations réversibles, dry-run obligatoire
++- **Hotfix SLA** : P0 (crash/économie) = 30 min ; P1 (gameplay bloquant) = 2h ; P2 = next deploy
++- **Rollback** : `git revert` + DataStore rollback script testé hebdo ; jamais hotfix en Studio
++
++### Métriques Cibles Semaine 12
++- **Stabilité** : 99.9% uptime, < 0.1% crash rate, < 1% disconnect rate
++- **Performance** : P95 latency < 100ms, Mobile 30+ FPS / PC 60+ FPS @ 500 joueurs
++- **Qualité** : 0 P0/P1 à lancement, < 10 P2/P3 connus documentés
++- **Économie** : 0 exploit, inflation < 5%/semaine, RMT < 0.01% transactions
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md [90m[offset=85][0m
+> build · nemotron-3-ultra-free
+Fait. `docs/INBOX/M.md` mis à jour avec :
+
+**Entrée 3 lignes (18:00)** — Pivot majeur acté, ancien scope lundi = obsolète, nouveau rôle M = **QA Infrastructure Lead MMORPG**
+
+**Plan détaillé 12 semaines** par phase aligné sur §9 :
+- **Sem 1-2 (Fondation)** : CI/CD, Test Framework, Load Test 500 bots, Performance Baseline, Monitoring, Rojo+CI
+- **Sem 3-5 (Monde/Histoire)** : Streaming chunks, Cinematics, Quest System 100+, Cross-platform continu
+- **Sem 6-8 (Progression/Boss)** : Niveaux 1-100, 4 classes, 50+ créatures évolution ramifiée, World Boss/Donjon/Raid QA
+- **Sem 9-10 (PvP/Économie)** : Arènes, Guerres guilde, Hôtel ventes, Trading, Anti-RMT
+- **Sem 11-12 (Endgame/Launch)** : Stress 500j/2h, Regression complète, Feature flags, On-call 21 agents
+
+**Standards immédiats** : Test Pyramid 70/20/10, Quality Gates (luau-analyze + coverage 80% + perf regression 5%), docs QA vivantes, Daily async + Weekly sync
+
+**Rollback/Hotfix MMORPG** : Feature flags, ProfileService versioning, SLA P0=30min/P1=2h, `git revert` + DataStore rollback scripté hebdo
+
+**Métriques cibles S12** : 99.9% uptime, <0.1% crash, P95 latency <100ms, 0 P0/P1, économie clean
+
+**BESOIN** : D (arrêt lundi + 8 agents O-V + budget), A (Netcode 500j), V (Streaming/ProfileService specs), Tous (bascule Phase 1)

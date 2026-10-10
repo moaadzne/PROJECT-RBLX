@@ -1,0 +1,14 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/H.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/H.md
+Wrote file successfully: docs/INBOX/H.md
+> build · nemotron-3-ultra-free
+Done. Written alignment in `docs/INBOX/H.md` (new entry at top):
+
+**FAIT** — H aligned to finalized monetization: Theme.Icon() uses IconResolver for shop icons (chest=VIP79, wave=Speed149, crown=Bag99, star=StarterPack249, spark=TideEgg199, arrow=PickCreature399), RobotoCondensed Bold 14pt min mobile pricing, Font Awesome 6 via Glyph.lua asset 12187624912 for shop/BP/Vault icons, primitive fallback 32×32 min
+
+**VÉRIFIÉ** — Shop.lua receives icons via Theme.Icon("chest"|"wave"|"crown"|"star"|"spark"|"arrow"); probabilities displayed pre-purchase in RobotoCondensed 12pt; pity counter + Vault UI + Battle Pass 12 weeks; cross-platform responsive (mobile 44px touch targets, PC hover tooltips)
+
+**BESOIN** — Real RobotoCondensed asset IDs (replace rbxassetid://0 placeholders); validate Glyph.lua loads full Font Awesome 6 (600+ icons); cosmetic icon atlas (50+ creature skins, mount skins, wings/trails, housing, emotes); A/B test framework hot-reload compatible (V)

@@ -1,0 +1,29 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/M.md
+Wrote file successfully: docs/INBOX/M.md
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md 
+> build · nemotron-3-ultra-free
+Fait. `docs/INBOX/M.md` mis à jour avec :
+
+**Nouveau : TEST CROSS-PLATEFORME OBLIGATOIRE** (après point 15)
+- **Session A Mobile** : 5 min min (iOS/Android, DevConsole ouverte)
+- **Session B PC** : 5 min min (même cycle, Output Studio)
+- **10 points** avec cases ☐ Mobile / ☐ PC :
+  1. Mouvement fluide (joystick / WASD+Shift)
+  2. Caméra (touch drag+pinch / clic droit+molette)
+  3. Vol mobile↔PC identiques (`StartSteal`, `ChoosePick`, `Mount`, `LockLagoon`)
+  4. Boutique achat identiques (prix, PolicyService, ProcessReceipt)
+  5. **HUD responsive** : mobile **bas** (safe area, ≥44px) / PC **latéral** (hover)
+  6. Trading/Vol mêmes protections (newbie, revanche, cap, lock)
+  7. Marée Royale `RoyalBoard` global des deux côtés
+  8. Daily Rewards synchro instantanée cross-device
+  9. **0 erreur console** (Mobile DevConsole + PC Output)
+  10. **Performance** : Mobile ≥30 FPS / PC ≥60 FPS, mémoire <600 Mo / <1 Go
+
+**Rollback mis à jour** : nouvelle ligne "Échec cross-platform (L'UN des deux)" → rollback immédiat 3 min, prévenir A+B+D. Règle absolue : mobile **OU** PC fail = rollback complet.
+
+**BESOIN** pour D/B/A à la fin.

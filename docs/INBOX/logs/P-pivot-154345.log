@@ -1,0 +1,22 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/P.md
+Wrote file successfully: docs/INBOX/P.md
+> build · nemotron-3-ultra-free
+Fait. Le plan MMORPG complet est écrit dans `docs/INBOX/P.md` format 3 lignes.
+
+**Résumé (FAIT) — aligné §9 PIVOT MAJEUR :**
+- **Niveaux 1-100+** : XP unifiée tout activité, soft cap 100 + Paragon infini
+- **4 Classes/Specs** : Gardien (tank/contrôle), Chasseur (DPS/vol/stealth), Maître (support/marées), Tisseur (craft/économie)
+- **3 arbres talents/classe** (18×5 rangs, prérequis arbre, respec croissant Pearls+XP+temps)
+- **Gear** : craft par zone/donjon, enchantement runes (5 slots, échec possible), 6 sets légendaires + set raid
+- **Créatures 50+** : 10×5 mutations×traits héréditaires, évolution 3 paths, breeding
+- **Montures 3 arbres** : Vol/Nage/Terre avec combat monté
+- **Housing/Guild Halls** : 5 paliers, modules défense/production, war room guilde
+- **Architecture** : ProfileService + GlobalDataStore + OrderedDataStore + MessagingService, streaming chunks
+- **Remotes additifs** : ClassSelect, TalentReset, CraftItem, EnchantGear, MountUpgrade, HousingBuild, GuildAction, BreedingRequest, TradePost
+- **Phase 1** : fondations données seulement (Config + DataSchema), systèmes désactivés unlock Phase 2-3
+
+**BESOIN** : ownership A (implémentation), fiches talents E, hooks lore O, concepts art C, loot tables Q, économie craft R, arbitrage respec/calendrier/0P2W D, architecture streaming V.

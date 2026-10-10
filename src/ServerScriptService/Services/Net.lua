@@ -1,6 +1,10 @@
--- Net : remotes du jeu, limite de frequence, notifications, etat de la vague (global ou propre a un joueur).
+-- Net : remotes du jeu, limite de frequence adaptative, notifications, etat de la vague.
+-- Cycle 1 : RateLimiter adaptatif integre (anti-spam, reconnexion seamless).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Services = script.Parent
+local RateLimiter = require(Services.RateLimiter)
 
 -- Remotes du contrat v2 : crees au demarrage s'ils manquent dans Studio
 local REMOTES = {
@@ -13,6 +17,10 @@ local REMOTES = {
 	StartSteal = "RemoteFunction",
 	Mount = "RemoteFunction",
 	ChoosePick = "RemoteFunction",
+	ClaimDaily = "RemoteFunction",
+	ClaimQuest = "RemoteFunction",
+	ClaimBattlePass = "RemoteFunction",
+	RefreshQuests = "RemoteFunction",
 	StateChanged = "RemoteEvent",
 	RoyalBoard = "RemoteEvent",
 	WaveState = "RemoteEvent",
@@ -41,36 +49,17 @@ end
 
 local Net = {}
 
-local RATE_CAPACITY = 8 -- appels d'affilee possibles, par remote et par joueur
-local RATE_REFILL = 4 -- appels rendus par seconde
-
-local buckets = {} -- [player][remoteName] = { tokens, t }
 local handlers = {} -- [remoteName] = fonction branchee (pour le selftest)
 local currentWave = nil
 local personal = {} -- [player] = { wave = table? (vague propre), tide = string? (maree propre sur la vague globale) }
 
+-- Rate limiting adaptatif via RateLimiter
 local function allow(player, name)
 	if not player.Parent then
 		return false -- deja parti : ne pas recreer de seau apres Net.Forget (fuite du Player)
 	end
-	local now = os.clock()
-	local perPlayer = buckets[player]
-	if not perPlayer then
-		perPlayer = {}
-		buckets[player] = perPlayer
-	end
-	local bucket = perPlayer[name]
-	if not bucket then
-		bucket = { tokens = RATE_CAPACITY, t = now }
-		perPlayer[name] = bucket
-	end
-	bucket.tokens = math.min(RATE_CAPACITY, bucket.tokens + (now - bucket.t) * RATE_REFILL)
-	bucket.t = now
-	if bucket.tokens < 1 then
-		return false
-	end
-	bucket.tokens -= 1
-	return true
+	local ok, reason = RateLimiter.Allow(player, name)
+	return ok
 end
 
 -- Branche une RemoteFunction. Le handler renvoie (true, ...) ou (false, code).
@@ -198,8 +187,13 @@ function Net.SetPersonalTide(player, tide)
 end
 
 function Net.Forget(player)
-	buckets[player] = nil
+	RateLimiter.Forget(player)
 	personal[player] = nil
+end
+
+-- Reconnexion seamless : donne une grace de 30 s au joueur
+function Net.OnReconnect(player)
+	RateLimiter.OnReconnect(player)
 end
 
 return Net

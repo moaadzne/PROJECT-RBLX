@@ -1,0 +1,18 @@
+[0m
+> build · longcat-2.5-preview-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== coveRadius actuel ==="; grep -n "coveRadius" src/ReplicatedStorage/Shared/Shared/Config.lua 2>/dev/null || grep -n "coveRadius" src/ReplicatedStorage/Shared/Config.lua; echo "=== SUNK_POOLS dans build_lagoon ==="; grep -n "SUNK_POOLS" tools/world/build_lagoon.luau | head -5; echo "=== PLOTS dans build_lagoon ==="; grep -n "PLOTS" tools/world/build_lagoon.luau | head -5
+=== coveRadius actuel ===
+191:-- Dans la crique (coveRadius) : les 8 lagons, a l'abri de la vague, pas de capture.
+197:	coveRadius = 70,
+400:	return Config.IslandDistance(position) <= Config.Island.coveRadius
+=== SUNK_POOLS dans build_lagoon ===
+15:local SUNK_POOLS = true
+36:	sink = 3.5, -- SUNK_POOLS : descente des socles
+384:		local pedY = origY - (SUNK_POOLS and POOL.sink or 0)
+393:		local waterTop = if SUNK_POOLS then deckTop - 0.2 else floorTop + POOL.waterDepth
+394:		local rimTop = if SUNK_POOLS then deckTop + 0.6 else waterTop + POOL.rimExtra
+=== PLOTS dans build_lagoon ===
+11:local PLOTS = { 1 }
+470:	for _, index in PLOTS do
+> build · longcat-2.5-preview-free
+[91m[1mError: [0mRate limit exceeded. Please try again later.

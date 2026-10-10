@@ -14,11 +14,13 @@ local Stats = require(Services.Stats)
 local DataService = {}
 
 local STORE_NAME = "TideRush_Players"
+local BACKUP_STORE_NAME = "TideRush_Players_Backup"
 local KEY_PREFIX = "u_"
 local SCHEMA_VERSION = 2
 local LOAD_TRIES = 3
 local AUTOSAVE_EVERY = 90
 local AUTOSAVE_STAGGER = 0.5
+local BACKUP_EVERY = 3600 -- backup horaire
 local LOCK_STALE = AUTOSAVE_EVERY + 30 -- s sans rafraichissement : le serveur qui tenait le verrou est mort
 local LOCK_WAIT = 3 -- s entre deux essais quand un autre profil tient le verrou
 local LOCK_WAIT_TRIES = 10 -- ensuite on force : l'ancien profil ne pourra plus ecrire
@@ -38,6 +40,7 @@ local MAX_RECEIPTS = 100
 local SESSION_ID = HttpService:GenerateGUID(false)
 
 local store = nil
+local backupStore = nil
 local profiles = {} -- [player] = profile
 local dirty = {} -- [player] = true : etat a renvoyer au client
 local loadedHooks = {}
@@ -298,10 +301,14 @@ end
 
 -- Prend le verrou de session et lit l'enregistrement.
 -- Renvoie "ok", record | "locked" | "error", message
-local function claim(profile, force)
+local function claim(profile, force, useBackup)
 	local status = "error"
+	local targetStore = useBackup and backupStore or store
+	if not targetStore then
+		return "error", "Store indisponible"
+	end
 	local ok, result = pcall(function()
-		return store:UpdateAsync(profile.key, function(record)
+		return targetStore:UpdateAsync(profile.key, function(record)
 			if type(record) ~= "table" then
 				record = {}
 			end
@@ -371,6 +378,16 @@ local function loadRecord(profile)
 			errors += 1
 			warn(("[TideRush] chargement %s, essai %d/%d : %s"):format(profile.key, errors, LOAD_TRIES, tostring(result)))
 			if errors >= LOAD_TRIES then
+				-- Dernier recours : lire depuis le backup horaire (recovery rapide, jamais d'ecriture)
+				if backupStore then
+					local ok, backup = pcall(function()
+						return backupStore:GetAsync(profile.key)
+					end)
+					if ok and type(backup) == "table" and type(backup.data) == "table" then
+						warn(("[TideRush] %s restaure depuis le backup"):format(profile.key))
+						return backup
+					end
+				end
 				releaseLock(profile) -- au cas ou une ecriture serait passee malgre l'erreur
 				return nil, result
 			end
@@ -382,11 +399,12 @@ end
 
 -- Sauvegarde ; release = true rend le verrou (depart, fermeture).
 -- Renvoie "ok" | "error" | "lockLost" | "skipped"
-local function save(profile, release)
+local function save(profile, release, useBackup)
 	while profile.saving do
 		task.wait(0.1)
 	end
-	if not store or not profile.saveEnabled or profile.released then
+	local targetStore = useBackup and backupStore or store
+	if not targetStore or not profile.saveEnabled or profile.released then
 		return "skipped"
 	end
 	profile.saving = true
@@ -399,7 +417,7 @@ local function save(profile, release)
 		local snapshot = deepCopy(profile.data)
 		snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
 		snapshot._passBonus = nil
-		store:UpdateAsync(profile.key, function(record)
+		targetStore:UpdateAsync(profile.key, function(record)
 			if type(record) ~= "table" or not ownsLock(record.lock, profile) then
 				lockLost = true
 				return nil
@@ -412,7 +430,7 @@ local function save(profile, release)
 	end)
 	profile.saving = false
 	if not ok then
-		warn(("[TideRush] sauvegarde %s echouee : %s"):format(profile.key, tostring(err)))
+		warn(("[TideRush] sauvegarde %s echouee%s : %s"):format(profile.key, useBackup and " (backup)" or "", tostring(err)))
 		return "error"
 	end
 	if lockLost then
@@ -595,6 +613,19 @@ function DataService.AddCoins(player, amount)
 		profile.data.stats.coinsEarned += whole
 		DataService.MarkDirty(player)
 	end
+end
+
+-- Tide Egg gratuit (daily reward, battle pass, etc.) : free = true => non-échangeable
+function DataService.AddTideEgg(player, count, free)
+	local profile = profiles[player]
+	if not profile or not profile.loaded or type(count) ~= "number" or count <= 0 then
+		return
+	end
+	profile.data.tideEggs = (profile.data.tideEggs or 0) + count
+	if free then
+		profile.data.freeTideEggs = (profile.data.freeTideEggs or 0) + count
+	end
+	DataService.MarkDirty(player)
 end
 
 function DataService.TrySpend(player, cost)
@@ -808,6 +839,22 @@ local function onClose()
 	end
 end
 
+-- Backup horaire : copie deja sanitizee, sans verrou, dans un store separe
+local function backupLoop()
+	while true do
+		task.wait(BACKUP_EVERY)
+		if not backupStore then
+			continue
+		end
+		for _, profile in pairs(profiles) do
+			if profile.loaded and profile.saveEnabled and not profile.leaving then
+				save(profile, false, true)
+				task.wait(AUTOSAVE_STAGGER)
+			end
+		end
+	end
+end
+
 function DataService.Start()
 	local ok, result = pcall(function()
 		return DataStoreService:GetDataStore(STORE_NAME)
@@ -816,6 +863,15 @@ function DataService.Start()
 		store = result
 	else
 		warn("[TideRush] DataStore indisponible : " .. tostring(result))
+	end
+	-- Store de backup (recovery) : ouvert a part, son absence ne coupe rien
+	local okB, resultB = pcall(function()
+		return DataStoreService:GetDataStore(BACKUP_STORE_NAME)
+	end)
+	if okB then
+		backupStore = resultB
+	else
+		warn("[TideRush] DataStore backup indisponible : " .. tostring(resultB))
 	end
 	-- SubscribeAsync peut attendre longtemps (place non publiee) : jamais dans le fil de demarrage
 	task.spawn(function()
@@ -845,6 +901,13 @@ function DataService.Start()
 		while true do
 			local ok, err = pcall(autosaveLoop)
 			warn("[TideRush] sauvegarde automatique : " .. tostring(ok and "fin" or err))
+			task.wait(1)
+		end
+	end)
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(backupLoop)
+			warn("[TideRush] backup horaire : " .. tostring(ok and "fin" or err))
 			task.wait(1)
 		end
 	end)

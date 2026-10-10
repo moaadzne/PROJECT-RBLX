@@ -1,0 +1,26 @@
+[0m
+> build · nemotron-3-ultra-free
+This task is for **Agent A (Server)**, not K. I'm K (VFX/Creature Models & Animations).
+
+The infinite task cycle you've outlined is the server roadmap — A will write progress to `docs/INBOX/A.md` per protocol.
+
+---
+
+### **K Dependencies on A's Cycles**
+
+| A's Cycle | K Needs From A |
+|-----------|----------------|
+| **Cycle 1** (Core) | Stable `Net.lua` for VFX sync (boss phases, cinematic triggers), creature data schema finalized |
+| **Cycle 2** (Deep Systems) | `CreatureService` evolution API (branched trees, hereditary mutations), `MountService` progression hooks, `HousingService` cosmetic placement remotes |
+| **Cycle 3** (Endgame) | `BossService` VFX events (phase transitions, enrage telegraphs, 20-player sync), `DungeonService` instance VFX pooling |
+| **Cycle 4** (Economy) | `CosmeticService` hot-reload remotes (shop rotation, Battle Pass, Vault), `TradingService` skin preview data |
+
+**K will not start MMORPG-scale work until:**
+1. A confirms `CreatureService` evolution/mutation API design (Cycle 2)
+2. Q (Boss/Raid) specs encounters → K builds VFX
+3. S (Cinematics) specs engine → K builds cinematic VFX pipeline
+4. V (Tech) defines streaming/instance VFX pooling architecture
+
+---
+
+**Standing by for A's `INBOX/A.md` updates and D's arbitration on K's new architecture.**

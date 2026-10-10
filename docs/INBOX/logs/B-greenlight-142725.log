@@ -1,0 +1,166 @@
+[0m
+> build · space-bunny-free
+Reçu. Une tension à signaler d'emblée : mon travail est sur `claude/friendly-volta-qj504y`, pas sur la branche partagée — et tu m'interdis de merger. Je le note et je continue sur P1-15.
+
+Je vérifie l'alignement au contrat v2.1, point par point.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== contrat : remotes et champs ===" && grep -n "StartSteal\|ChoosePick\|Mount\|StealResult\|randomAllowed\|newbie\|shield\|Juvenile\|Titan" review/review_context.md | head -30
+=== contrat : remotes et champs ===
+7:  - stades : Juvenile / Adult / Elder / Titan (indices 1..4 inchangés) ;
+8:  - monture dès Elder ; Titan surfe ;
+15:- `src/ServerScriptService/Main.server.lua` (Script) ; `Services/*.lua` (ModuleScripts) : Net, Stats, DataService, PlotService, WaveService, CreatureService, CreatureFactory, IntroService, LagoonService, StealService, MountService, RoyalService, ShopService, UpgradeService, PetService, DebugService, SelfTest.
+33:- **Dépôt** automatique en entrant dans sa base : bassin libre d'abord ; lagon plein → la nouvelle remplace la plus faible si elle vaut plus (revenu/s courant, stade et mutation compris) ; sinon elle est relâchée contre des pièces. Une créature remplacée est relâchée aussi. Prix de relâche = revenu au stade Juvenile (mutation comprise) × Config.SellMultiplier.
+43:  - prise si l'axe du joueur est dans `[front - thickness, front]`, pieds sous 30 et hors de la crique. Tours, remparts, belvédère et terrain haut sont des abris (pieds au-dessus de 30), et une monture Titan surfe ;
+52:  - pendant la fenêtre, on entre dans un lagon ouvert et on maintient 1 s près d'un bassin (`StartSteal`) ;
+64:  - espèces de Config.Mount, à partir du stade Elder, une seule à la fois ;
+65:  - vitesse : Elder ×1,3, Titan ×1,6 ;
+66:  - une Titan n'est jamais prise par la vague, elle la surfe, et le joueur garde son sac ;
+108:  newbie,                   -- true pendant la protection débutant (ni voler ni être volé)
+114:  shield,                   -- "" | "newbie" | "stolen" | "cap" | "lock" : pourquoi ton lagon reste fermé
+119:  shop = {randomAllowed},   -- false : montrer Pick a Creature à la place du Tide Egg
+130:  nextStageAt,              -- heure du prochain stade, 0 si Titan (dernier stade)
+197:- `StartSteal(plot, slot) -> (true, holdEndsAt) | (false, code)` :
+200:- `Mount(uid | nil) -> (true) | (false, code)` : nil = descendre.
+201:- `ChoosePick(species) -> (true) | (false, code)` : choix pour Pick a Creature, à appeler juste avant d'ouvrir l'achat. Sans choix, le serveur donne l'espèce de plus grande valeur.
+203:- Codes v2.1 : Closed (hors fenêtre), Locked (lagon verrouillé ou protégé), Newbie, LastCreature, Mounted, Carrying, TooFar, NotStealable, NotMountable, TooYoung, Busy.
+215:- PlotN : `Open` (bool, barrière baissée pour tous), `Locked` (bool), `Shield` ("" | "newbie" | "stolen" | "cap" | "lock").
+221:- Joueur : `Carrying` ("HawksbillTurtle:Golden" ou ""), `Mount` (espèce ou ""), `MountStage` (3 ou 4), `Surfing` (bool, monture Titan pendant la vague), `Crown` (0..3), `Newbie` (bool), `VIP` (bool).
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && for s in StartSteal ChoosePick Mount StealResult "shop.randomAllowed" randomAllowed newbie shield Juvenile Adult Elder Titan; do printf "%-22s Store:%s  Hud/Steal/Shop/Mount:%s\n" "$s" "$(grep -c "$s" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua)" "$(cat src/StarterPlayer/StarterPlayerScripts/TideClient/{StealHud,MountButton,Shop,Hud,World}.lua 2>/dev/null | grep -c "$s")"; done
+StartSteal             Store:3  Hud/Steal/Shop/Mount:4
+ChoosePick             Store:2  Hud/Steal/Shop/Mount:3
+Mount                  Store:6  Hud/Steal/Shop/Mount:16
+StealResult            Store:0  Hud/Steal/Shop/Mount:0
+shop.randomAllowed     Store:1  Hud/Steal/Shop/Mount:3
+randomAllowed          Store:3  Hud/Steal/Shop/Mount:7
+newbie                 Store:3  Hud/Steal/Shop/Mount:6
+shield                 Store:3  Hud/Steal/Shop/Mount:14
+Juvenile               Store:3  Hud/Steal/Shop/Mount:0
+Adult                  Store:5  Hud/Steal/Shop/Mount:1
+Elder                  Store:0  Hud/Steal/Shop/Mount:0
+Titan                  Store:0  Hud/Steal/Shop/Mount:0
+> build · space-bunny-free
+Deux trous concrets : `StealResult` est absent partout, et **`Elder`/`Titan` n'apparaissent nulle part dans le Store** alors que la monture commence à Elder. Je regarde.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== Config.Stages ===" && grep -n "Config.Stages" -A 8 src/ReplicatedStorage/Shared/Config.lua | head -14; echo ""; echo "=== Store : stades ===" && grep -n "Juvenile\|Adult\|stage" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | head -20
+=== Config.Stages ===
+47:Config.Stages = {
+48-	{ id = "Juvenile", scale = 0.6, mult = 1 },
+49-	{ id = "Adult", scale = 0.8, mult = 2 },
+50-	{ id = "Elder", scale = 1.0, mult = 4 },
+51-	{ id = "Titan", scale = 1.5, mult = 8 },
+52-}
+53--- Minutes cumulees depuis le depot pour atteindre Adult, Elder, Titan
+54-Config.GrowthMinutes = {
+55-	Common = { 3, 15, 60 },
+--
+305:	for i, stage in ipairs(Config.Stages) do
+306-		if stage.id == id then
+307-			return i
+308-		end
+
+=== Store : stades ===
+18:local STAGE_IDS = { "Baby", "Juvenile", "Adult", "Giant" }
+19:-- Croissance du GDD §4.3 (minutes cumulees vers Juvenile, Adult, Giant), tant que Config.GrowthMinutes manque
+63:-- creature du contrat v2 : {uid, species, mutation ("" = aucune), born, stage 1..4, nextStageAt (0 si Giant), income}
+64:-- -> {uid?, species, mutation?, born?, stage?, nextStageAt?, income} ou false (bassin vide)
+76:	local stage = optNumber(raw.stage)
+82:		stage = if stage then math.clamp(math.floor(stage), 1, #STAGE_IDS) else nil,
+357:	local stage, _, left = Store.CreatureStage(creatureEntry(entry), now)
+358:	entry.stage = stage
+561:function Store.StageId(stage: number): string
+562:	local stages = (Config :: any).Stages
+563:	local s = stages and stages[stage]
+567:	return STAGE_IDS[stage] or STAGE_IDS[1]
+570:-- Echelle visuelle d'un stade, relative a l'Adult (Config.Stages : 0.6 / 0.8 / 1 / 1.5)
+571:function Store.StageScale(stage: number): number
+572:	local stages = (Config :: any).Stages
+573:	local s = stages and stages[stage]
+577:	return ({ 0.6, 0.8, 1, 1.5 })[stage] or 1
+584:	-- seuils en secondes : Baby 0, Juvenile, Adult, Giant
+589:-- Le serveur fait foi (stage, nextStageAt) ; born sert a placer le debut du stade, avec la meme vitesse de
+595:	local stage = entry.stage
+> build · space-bunny-free
+Trouvé : `Store.lua:18` a encore les **anciens noms de stades v1** (`Baby…Giant`) alors que le contrat v2.1 dit `Juvenile/Adult/Elder/Titan`. Je lis la zone à corriger.
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=50, offset=556][0m
+> build · space-bunny-free
+`StageId`/`StageScale` lisent déjà `Config.Stages` — le risque est dans le repli. Je aligne les noms de repli sur v2.1 et je retire les commentaires obsolètes.
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=8, offset=17][0m
+> build · space-bunny-free
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -14,10 +14,12 @@
+ local GETSTATE_ATTEMPTS = 5
+ local ATTRIBUTE_SETTLE = 0.15 -- delai avant de relire les attributs de vague
+ local PHASES = { calm = true, warning = true, wave = true, recede = true }
+ local INTRO_STEPS = { intro = true, golden = true, done = true }
+-local STAGE_IDS = { "Baby", "Juvenile", "Adult", "Giant" }
+--- Croissance du GDD §4.3 (minutes cumulees vers Juvenile, Adult, Giant), tant que Config.GrowthMinutes manque
++-- Stades du contrat v2.1 : Juvenile / Adult / Elder / Titan, indices 1..4.
++-- Source de verite = Config.Stages ; cette liste n'est que le repli.
++local STAGE_IDS = { "Juvenile", "Adult", "Elder", "Titan" }
++-- Repli si Config.GrowthMinutes manque : minutes cumulees vers Adult, Elder, Titan.
+ local GROWTH_FALLBACK = {
+ 	Common = { 3, 15, 60 },
+ 	Uncommon = { 5, 30, 120 },
+ 	Rare = { 10, 60, 240 },
+
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -582,9 +582,9 @@
+ local function growthMarks(species: string): { number }
+ 	local info = Store.CreatureInfo(species)
+ 	local growthTable = (Config :: any).GrowthMinutes or GROWTH_FALLBACK
+ 	local growth = growthTable[info and info.rarity or "Common"] or growthTable.Common or GROWTH_FALLBACK.Common
+-	-- seuils en secondes : Baby 0, Juvenile, Adult, Giant
++	-- seuils en secondes : Juvenile 0, puis Adult, Elder, Titan
+ 	return { 0, growth[1] * 60, growth[2] * 60, growth[3] * 60 }
+ end
+ 
+ -- Stade d'une creature (entree de state.pools) : (stade 1..4, progression 0..1 vers le suivant, secondes restantes ou nil)
+
+> build · space-bunny-free
+Maintenant les signatures de remote, qui est le cœur de P1-15. Je compare au contrat.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== wrappers remotes dans Store ===" && grep -n "StartSteal\|ChoosePick\|\"Mount\"\|Mount(\|function Store.Mount\|Net:Call\|Invoke" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | head -20; echo ""; echo "=== codes d'erreur geres ? ==="; for c in Closed Locked Newbie LastCreature Mounted Carrying TooFar NotStealable NotMountable TooYoung Busy; do printf "%-14s %s\n" "$c" "$(grep -rc "\"$c\"" src/StarterPlayer/StarterPlayerScripts/TideClient/ 2>/dev/null | grep -v ':0' | tr '\n' ' ')"; done
+=== wrappers remotes dans Store ===
+683:			return rf:InvokeServer(table.unpack(args, 1, args.n))
+697:function Store.Invoke(name: string, ...: any): (boolean, ...any)
+703:	local callOk, ok, value = Store.Invoke(name, ...)
+719:-- Contrat v2.1 : StartSteal -> (true, holdEndsAt) ; le serveur prend la creature a holdEndsAt si on n'a pas bouge
+720:function Store.StartSteal(plot: number, slot: number): (boolean, any)
+721:	return call("StartSteal", plot, slot)
+733:-- Mount(uid) monte ; Mount(nil) descend (contrat v2.1)
+734:function Store.Mount(uid: string?): (boolean, any)
+739:	return call("Mount", uid)
+742:function Store.ChoosePick(species: string): (boolean, any)
+743:	return call("ChoosePick", species)
+747:function Store.Mountables(): { any }
+
+=== codes d'erreur geres ? ===
+Closed         
+Locked         src/StarterPlayer/StarterPlayerScripts/TideClient/StealHud.lua:1 
+Newbie         src/StarterPlayer/StarterPlayerScripts/TideClient/NameTags.lua:2 
+LastCreature   
+Mounted        src/StarterPlayer/StarterPlayerScripts/TideClient/StealHud.lua:1 
+Carrying       src/StarterPlayer/StarterPlayerScripts/TideClient/NameTags.lua:2 
+TooFar         
+NotStealable   
+NotMountable   
+TooYoung       src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:1 
+Busy           src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:1 src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:2 src/StarterPlayer/StarterPlayerScripts/TideClient/StealHud.lua:1
+> build · space-bunny-free

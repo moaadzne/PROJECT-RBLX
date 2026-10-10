@@ -1,0 +1,100 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/K.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+[0m→ [0mRead tools/world/build_creatures.luau 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite tools/world/build_creatures.luau
+Wrote file successfully: tools/world/build_creatures.luau
+> build · nemotron-3-ultra-free
+[0m→ [0mRead src/ReplicatedStorage/Shared/Config.lua [90m[limit=30, offset=130][0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead src/ReplicatedStorage/Shared/Config.lua [90m[limit=100, offset=380][0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead src/ReplicatedStorage/Shared/Config.lua [90m[offset=260, limit=30][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit src/ReplicatedStorage/Shared/Config.lua
+Index: src/ReplicatedStorage/Shared/Config.lua
+===================================================================
+--- src/ReplicatedStorage/Shared/Config.lua
++++ src/ReplicatedStorage/Shared/Config.lua
+@@ -271,8 +271,21 @@
+ }
+ Config.MaxEquippedPets = 3
+ Config.MaxPetInventory = 40
+ 
++-- Cross-platform LOD & quality (DECISIONS_MARCHE.md §7) — distances différenciées Mobile/PC
++Config.CrossPlatform = {
++	LODDistancesMobile = { Near = 80, Mid = 160, Far = 300 }, -- suppression mesh >200 studs mobile
++	LODDistancesPC = { Near = 120, Mid = 250, Far = 500 },
++	MaxParticlesMobile = 50,
++	MaxParticlesPC = 200,
++	ShadowsMobile = false,
++	ShadowsPC = true,
++	WaterQualityMobile = 0.5,
++	WaterQualityPC = 1.0,
++	GraphicsQuality = { "Auto", "High", "Low" }, -- Settings.lua persiste le choix
++}
++
+ Config.PickupRadius = 6
+ Config.CreatureSpacing = 7 -- ecart minimal entre deux creatures au sol (studs)
+ Config.HomeCooldown = 20
+ Config.MaxPlayersPerServer = 8
+
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+Done. Updated both files with the double-platform LOD plan:
+
+---
+
+### **Updated `tools/world/build_creatures.luau`**
+- Generates **LOD0** (full mesh) + **LOD1** (~50% triangles) per creature
+- Each species has `trianglesLOD0` / `trianglesLOD1` budget (max 1500 / 750)
+- `Model.LODConfig` folder with Mobile/PC distances embedded
+- Mountable creatures get Saddle/SurfStand on LOD0 only
+
+### **Updated `Config.lua` — `Config.CrossPlatform`**
+```lua
+Config.CrossPlatform = {
+	LODDistancesMobile = { Near = 80, Mid = 160, Far = 300 },   -- mesh cull >200 studs
+	LODDistancesPC = { Near = 120, Mid = 250, Far = 500 },
+	MaxParticlesMobile = 50,
+	MaxParticlesPC = 200,
+	ShadowsMobile = false,
+	ShadowsPC = true,
+	WaterQualityMobile = 0.5,
+	WaterQualityPC = 1.0,
+	GraphicsQuality = { "Auto", "High", "Low" },
+}
+```
+
+### **LOD Switching Logic (for Monday in `CreatureRenderer`)**
+```lua
+local isMobile = UserInputService.TouchEnabled
+local distances = isMobile and Config.CrossPlatform.LODDistancesMobile 
+                       or Config.CrossPlatform.LODDistancesPC
+
+-- Dans onRenderStepped:
+if dist < distances.Near then setLOD(model, 0)
+elseif dist < distances.Mid then setLOD(model, 1)
+elseif dist < distances.Far then setLOD(model, 1) -- LOD1
+else model.Parent = nil -- culled (mobile >200, PC >500)
+end
+```
+
+### **Monday 12/10 Checklist**
+| Task | Owner |
+|------|-------|
+| Import 3 Store meshes to `_DecorLib` | C |
+| Run `build_creatures.luau` (DRY_RUN=false) | K |
+| Replace Body placeholders, set `MeshPart.RenderFidelity = Automatic` | C |
+| Verify Saddle/SurfStand on HawksbillTurtle | C/K |
+| Run `build_mutation_fx.luau` + `build_royal_fx.luau` | K |
+| Implement LOD switching in `CreatureRenderer` (TouchEnabled) | K |
+| `Settings.GraphicsQuality` persistence (Auto/High/Low) | N |
+| TouchTargetMin 44px + HUD responsive | B |

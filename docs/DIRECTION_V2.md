@@ -79,3 +79,39 @@ Références de principe, à ne jamais copier : la lumière et l'eau de Sea of T
 6. Aucun bloc, aucun plastique lisse, aucun emoji, aucune police ronde.
 
 Si un seul point échoue, on ne montre pas.
+
+---
+
+## Validation cohérence (E, 10/10) — alignée sur DECISIONS_MARCHE.md et BRIEF_NOUVEAUX_AGENTS
+
+**Verdict : la direction tient, avec deux ajustements précis à acter.**
+
+### Ce qui est conforme, et reste la référence
+
+| Point de la directive | Statut |
+|---|---|
+| Ton **cool / intense / premium** | ✅ intact. Verbes d'action CATCH / STEAL / RIDE / SURF / SURVIVE. Aucun « Yay! », aucun diminutif. |
+| **Pas enfantin**, public 13-25 ans | ✅ intact. C'est la condition d'accès au top 50 (voir `AUDIT_TOP10_v2.md` §2). |
+| **Zéro emoji** | ✅ confirmé. Le brief agents H impose `IconResolver` + fallback primitives (coffre, vague, bouclier, couronne, étoile, flèche). |
+| **30 s d'onboarding visuel** | ✅ conforme. Aucun HUD avant 31,5 s, aucun texte avant 18 s sauf « CATCH ». |
+| Réalisme stylisé, animaux crédibles | ✅ intact, et renforcé par le pivot : 50+ créatures exigent un pipeline de modélisation unique, donc la règle « pas de gros yeux » s'applique 50 fois. |
+
+### Les deux ajustements à acter
+
+**1. Police : RobotoCondensed native, pas Barlow Condensed.**
+`DIRECTION_V2.md` §Interface propose « Barlow Condensed ou une police équivalente, sous licence ». Le brief agent H tranche pour **`Enum.Font.RobotoCondensed`** (bold pour les titres) : c'est **natif Roblox**, donc zéro téléversement, zéro problème de licence, rendu garanti identique sur toute plateforme.
+→ **E approuve.** Barlow restait une charge (licence, upload, fallback) pour un gain stylistique minime face à une police système qui fait déjà le travail.
+
+**2. Icônes : Font Awesome 6 + fallback primitives.**
+`DIRECTION_V2.md` demande « icônes cohérentes, pleines ou au trait ». Le brief agent H précise **Font Awesome 6 (SIL OFL)** avec `IconResolver` et fallback sur des primitives Roblox si le chargement échoue.
+→ **E approuve, avec une réserve :** la cohérence doit se lire **sur les primitives de repli**, pas seulement sur Font Awesome. Un jeu dont les icônes deviennent des carrés gris si le chargement échoue est un jeu qui paraît cassé. Le fallback doit être testé sur capture, pas supposé.
+
+### Ce que la direction ne couvre pas encore
+
+Le pivot MMORPG ajoute trois angles que `DIRECTION_V2.md` n'avait pas à traiter en v1 :
+
+- **Classes et builds** : la lisibilité de classe (armure, silhouette, couleur) doit se lire à 50 studs — cf. brief agent P.
+- **Cinématiques** : la caméra scriptée doit rester dans le ton « console », pas devenir un film interactif enfantin — cf. brief agent S.
+- **Économie joueur visible** : l'hôtel des ventes est un endroit où les prix se voient. Il ne doit pas devenir un mur de texte — cf. brief agent R.
+
+**Ce ne sont pas des changements de direction, ce sont des extensions.** Le ton ne bouge pas : cool, intense, premium.

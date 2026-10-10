@@ -1,15 +1,16 @@
 -- Theme : systeme visuel « jeu console » (docs/DIRECTION_V2.md, prime sur la bible) :
--- panneaux sombres translucides, coins de 6 a 10 px, police condensee nette, titres en MAJUSCULES espacees,
--- aucun emoji (icones dessinees, ou images de Assets.UI.Icons quand C les fournit), animations courtes et seches.
+-- panneaux sombres translucides, coins de 6 a 10 px, police condensee nette (RobotoCondensed), titres en MAJUSCULES espacees,
+-- aucun emoji (IconResolver : Font Awesome 6 Free si charge, sinon primitives Roblox), animations courtes et seches.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 
 local Util -- injecte dans Init
+local IconResolver -- injecte dans Init
 
 local Theme = {}
 
----------------------------------------------------------------- Jetons
+--------------------------------------------------------------- Jetons
 Theme.Colors = {
 	-- fonds : nuit marine, presque neutre (pas de couleur bonbon)
 	Plate = Color3.fromRGB(10, 14, 22),
@@ -48,13 +49,16 @@ Theme.Transparency = {
 	TextStroke = 0.55,
 }
 
--- Titres et chiffres : Oswald (condensee, nette ; la plus proche de Barlow Condensed parmi les polices integrees
--- a Roblox, donc rien a charger). Texte courant : Builder Sans (VISION_TON §3).
-local OSWALD = "rbxasset://fonts/families/Oswald.json"
-local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
+-- Polices : RobotoCondensed (SIL OFL, upload sur Creator Hub) pour titres/chiffres, Builder Sans pour corps
+-- Asset IDs a remplacer apres upload sur Creator Hub :
+local ROBOTO_CONDENSED_REGULAR = "rbxassetid://0" -- RobotoCondensed-Regular
+local ROBOTO_CONDENSED_BOLD = "rbxassetid://0"   -- RobotoCondensed-Bold
+local BUILDER = "rbxasset://fonts/families/BuilderSans.json" -- police integree Roblox pour texte courant
+
 Theme.Fonts = {
-	Title = Font.new(OSWALD, Enum.FontWeight.Bold),
-	Number = Font.new(OSWALD, Enum.FontWeight.Bold),
+	Title = Font.new(ROBOTO_CONDENSED_BOLD, Enum.FontWeight.Bold),
+	Number = Font.new(ROBOTO_CONDENSED_BOLD, Enum.FontWeight.Bold),
+	Body = Font.new(ROBOTO_CONDENSED_REGULAR, Enum.FontWeight.Regular),
 	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
 	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
 }
@@ -93,15 +97,16 @@ local HOVER_SCALE = 1.03
 local PRESS_SCALE = 0.95
 local LETTER_GAP = utf8.char(0x200A) -- espace fine : MAJUSCULES espacees (Roblox n'a pas d'interlettrage)
 
----------------------------------------------------------------- Accroche
+--------------------------------------------------------------- Accroche
 -- Appelee a chaque clic de bouton (branchee sur Sfx par le bootstrap)
 Theme.OnPress = function() end
 
 function Theme.Init(ctx)
 	Util = ctx.Util
+	IconResolver = ctx.IconResolver
 end
 
----------------------------------------------------------------- Texte
+--------------------------------------------------------------- Texte
 -- "Wave in" -> "WAVE IN" avec une espace fine entre deux lettres (les chiffres et les prix restent groupes)
 function Theme.Caps(text: string): string
 	local upper = string.upper(text)
@@ -118,7 +123,7 @@ function Theme.Caps(text: string): string
 	return table.concat(out)
 end
 
----------------------------------------------------------------- Fabrique
+--------------------------------------------------------------- Fabrique
 -- Theme.Create("Frame", {Name = "X", Parent = p}, {enfant1, enfant2})
 function Theme.Create(className: string, props: { [any]: any }?, children: { Instance }?): any
 	local inst = Instance.new(className)
@@ -222,12 +227,12 @@ local function applyProps(inst: Instance, props: { [any]: any }?)
 	end
 end
 
--- Texte blanc, Builder Sans par defaut, ombre fine
+-- Texte blanc, RobotoCondensed (Body) par defaut, ombre fine
 function Theme.Text(props: { [any]: any }?): TextLabel
 	local label = create("TextLabel", {
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		FontFace = Theme.Fonts.Bold,
+		FontFace = Theme.Fonts.Body,
 		TextColor3 = Theme.Colors.Text,
 		TextSize = Theme.TextSize.Body,
 		Text = "",
@@ -240,7 +245,7 @@ function Theme.Text(props: { [any]: any }?): TextLabel
 	return label
 end
 
--- Titre : Oswald, MAJUSCULES espacees
+-- Titre : RobotoCondensed Bold, MAJUSCULES espacees
 function Theme.Title(props: { [any]: any }): TextLabel
 	local p = table.clone(props)
 	p.Text = Theme.Caps(props.Text or "")
@@ -248,7 +253,7 @@ function Theme.Title(props: { [any]: any }): TextLabel
 	return Theme.Text(p)
 end
 
----------------------------------------------------------------- Panneaux
+--------------------------------------------------------------- Panneaux
 -- Plaque console : fond sombre translucide, filet clair de 1 px, trait de couleur fin en haut (option)
 -- props : Name, Size, Position, AnchorPoint, Rotation, ZIndex, Parent, Accent (Color3), Radius, Strong (moins transparent)
 function Theme.Plate(props: { [string]: any }): Frame
@@ -289,7 +294,7 @@ function Theme.Panel(props: { [any]: any }?): Frame
 	return Theme.Plate(props or {})
 end
 
----------------------------------------------------------------- Echelle et animations
+--------------------------------------------------------------- Echelle et animations
 -- UIScale unique "TR_Scale" par objet : survol, appui, Pop et ouvertures passent par lui
 function Theme.GetScale(obj: GuiObject): UIScale
 	local s = obj:FindFirstChild("TR_Scale")
@@ -374,7 +379,7 @@ local function textOn(color: Color3): Color3
 	return if luminance > 0.55 then Theme.Colors.TextDark else Theme.Colors.Text
 end
 
--- Bouton plein a la couleur d'accent, libelle Oswald en MAJUSCULES espacees
+-- Bouton plein a la couleur d'accent, libelle RobotoCondensed Bold en MAJUSCULES espacees
 -- props : Name, Size, Position, AnchorPoint, LayoutOrder, Parent, Text, TextSize, Color, Font, Radius
 function Theme.Button(props: { [string]: any }): TextButton
 	local color = props.Color or Theme.Colors.Lagoon
@@ -434,190 +439,40 @@ function Theme.SetButtonText(button: GuiObject, text: string)
 	end
 end
 
----------------------------------------------------------------- Icones (aucun emoji)
--- Image de C si elle existe : Assets.UI.Icons.<name> (Decal, ImageLabel ou StringValue "rbxassetid://...")
-local function iconImage(name: string): string?
-	local node = Util and Util.Find(ReplicatedStorage, "Assets", "UI", "Icons", name)
-	if not node then
-		return nil
-	end
-	if node:IsA("Decal") or node:IsA("Texture") then
-		return node.Texture
-	elseif node:IsA("ImageLabel") or node:IsA("ImageButton") then
-		return node.Image
-	elseif node:IsA("StringValue") then
-		return node.Value
-	end
-	return nil
-end
+--------------------------------------------------------------- Icones (aucun emoji)
+-- Delegue a IconResolver : Font Awesome 6 Free si charge, sinon primitives Roblox
+-- Theme.Icon est maintenant un wrapper autour de IconResolver.Resolve
 
--- Trait plein en coordonnees relatives (0..1) dans l'icone
-local function bar(parent: Instance, cx: number, cy: number, w: number, h: number, rot: number, color: Color3, round: boolean?)
-	local f = create("Frame", {
-		Name = "Bar",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(cx, cy),
-		Size = UDim2.fromScale(w, h),
-		Rotation = rot,
-		BackgroundColor3 = color,
-		BorderSizePixel = 0,
-		Parent = parent,
-	})
-	if round then
-		Theme.Round(f)
-	end
-	return f
-end
-
--- Anneau (contour) en coordonnees relatives
-local function ring(parent: Instance, cx: number, cy: number, d: number, color: Color3, thickness: number)
-	local f = create("Frame", {
-		Name = "Ring",
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(cx, cy),
-		Size = UDim2.fromScale(d, d),
-		BackgroundTransparency = 1,
-		Parent = parent,
-	})
-	Theme.Round(f)
-	create("UIStroke", { Color = color, Thickness = thickness, Parent = f })
-	return f
-end
-
-local DRAW = {
-	lock = function(p, c, t)
-		ring(p, 0.5, 0.36, 0.42, c, t)
-		local body = bar(p, 0.5, 0.66, 0.66, 0.44, 0, c)
-		Theme.Corner(body, 6)
-	end,
-	unlock = function(p, c, t)
-		ring(p, 0.66, 0.3, 0.42, c, t)
-		local body = bar(p, 0.5, 0.66, 0.66, 0.44, 0, c)
-		Theme.Corner(body, 6)
-	end,
-	ride = function(p, c)
-		for _, y in { 0.42, 0.68 } do
-			bar(p, 0.36, y, 0.42, 0.13, -40, c, true)
-			bar(p, 0.64, y, 0.42, 0.13, 40, c, true)
-		end
-	end,
-	down = function(p, c)
-		for _, y in { 0.34, 0.6 } do
-			bar(p, 0.36, y, 0.42, 0.13, 40, c, true)
-			bar(p, 0.64, y, 0.42, 0.13, -40, c, true)
-		end
-	end,
-	shop = function(p, c, t)
-		ring(p, 0.5, 0.34, 0.36, c, t)
-		local body = bar(p, 0.5, 0.64, 0.72, 0.5, 0, c)
-		Theme.Corner(body, 6)
-	end,
-	alert = function(p, c, t)
-		local d = create("Frame", {
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.fromScale(0.5, 0.5),
-			Size = UDim2.fromScale(0.66, 0.66),
-			Rotation = 45,
-			BackgroundTransparency = 1,
-			Parent = p,
-		})
-		create("UIStroke", { Color = c, Thickness = t, Parent = d })
-		bar(p, 0.5, 0.44, 0.1, 0.26, 0, c)
-		bar(p, 0.5, 0.66, 0.1, 0.1, 0, c)
-	end,
-	arrow = function(p, c)
-		bar(p, 0.56, 0.36, 0.5, 0.16, 40, c, true)
-		bar(p, 0.56, 0.64, 0.5, 0.16, -40, c, true)
-	end,
-	crown = function(p, c)
-		bar(p, 0.5, 0.74, 0.8, 0.14, 0, c)
-		for _, spec in { { 0.18, 0.5, 0.22 }, { 0.5, 0.42, 0.3 }, { 0.82, 0.5, 0.22 } } do
-			bar(p, spec[1], spec[2], spec[3], spec[3], 45, c)
-		end
-	end,
-	shield = function(p, c)
-		bar(p, 0.5, 0.32, 0.64, 0.24, 0, c)
-		bar(p, 0.5, 0.52, 0.46, 0.46, 45, c)
-	end,
-	revenge = function(p, c)
-		bar(p, 0.5, 0.5, 0.86, 0.12, 45, c, true)
-		bar(p, 0.5, 0.5, 0.86, 0.12, -45, c, true)
-	end,
-	close = function(p, c)
-		bar(p, 0.5, 0.5, 0.7, 0.12, 45, c, true)
-		bar(p, 0.5, 0.5, 0.7, 0.12, -45, c, true)
-	end,
-	clock = function(p, c, t)
-		ring(p, 0.5, 0.5, 0.74, c, t)
-		bar(p, 0.5, 0.38, 0.09, 0.26, 0, c)
-		bar(p, 0.6, 0.52, 0.22, 0.09, 0, c)
-	end,
-	wave = function(p, c)
-		bar(p, 0.42, 0.38, 0.6, 0.13, -8, c, true)
-		bar(p, 0.58, 0.62, 0.6, 0.13, -8, c, true)
-	end,
-	spark = function(p, c)
-		bar(p, 0.5, 0.5, 0.5, 0.5, 45, c)
-		bar(p, 0.5, 0.5, 0.12, 0.9, 0, c)
-		bar(p, 0.5, 0.5, 0.9, 0.12, 0, c)
-	end,
-	moon = function(p, c, t)
-		ring(p, 0.5, 0.5, 0.7, c, t * 1.6)
-	end,
-	bolt = function(p, c)
-		bar(p, 0.42, 0.34, 0.14, 0.46, 20, c)
-		bar(p, 0.58, 0.66, 0.14, 0.46, 20, c)
-		bar(p, 0.5, 0.5, 0.36, 0.12, 0, c)
-	end,
-	info = function(p, c, t)
-		ring(p, 0.5, 0.5, 0.8, c, t)
-		bar(p, 0.5, 0.56, 0.1, 0.3, 0, c)
-		bar(p, 0.5, 0.32, 0.1, 0.1, 0, c)
-	end,
-	coin = function(p, c, t)
-		ring(p, 0.5, 0.5, 0.8, c, t)
-		bar(p, 0.5, 0.5, 0.42, 0.42, 0, c, true)
-	end,
-	dot = function(p, c)
-		bar(p, 0.5, 0.5, 0.5, 0.5, 45, c)
-	end,
-	net = function(p, c, t)
-		ring(p, 0.5, 0.5, 0.8, c, t)
-		for _, x in { 0.38, 0.62 } do
-			bar(p, x, 0.5, 0.07, 0.62, 0, c)
-			bar(p, 0.5, x, 0.62, 0.07, 0, c)
-		end
-	end,
-}
-Theme.IconNames = DRAW
-
--- Icone carree de `size` px : image de C si elle existe, sinon pictogramme dessine (un seul style, plein ou au trait)
+-- Icone carree de `size` px : IconResolver (Font Awesome ou primitive)
 function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
-	local c = color or Theme.Colors.Text
-	local key = name or "dot"
-	local image = iconImage(key)
-	if image then
-		return create("ImageLabel", {
-			Name = "Icon",
-			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(size, size),
-			Image = image,
-			ImageColor3 = c,
-			ScaleType = Enum.ScaleType.Fit,
-		})
+	if IconResolver then
+		return IconResolver.Resolve(name or "dot", size, color)
 	end
+	-- Fallback silencieux si IconResolver pas encore initialise
+	local c = color or Theme.Colors.Text
 	local holder = create("Frame", {
 		Name = "Icon",
 		BackgroundTransparency = 1,
 		Size = UDim2.fromOffset(size, size),
 	})
-	local draw = DRAW[key] or DRAW.dot
-	draw(holder, c, math.max(1.5, size * 0.09))
+	local dot = create("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(0.5, 0.5),
+		BackgroundColor3 = c,
+		BorderSizePixel = 0,
+		Parent = holder,
+	})
+	Theme.Round(dot)
 	return holder
 end
 
--- Recolore une icone (image ou dessin)
+-- Recolore une icone (ImageLabel ou Frame primitif)
 function Theme.SetIconColor(icon: Instance, color: Color3)
+	if IconResolver then
+		IconResolver.SetIconColor(icon, color)
+		return
+	end
 	if icon:IsA("ImageLabel") then
 		icon.ImageColor3 = color
 		return
@@ -631,7 +486,7 @@ function Theme.SetIconColor(icon: Instance, color: Color3)
 	end
 end
 
----------------------------------------------------------------- Rarete et pieces
+--------------------------------------------------------------- Rarete et pieces
 function Theme.RarityColor(rarity: string?): Color3
 	local r = rarity and Config.Rarities[rarity]
 	return r and r.color or Theme.Colors.TextDim

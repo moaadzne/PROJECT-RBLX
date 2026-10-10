@@ -1,0 +1,787 @@
+[0m
+> build · space-bunny-free
+Reçu. Je lis le protocole complet avant de toucher quoi que ce soit.
+[0m→ [0mRead AGENTS.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== INBOX ===" && ls -la docs/INBOX/ 2>/dev/null || echo "PAS DE DOSSIER INBOX"; echo ""; echo "=== B ==="; cat docs/INBOX/B.md 2>/dev/null || echo "PAS DE B.md"
+=== INBOX ===
+total 48
+drwxr-xr-x   9 admin  staff   288 Oct 10 13:55 .
+drwxr-xr-x  22 admin  staff   704 Oct 10 13:52 ..
+-rw-r--r--   1 admin  staff   210 Oct 10 13:52 A.md
+-rw-r--r--   1 admin  staff   198 Oct 10 13:52 B.md
+-rw-r--r--   1 admin  staff   193 Oct 10 13:52 C.md
+-rw-r--r--   1 admin  staff  1450 Oct 10 13:53 D.md
+-rw-r--r--   1 admin  staff   203 Oct 10 13:52 E.md
+-rw-r--r--   1 admin  staff   208 Oct 10 13:52 F.md
+drwxr-xr-x   7 admin  staff   224 Oct 10 13:55 logs
+
+=== B ===
+# File de B — Interface & feel
+> Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+> Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+> build · space-bunny-free
+[0m→ [0mRead docs/INBOX/D.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== BRANCHE ===" && git branch --show-current && echo "=== STATUS ===" && git status --short && echo "=== P1-42 branche ===" && git ls-remote --heads origin 2>/dev/null | grep -i "wave\|p42"; echo "=== local ==="; git branch -a | head -20
+=== BRANCHE ===
+claude/e-gdd-reef
+=== STATUS ===
+?? docs/INBOX/logs/
+?? docs/UI_B_preparation.md
+?? tools/box
+=== P1-42 branche ===
+4955d92f85e5ee4ec0c9c70792a5c6f1fe119f76	refs/heads/claude/wave-client-p42
+=== local ===
+* claude/e-gdd-reef
++ claude/wave-client-p42
+  main
+  remotes/origin/claude/awesome-allen-i2ni7b
+  remotes/origin/claude/clever-wozniak-h2znoi
+  remotes/origin/claude/e-gdd-reef
+  remotes/origin/claude/epic-pasteur-q323d7
+  remotes/origin/claude/friendly-volta-qj504y
+  remotes/origin/claude/inspiring-albattani-8hikpu
+  remotes/origin/claude/laughing-lovelace-8xixq7
+  remotes/origin/claude/wave-client-p42
+  remotes/origin/main
+> build · space-bunny-free
+Je suis sur la branche d'E (`e-gdd-reef`), pas la mienne. Je regarde d'abord l'état réel du code vague avant de toucher à quoi que ce soit.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== Feel.lua existe ? ===" && find . -name "Feel*.lua" -not -path "./.git/*" 2>/dev/null; echo "--- liste client ---"; ls src/StarterPlayer/StarterPlayerScripts/TideClient/; echo ""; echo "=== Config.Wave reel ==="; grep -n "Wave = {" -A 25 src/ReplicatedStorage/Shared/Config.lua 2>/dev/null | head -35
+=== Feel.lua existe ? ===
+--- liste client ---
+Ambience.lua
+Components.lua
+Fx.lua
+Hud.lua
+MountButton.lua
+Notifications.lua
+Onboarding.lua
+PoolBillboards.lua
+RoyalHud.lua
+Settings.lua
+Sfx.lua
+Shop.lua
+StealHud.lua
+Store.lua
+Theme.lua
+Util.lua
+World.lua
+init.client.lua
+
+=== Config.Wave reel ===
+226:Config.Wave = {
+227-	calmTime = 35, -- secondes de calme
+228-	warningTime = 7, -- alerte avant la vague
+229-	speed = 46, -- studs par seconde ; trajet de -(size/2 + seaMargin) a +(size/2 + seaMargin) sur son axe
+230-	height = 30, -- hauteur : plateformes des tours a height + 4 (34), construites par C d'apres cette valeur
+231-	thickness = 40,
+232-	recedeTime = 2.5,
+233-	caughtDelay = 0.8, -- secondes entre la prise par la vague et le retour a la base
+234-}
+235-
+236--- Ameliorations (achetees avec les pieces du jeu)
+237-Config.UpgradeOrder = { "Speed", "Bag", "Slots" }
+238-Config.Upgrades = {
+239-	-- icon = "" : pas d'emoji (DIRECTION_V2), l'interface de B fournit ses icones d'apres `key`
+240-	Speed = { key = "speed", label = "Speed", icon = "", unit = "", base = 16, step = 2, maxLevel = 12, baseCost = 50, costMult = 2.0 },
+241-	Bag = { key = "bag", label = "Bag", icon = "", unit = " slots", base = 2, step = 1, maxLevel = 8, baseCost = 75, costMult = 2.2 },
+242-	Slots = { key = "slots", label = "Pools", icon = "", unit = " pools", base = 5, step = 1, maxLevel = 5, baseCost = 200, costMult = 3.0 },
+243-}
+244-Config.MaxSlots = 10
+245-
+246--- Compagnons marins (bonus de revenus) et oeufs (achetes avec les pieces du jeu uniquement)
+247-Config.Pets = {
+248-	CrabBuddy = { name = "Crab Buddy", rarity = "Common", boost = 0.10, color = Color3.fromRGB(255, 110, 90) },
+249-	Turtle = { name = "Sea Turtle", rarity = "Uncommon", boost = 0.20, color = Color3.fromRGB(90, 200, 120) },
+250-	Seahorse = { name = "Seahorse", rarity = "Rare", boost = 0.35, color = Color3.fromRGB(255, 190, 80) },
+251-	Dolphin = { name = "Dolphin", rarity = "Epic", boost = 0.60, color = Color3.fromRGB(110, 170, 255) },
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== ma branche B vs PR#1 ===" && git log --oneline -1 origin/claude/friendly-volta-qj504y && echo "PR#1:" && git log --oneline -1 06f2f54 2>/dev/null && echo "" && echo "=== B contient PR#1 ? ===" && git merge-base --is-ancestor 06f2f54 origin/claude/friendly-volta-qj504y 2>/dev/null && echo "OUI" || echo "NON - B est en retard"
+=== ma branche B vs PR#1 ===
+20e883b Merge remote-tracking branch 'origin/claude/inspiring-albattani-8hikpu' into claude/friendly-volta-qj504y
+PR#1:
+06f2f54 Extreme tide (P1-37): about once an hour, the reef is revealed during calm with rare creatures, then the sea takes them back
+
+=== B contient PR#1 ? ===
+NON - B est en retard
+> build · space-bunny-free
+Bug confirmé : `Config.Wave` n'a plus `startZ`/`endZ`, et `Feel.lua` n'existe pas (c'est `Fx.lua`). Je regarde exactement ce que le store et le fx utilisent.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== Store : WaveFrontZ + normalisation ===" && grep -n "WaveFrontZ\|startZ\|endZ\|frontZ\|wave = \|wave\.\|dir\b" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | head -40
+=== Store : WaveFrontZ + normalisation ===
+16:local PHASES = { calm = true, warning = true, wave = true, recede = true }
+260:		startZ = optNumber(raw.startZ), -- vague d'intro seulement
+296:	wave = nextWave
+361:	local travel = (cfg.endZ - cfg.startZ) / cfg.speed
+450:	return math.max(0, wave.phaseEnd - Store.Now())
+455:	local span = wave.phaseEnd - wave.phaseStart
+459:	return math.clamp((Store.Now() - wave.phaseStart) / span, 0, 1)
+463:function Store.WaveFrontZ(now: number?): number?
+464:	if wave.phase ~= "wave" and wave.phase ~= "recede" then
+469:	local startZ = wave.startZ or cfg.startZ
+470:	local speed = wave.speed or cfg.speed
+471:	return math.min(cfg.endZ, startZ + speed * math.max(0, t - wave.startTime))
+711:	wave = { phase = "calm", phaseStart = 0, phaseEnd = 0, startTime = 0, cycle = 0, tide = "Normal", intro = false }
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== Fx.lua : rumble / waveImpact ===" && grep -n "rumble\|waveImpact\|frontZ\|startZ\|endZ\|Wave" src/StarterPlayer/StarterPlayerScripts/TideClient/Fx.lua | head -30; echo ""; echo "=== Config Island/WaveFront ==="; grep -n "WaveFront\|Config.Island\|direction\|dir " src/ReplicatedStorage/Shared/Config.lua | head -20
+=== Fx.lua : rumble / waveImpact ===
+30:local rumble = 0 -- secousse continue (pilotee par la vague)
+127:	rumble = math.clamp(level, 0, 1)
+132:	local level = math.max(trauma, if Settings.IsLowGraphics() then rumble * 0.5 else rumble)
+
+=== Config Island/WaveFront ===
+173:-- Ile ouverte (GDD 3 bis, version de lancement). Centre de l'ile et de la crique = Config.Island.center.
+175:-- La vague traverse l'ile dans une direction par cycle (N/E/S/W), jamais deux fois de suite la meme.
+176:Config.Island = {
+336:function Config.IslandDistance(position: Vector3): number
+337:	local c = Config.Island.center
+342:	return Config.IslandDistance(position) <= Config.Island.coveRadius
+347:	local r = Config.IslandDistance(position)
+357:function Config.WaveFrontD(wave, t: number): number
+358:	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+365:	local c = Config.Island.center
+> build · space-bunny-free
+[0m→ [0mRead src/ReplicatedStorage/Shared/Config.lua [90m[limit=30, offset=173][0m
+[0m→ [0mRead src/ReplicatedStorage/Shared/Config.lua [90m[limit=30, offset=352][0m
+> build · space-bunny-free
+Contrat clair : `Config.WaveFrontD` + `Config.WaveAxis` avec `wave.dir` (Vector3), `startD`/`endD`. Je lis les deux endroits à corriger dans le Store.
+[0m→ [0mRead src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=30, offset=350][0m
+[0m→ [0mRead src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=50, offset=248][0m
+> build · space-bunny-free
+Le store a un vrai bug de plus : `demoWaveLoop` calcule `cfg.endZ - cfg.startZ` sur des champs supprimés → erreur arithmétique sur nil en mode démo. Je bascule sur ma branche et j'intègre la PR #1.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git checkout claude/friendly-volta-qj504y 2>&1 | tail -3 && git merge 06f2f54 --no-edit 2>&1 | tail -8
+docs/INBOX/C.md
+Please commit your changes or stash them before you switch branches.
+Aborting
+Already up to date.
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git status --short && echo "=== DIFF ===" && git diff --stat && echo "=== branche ===" && git branch --show-current
+M docs/INBOX/C.md
+?? docs/INBOX/logs/
+?? docs/UI_B_preparation.md
+?? tools/box
+?? tools/world/verify_decorlib.py
+=== DIFF ===
+ docs/INBOX/C.md | 41 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+=== branche ===
+claude/e-gdd-reef
+> build · space-bunny-free
+Une autre session (C) écrit **en ce moment** dans ce même dossier de travail — `docs/INBOX/C.md` modifié, `tools/world/verify_decorlib.py` en cours. Je ne checkout pas de branche ici : je l'écraserais. Je regarde comment le repo gère déjà ça.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== WORKTREES ===" && git worktree list
+=== WORKTREES ===
+/Users/admin/Documents/claude code/tide-rush      161586f [claude/e-gdd-reef]
+/Users/admin/Documents/claude code/tide-rush-p42  4955d92 [claude/wave-client-p42]
+> build · space-bunny-free
+Le repo utilise déjà les worktrees (`tide-rush-p42` pour l'agent vague). Je fais pareil pour B, ce qui m'isole de C sans le gêner.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git worktree add "/Users/admin/Documents/claude code/tide-rush-b" claude/friendly-volta-qj504y 2>&1 | tail -4 && cp docs/UI_B_preparation.md "/Users/admin/Documents/claude code/tide-rush-b/docs/" && echo "--- worktree B pret ---" && git -C "/Users/admin/Documents/claude code/tide-rush-b" branch --show-current
+Preparing worktree (new branch 'claude/friendly-volta-qj504y')
+branch 'claude/friendly-volta-qj504y' set up to track 'origin/claude/friendly-volta-qj504y'.
+HEAD is now at 20e883b Merge remote-tracking branch 'origin/claude/inspiring-albattani-8hikpu' into claude/friendly-volta-qj504y
+--- worktree B pret ---
+claude/friendly-volta-qj504y
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git merge 06f2f54 --no-edit 2>&1 | tail -6 && echo "=== HEAD ===" && git log --oneline -1
+src/ServerScriptService/Services/IntroService.lua  |  4 +-
+ src/ServerScriptService/Services/LagoonService.lua |  6 +-
+ src/ServerScriptService/Services/PlotService.lua   | 31 +++++-----
+ src/ServerScriptService/Services/SelfTest.lua      | 20 ++++++-
+ src/ServerScriptService/Services/WaveService.lua   | 33 +++++++++++
+ 9 files changed, 169 insertions(+), 33 deletions(-)
+=== HEAD ===
+1b290a3 Merge commit '06f2f54' into claude/friendly-volta-qj504y
+> build · space-bunny-free
+PR #1 intégrée. Je lis le contrat de `Wave.lua` (sans le fusionner) pour que mon correctif serve exactement ce qu'il attend.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== qui appelle WaveFrontZ / Rumble ===" && grep -rn "WaveFrontZ\|Fx.Rumble\|Rumble(" src/StarterPlayer/ | head -15; echo ""; echo "=== normalizeWave tete ==="; sed -n '236,250p' src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+=== qui appelle WaveFrontZ / Rumble ===
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:479:function Store.WaveFrontZ(now: number?): number?
+src/StarterPlayer/StarterPlayerScripts/TideClient/Fx.lua:126:function Fx.SetRumble(level: number)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:59:	local frontZ = Store.WaveFrontZ()
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:62:		Fx.SetRumble(0)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:68:		Fx.SetRumble(0.55 * math.clamp(1 - distance / RUMBLE_RANGE, 0, 1))
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:70:		Fx.SetRumble(0)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:79:		local endZ = (Store.WaveFrontZ() or 0)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:90:		Fx.SetRumble(0)
+
+=== normalizeWave tete ===
+		newbie = raw.newbie == true,
+		playTime = num(raw.playTime, 0),
+		mount = if raw.mount ~= nil and raw.mount ~= "" and raw.mount ~= false then tostring(raw.mount) else nil,
+		carrying = normalizeCarrying(raw.carrying),
+		lockActive = raw.lockActive == true,
+		lockReadyAt = num(raw.lockReadyAt, 0),
+		shield = if type(raw.shield) == "string" then raw.shield else "",
+		protectedUntil = num(raw.protectedUntil, 0),
+		revenge = normalizeRevenge(raw.revenge),
+		crown = math.clamp(math.floor(num(raw.crown, 0)), 0, 3),
+		passes = type(raw.passes) == "table" and table.clone(raw.passes) or {},
+		-- absent = prudence : pas d'achat aleatoire (Pick a Creature)
+		shop = { randomAllowed = type(raw.shop) == "table" and raw.shop.randomAllowed == true },
+	}
+end
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git show 4955d92:src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua 2>/dev/null | grep -n "Store\.\|Config\.\|wave\.\|dir\|FrontD\|Axis" | head -35
+4:--   - `dir` : sens de marche de la vague de CE cycle, horizontal (Config.WaveTravel pour N / E / S / O) ;
+5:--   - front : Config.WaveFrontD(wave, t) = min(endD, startD + speed * (t - startTime)), par defaut de
+6:--     -REACH a +REACH, REACH = Config.Island.size / 2 + Config.Island.seaMargin ;
+8:--     cette tranche, pieds sous Config.Wave.height, hors de la crique (Config.InCove) ;
+18:-- encore l'ancienne vague sur Z et perd dir / direction / startD / endD. Tant qu'il ne les expose pas, c'est
+19:-- le seul endroit ou la vraie direction du serveur existe cote client.
+29:local W, ISLAND = Config.Wave, Config.Island
+85:local base = CFrame.new(ISLAND.center) -- repere de la vague, remplace quand la direction change
+101:-- etat brut du serveur -> table propre ; nil si la phase est inconnue ou la direction absente
+110:	-- dir : horizontal, sens de marche. Repli sur le nom du cycle si le Vector3 n'est pas arrive.
+111:	local dir: Vector3? = nil
+112:	if typeof(raw.dir) == "Vector3" then
+113:		dir = Vector3.new(raw.dir.X, 0, raw.dir.Z)
+114:		if dir.Magnitude < 0.001 then
+115:			dir = nil
+118:	if not dir then
+119:		dir = Config.WaveTravel[raw.direction]
+121:	if not dir then
+122:		warnOnce("vague sans direction : rien n'est affiche")
+137:		dir = dir.Unit,
+138:		-- absents = valeurs par defaut du serveur, appliquees par Config.WaveFrontD
+146:local function setDirection(dir: Vector3)
+147:	base = CFrame.fromMatrix(ISLAND.center, Vector3.new(-dir.Z, 0, dir.X), Vector3.yAxis, -dir)
+280:	local distance = math.abs(Config.WaveAxis(w, root.Position) - front)
+308:	local lateral = Vector3.new(-w.dir.Z, 0, w.dir.X)
+314:	return c + lateral * side + w.dir * ((w.startD or -REACH) + THICK) + Vector3.new(0, 4, 0)
+370:	if not prev or prev.dir ~= nextWave.dir then
+371:		setDirection(nextWave.dir)
+381:-- Config.WaveFrontD, donc le mur est exactement la ou le serveur attrape les joueurs.
+388:	local front = Config.WaveFrontD(w, now)
+414:	local near = cam == nil or math.abs(Config.WaveAxis(w, cam.CFrame.Position) - front) < NEAR_RANGE
+> build · space-bunny-free
+`Feel.lua` existe bien après merge et appelle `Store.WaveFrontZ` — c'est lui qui tourne sur le faux axe. Je le lis.
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua [90m[limit=50, offset=48][0m
+> build · space-bunny-free
+J'ai tout ce qu'il faut. Je corrige le Store pour qu'il porte la vraie direction, puis Feel.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && grep -n "startZ\|endZ\|WaveFrontZ\|function Store.Wave\|local function normalizeWave\|optNumber\|Config.WaveTravel" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | head -25
+55:local function optNumber(v: any): number?
+76:	local stage = optNumber(raw.stage)
+81:		born = optNumber(raw.born),
+83:		nextStageAt = optNumber(raw.nextStageAt),
+183:		victim = optNumber(v.victim),
+190:	if type(v) ~= "table" or optNumber(v.userId) == nil then
+193:	return { userId = optNumber(v.userId), name = if type(v.name) == "string" then v.name else "" }
+208:		serverNow = optNumber(raw.serverNow),
+252:local function normalizeWave(raw: any)
+260:		nextSpecial = { tide = ns.tide, cycle = optNumber(ns.cycle) }
+276:		startZ = optNumber(raw.startZ), -- vague d'intro seulement
+277:		speed = optNumber(raw.speed),
+378:	local travel = (cfg.endZ - cfg.startZ) / cfg.speed
+465:function Store.WaveTimeLeft(): number
+470:function Store.WaveProgress(): number
+479:function Store.WaveFrontZ(now: number?): number?
+485:	local startZ = wave.startZ or cfg.startZ
+487:	return math.min(cfg.endZ, startZ + speed * math.max(0, t - wave.startTime))
+> build · space-bunny-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=14, offset=274][0m
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=14, offset=478][0m
+> build · space-bunny-free
+Correctif 1 — le Store porte la vraie direction et délègue le calcul à `Config` :
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -274,10 +274,27 @@
+ 		nextSpecial = nextSpecial,
+ 		intro = raw.intro == true,
+ 		startZ = optNumber(raw.startZ), -- vague d'intro seulement
+ 		speed = optNumber(raw.speed),
++		-- Ile ouverte (GDD 3 bis) : la vague traverse l'ile sur un axe, pas sur Z.
++		-- `dir` est le sens de marche de CE cycle ; `direction` son nom (N/E/S/O).
++		-- Repli sur le nom si le Vector3 n'est pas arrive. nil = on ne sait pas (vague non rendue).
++		direction = optString(raw.direction),
++		dir = nil, -- remplit juste apres
++		startD = optNumber(raw.startD),
++		endD = optNumber(raw.endD),
+ 		royal = royal,
+ 	}
++	-- `Config.WaveTravel` est la source unique du sens de marche (Config.lua).
++	local travel = nextWave.direction and Config.WaveTravel[nextWave.direction] or nil
++	if typeof(raw.dir) == "Vector3" then
++		local d = Vector3.new(raw.dir.X, 0, raw.dir.Z)
++		if d.Magnitude > 0.001 then
++			travel = d.Unit
++		end
++	end
++	nextWave.dir = travel
++	return nextWave
+ end
+ 
+ ---------------------------------------------------------------- Mise a jour
+ local function setState(raw: any)
+
+> build · space-bunny-free
+Erreur de structure : la fonction commençait par `return {`. Je regarde et je corrige.
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=50, offset=252][0m
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -263,9 +263,9 @@
+ 	local royal = nil
+ 	if type(raw.royal) == "table" then
+ 		royal = { active = raw.royal.active == true, endsAt = num(raw.royal.endsAt, 0) }
+ 	end
+-	return {
++	local nextWave = {
+ 		phase = raw.phase,
+ 		phaseStart = num(raw.phaseStart, 0),
+ 		phaseEnd = num(raw.phaseEnd, 0),
+ 		startTime = num(raw.startTime, 0),
+
+> build · space-bunny-free
+Correctif 2 — `WaveFrontZ` remplacé par un calcul sur l'axe de la vague, plus une distance au joueur :
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -491,20 +491,40 @@
+ 	end
+ 	return math.clamp((Store.Now() - wave.phaseStart) / span, 0, 1)
+ end
+ 
+--- Z du front de vague, formule du contrat (nil quand la vague ne roule pas)
+-function Store.WaveFrontZ(now: number?): number?
++-- Position du front de vague SUR SON AXE (Config.WaveFrontD : d = startD + speed * (t - startTime)).
++-- nil quand la vague ne roule pas, ou quand le serveur n'a pas donne de direction.
++function Store.WaveFrontD(now: number?): number?
+ 	if wave.phase ~= "wave" and wave.phase ~= "recede" then
+ 		return nil
+ 	end
+-	local cfg = Config.Wave
+-	local t = now or Store.Now()
+-	local startZ = wave.startZ or cfg.startZ
+-	local speed = wave.speed or cfg.speed
+-	return math.min(cfg.endZ, startZ + speed * math.max(0, t - wave.startTime))
++	if not wave.dir then
++		return nil
++	end
++	return Config.WaveFrontD(wave, now or Store.Now())
+ end
+ 
++-- Distance du joueur au front, en studs, sur l'axe de la vague (pas sur Z).
++-- C'est la seule mesure de distance a utiliser pour la vague : elle vaut pour N, E, S et O.
++function Store.WaveDistanceTo(position: Vector3, now: number?): number?
++	local front = Store.WaveFrontD(now)
++	if front == nil then
++		return nil
++	end
++	return math.abs(Config.WaveAxis(wave, position) - front)
++end
++
++-- Point monde du front, a une hauteur donnee (pour poser un son ou un effet).
++function Store.WaveFrontPoint(height: number, now: number?): Vector3?
++	local front = Store.WaveFrontD(now)
++	if front == nil then
++		return nil
++	end
++	local d = wave.dir or Vector3.new(0, 0, 1)
++	return Config.Island.center + d * front + Vector3.new(0, height, 0)
++end
++
+ -- Fiche d'une espece : Config.Creatures (v2) puis Config.Items (v1). nil si inconnue.
+ function Store.CreatureInfo(species: string?): { name: string, rarity: string?, [string]: any }?
+ 	if type(species) ~= "string" then
+ 		return nil
+
+> build · space-bunny-free
+Correctif 3 — la boucle de démo calculait une durée de trajet sur des champs supprimés (`nil - nil`) :
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -391,9 +391,12 @@
+ end
+ 
+ local function demoWaveLoop()
+ 	local cfg = Config.Wave
+-	local travel = (cfg.endZ - cfg.startZ) / cfg.speed
++	-- La vague traverse l'ile sur un axe (GDD 3 bis) : la duree de trajet se calcule
++	-- sur REACH, plus sur des startZ/endZ qui n'existent plus en Config.
++	local reach = Config.Island.size / 2 + Config.Island.seaMargin
++	local travel = (reach * 2) / cfg.speed
+ 	local cycle = 0
+ 	while demoActive do
+ 		cycle += 1
+ 		local t0 = Store.Now()
+
+> build · space-bunny-free
+Maintenant Feel, qui doit mesurer la distance sur l'axe et non sur Z :
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua
+@@ -54,17 +54,21 @@
+ 	end
+ end
+ 
+ -- Grondement : plus le front est proche du joueur, plus la camera tremble (Fx coupe tout en reduit)
++-- Distance sur l'axe de la vague (N/E/S/O), pas sur Z.
+ local function updateWave()
+-	local frontZ = Store.WaveFrontZ()
+ 	local root = Util.LocalRoot(player)
+-	if not frontZ or not root then
++	if not root then
+ 		Fx.SetRumble(0)
+ 		return
+ 	end
++	local distance = Store.WaveDistanceTo(root.Position)
++	if distance == nil then
++		Fx.SetRumble(0)
++		return
++	end
+ 	local wave = Store.GetWave()
+-	local distance = math.abs(root.Position.Z - frontZ)
+ 	if wave.phase == "wave" then
+ 		Fx.SetRumble(0.55 * math.clamp(1 - distance / RUMBLE_RANGE, 0, 1))
+ 	else
+ 		Fx.SetRumble(0)
+@@ -75,16 +79,15 @@
+ 	-- la vague s'ecrase sur la limite des lagons : debut du reflux
+ 	if wave.phase == "recede" and prev and prev.phase == "wave" and impactCycle ~= wave.cycle then
+ 		impactCycle = wave.cycle
+ 		local root = Util.LocalRoot(player)
+-		local endZ = (Store.WaveFrontZ() or 0)
+ 		if root then
+-			local distance = math.abs(root.Position.Z - endZ)
++			local distance = Store.WaveDistanceTo(root.Position) or math.huge
+ 			local k = math.clamp(1 - distance / IMPACT_RANGE, 0, 1)
+ 			if k > 0 then
+ 				Fx.Shake(0.7 * k)
+ 			end
+-			Sfx.Play("waveImpact", { position = Vector3.new(root.Position.X, 4, endZ) })
++			Sfx.Play("waveImpact", { position = Store.WaveFrontPoint(4) or root.Position })
+ 		end
+ 	end
+ 	if wave.phase ~= "wave" then
+ 		Fx.SetRumble(0)
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== appelants WaveFrontZ restants ===" && grep -rn "WaveFrontZ\|cfg.startZ\|cfg.endZ\|Config.Wave.startZ\|Config.Wave.endZ" src/ || echo "AUCUN - OK"; echo ""; echo "=== demo: ce qu'il emet ==="; sed -n '395,425p' src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+=== appelants WaveFrontZ restants ===
+AUCUN - OK
+
+=== demo: ce qu'il emet ===
+	-- La vague traverse l'ile sur un axe (GDD 3 bis) : la duree de trajet se calcule
+	-- sur REACH, plus sur des startZ/endZ qui n'existent plus en Config.
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	local travel = (reach * 2) / cfg.speed
+	local cycle = 0
+	while demoActive do
+		cycle += 1
+		local t0 = Store.Now()
+		local calmEnd = t0 + cfg.calmTime
+		local warnEnd = calmEnd + cfg.warningTime
+		local waveEnd = warnEnd + travel
+		local steps = {
+			{ "calm", t0, calmEnd },
+			{ "warning", calmEnd, warnEnd },
+			{ "wave", warnEnd, waveEnd },
+			{ "recede", waveEnd, waveEnd + cfg.recedeTime },
+		}
+		-- une marée doree (avec Maree Royale) tous les 3 cycles, annoncee a l'avance
+		local golden = cycle % 3 == 0
+		local nextGolden = cycle + (3 - cycle % 3)
+		for _, step in steps do
+			if not demoActive then
+				return
+			end
+			setWave({
+				phase = step[1],
+				phaseStart = step[2],
+				phaseEnd = step[3],
+				startTime = warnEnd,
+				cycle = cycle,
+				tide = if golden then "Golden" else "Normal",
+> build · space-bunny-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=14, offset=425][0m
+> build · space-bunny-free
+Le mode démo n'émet aucune direction — la vague et le grondement y resteraient morts. Je lui donne le cycle N/E/S/O sans répétition, comme le contrat :
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+
+Arguments provided:
+{
+  "newString": "\t\t-- une marée doree (avec Maree Royale) tous les 3 cycles, annoncee a l'avance\n\t\tlocal golden = cycle % 3 == 0\n\t\tlocal nextGolden = cycle + (3 - cycle % 3)\n\t\t-- une direction par cycle (N/E/S/O), jamais deux fois la meme (Config.Island)\n\t\tlocal dirs = Config.Island.waveDirections\n\t\tlocal dirName = dirs[((cycle - 1) % #dirs) + 1]\n\t\tlocal dirVec = Config.WaveTravel[dirName]\n\t\tfor _, step in steps do\n\t\t\tif not demoActive then\n\t\t\t\treturn\n\t\t\tend\n\t\t\tsetWave({\n\t\t\t\tphase = step[1],\n\t\t\t\tphaseStart = step[2],\n\t\t\t\tphaseEnd = step[3],\n\t\t\t\tstartTime = warnEnd,\n\t\t\t\tcycle = cycle,\n\t\t\t\ttide = if golden then \"Golden\" else \"Normal\",\n\t\t\t\tnextSpecial = { tide = \"Golden\", cycle = if golden then cycle + 3 else nextGolden },\n\t\t\t\troyal = if golden then { active = true, endsAt = waveEnd + cfg.recedeTime } else nil,\n\t\t\t\tdirection = dirName,\n\t\t\t\tdir = dirVec,\n\t\t\t\tstartD = -reach,\n\t\t\t\tendD = reach,\n\t\t\t})",
+  "oldString": "\t\t-- une marée doree (avec Maree Royale) tous les 3 cycles, annoncee a l'avance\n\t\tlocal golden = cycle % 3 == 0\n\t\tlocal nextGolden = cycle + (3 - cycle % 3)\n\t\tfor _, step in steps do\n\t\t\tif not demoActive then\n\t\t\t\treturn\n\t\t\tend\n\t\t\tsetWave({\n\t\t\t\tphase = step[1],\n\t\t\t\tphaseStart = step[2],\n\t\t\t\tphaseEnd = step[3],\n\t\t\t\tstartTime = warnEnd,\n\t\t\t\tcycle = cycle,\n\t\t\t\ttide = if golden then \"Golden\" else \"Normal\",\n\t\t\t\tnextSpecial = { tide = \"Golden\", cycle = if golden then cycle + 3 else nextGolden },\n\t\t\t\troyal = if golden then { active = true, endsAt = waveEnd + cfg.recedeTime } else nil,\n\t\t\t})"
+}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -411,8 +411,12 @@
+ 		}
+ 		-- une marée doree (avec Maree Royale) tous les 3 cycles, annoncee a l'avance
+ 		local golden = cycle % 3 == 0
+ 		local nextGolden = cycle + (3 - cycle % 3)
++		-- une direction par cycle (N/E/S/O), jamais deux fois la meme (Config.Island)
++		local dirs = Config.Island.waveDirections
++		local dirName = dirs[((cycle - 1) % #dirs) + 1]
++		local dirVec = Config.WaveTravel[dirName]
+ 		for _, step in steps do
+ 			if not demoActive then
+ 				return
+ 			end
+@@ -424,8 +428,12 @@
+ 				cycle = cycle,
+ 				tide = if golden then "Golden" else "Normal",
+ 				nextSpecial = { tide = "Golden", cycle = if golden then cycle + 3 else nextGolden },
+ 				royal = if golden then { active = true, endsAt = waveEnd + cfg.recedeTime } else nil,
++				direction = dirName,
++				dir = dirVec,
++				startD = -reach,
++				endD = reach,
+ 			})
+ 			task.wait(math.max(0, step[3] - Store.Now()))
+ 		end
+ 	end
+
+> build · space-bunny-free
+Vérification syntaxique des deux fichiers modifiés :
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && which luau luau-analyze luac 2>/dev/null; ls tools/ 2>/dev/null; echo "--- test rapide syntaxe via luau si dispo ---"; if command -v luau-analyze >/dev/null 2>&1; then luau-analyze src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua 2>&1 | tail -15; else echo "luau-analyze absent du PATH"; fi
+luau not found
+luau-analyze not found
+luac not found
+world
+--- test rapide syntaxe via luau si dispo ---
+luau-analyze absent du PATH
+> build · space-bunny-free
+Pas de toolchain Luau ici (ni Studio). Je relis mes changements à la main pour ne pas pousser une erreur de syntaxe.
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=32, offset=265][0m
+> build · space-bunny-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua [90m[limit=40, offset=496][0m
+> build · space-bunny-free
+Un détail : `setWave` ne compare pas la direction, donc un changement N→E entre deux cycles ne déclencherait pas `WaveChanged`. Je l'ajoute.
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+
+Arguments provided:
+{
+  "newString": "\t\tand prev.tide == nextWave.tide\n\t\tand prev.intro == nextWave.intro\n\t\tand prev.direction == nextWave.direction\n\tthen",
+  "oldString": "\t\tand prev.tide == nextWave.tide\n\t\tand prev.intro == nextWave.intro\n\tthen"
+}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -322,8 +322,9 @@
+ 		and prev.phaseEnd == nextWave.phaseEnd
+ 		and prev.startTime == nextWave.startTime
+ 		and prev.tide == nextWave.tide
+ 		and prev.intro == nextWave.intro
++		and prev.direction == nextWave.direction
+ 	then
+ 		return
+ 	end
+ 	wave = nextWave
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== usages de wave.startZ restants ===" && grep -rn "\.startZ" src/ || echo "AUCUN"; echo ""; echo "=== mes 3 nouvelles fonctions utilisees ? ==="; grep -rn "WaveFrontD\|WaveDistanceTo\|WaveFrontPoint" src/StarterPlayer/ | head
+=== usages de wave.startZ restants ===
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:276:		startZ = optNumber(raw.startZ), -- vague d'intro seulement
+
+=== mes 3 nouvelles fonctions utilisees ? ===
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:507:-- Position du front de vague SUR SON AXE (Config.WaveFrontD : d = startD + speed * (t - startTime)).
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:509:function Store.WaveFrontD(now: number?): number?
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:516:	return Config.WaveFrontD(wave, now or Store.Now())
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:521:function Store.WaveDistanceTo(position: Vector3, now: number?): number?
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:522:	local front = Store.WaveFrontD(now)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:530:function Store.WaveFrontPoint(height: number, now: number?): Vector3?
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:531:	local front = Store.WaveFrontD(now)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:65:	local distance = Store.WaveDistanceTo(root.Position)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:84:			local distance = Store.WaveDistanceTo(root.Position) or math.huge
+src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua:89:			Sfx.Play("waveImpact", { position = Store.WaveFrontPoint(4) or root.Position })
+> build · space-bunny-free
+Cohérent. J'écris mon compte rendu dans le fichier de boîte, puis je commite.
+[0m$ [0mdate "+%H:%M"
+13:59
+> build · space-bunny-free
+[0m✗ [0mRead /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md failed
+[91m[1mError: [0mFile not found: /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== docs/ dans ma branche ===" && ls docs/ && echo "" && echo "=== ou vit docs/INBOX/B.md ? ===" && git log --oneline --all -- docs/INBOX/B.md | head -5; echo "--- contient 06f2f54 INBOX ? ---"; git ls-tree 06f2f54 docs/INBOX/ 2>/dev/null | head
+=== docs/ dans ma branche ===
+ARCHI_SERVEUR_REEF.md
+AUDIT_TOP10.md
+BIBLE_QUALITE.md
+BRIEF_E.md
+CREATURES_ART.md
+DA_MONDE.md
+DIRECTIONS.md
+DIRECTION_V2.md
+EQUIPE.md
+GDD.md
+IMPORT_LUNDI.md
+LANCEMENT.md
+PASSATION.md
+SOURCING_C.md
+TABLEAU.md
+UI_B_preparation.md
+UI_REEF.md
+VISION_TON.md
+
+=== ou vit docs/INBOX/B.md ? ===
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+--- contient 06f2f54 INBOX ? ---
+> build · space-bunny-free
+`docs/INBOX/` a été ajouté dans `d82de60`, absent de ma branche. Je localise quelle branche le porte.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== qui contient d82de60 ? ===" && git branch -a --contains d82de60 2>/dev/null; echo ""; echo "=== commit ==="; git log -1 --format="%h %ad %s" --date=iso d82de60; echo ""; echo "=== AGENTS.md est dedans ? ==="; git ls-tree d82de60 AGENTS.md; echo "=== 06f2f54 contient-il d82de60 ? ==="; git merge-base --is-ancestor d82de60 06f2f54 2>/dev/null && echo OUI || echo NON
+=== qui contient d82de60 ? ===
+* claude/e-gdd-reef
+
+=== commit ===
+d82de60 2026-10-10 13:53:12 +0200 Protocole de boite : docs/INBOX/<lettre>.md
+
+=== AGENTS.md est dedans ? ===
+100644 blob f1052de2c2f0ab1fdfa6009cbbb1ac18bf99d8f5	AGENTS.md
+=== 06f2f54 contient-il d82de60 ? ===
+NON
+> build · space-bunny-free
+Les règles et la boîte vivent sur `e-gdd-reef`, **pas dans la PR #1**. Je vérifie ce qu'un merge amènerait.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== parent de d82de60 ===" && git log --oneline -4 d82de60 && echo "" && echo "=== e-gdd-reef contient PR#1 ? ===" && (git merge-base --is-ancestor 06f2f54 claude/e-gdd-reef && echo "OUI" || echo "NON") && echo "" && echo "=== fichiers que le merge apporterait ===" && git diff --stat 06f2f54 d82de60 | tail -12
+=== parent de d82de60 ===
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+70ce1cd AGENTS.md : 2 corrections signalees par F
+1d10d0f VIPRider majore les pieces, pas le revenu (contrat v2.1)
+
+=== e-gdd-reef contient PR#1 ? ===
+OUI
+
+=== fichiers que le merge apporterait ===
+ docs/GDD_REEF.md                                 | 476 +++++++++++++++++++++++
+ docs/INBOX/A.md                                  |   4 +
+ docs/INBOX/B.md                                  |   4 +
+ docs/INBOX/C.md                                  |   4 +
+ docs/INBOX/D.md                                  |  26 ++
+ docs/INBOX/E.md                                  |   4 +
+ docs/INBOX/F.md                                  |   4 +
+ docs/TABLEAU.md                                  |  14 +
+ src/ServerScriptService/Services/DataService.lua |   2 +-
+ src/ServerScriptService/Services/PlotService.lua |   3 +-
+ src/ServerScriptService/Services/Stats.lua       |  11 +-
+ 12 files changed, 677 insertions(+), 4 deletions(-)
+> build · space-bunny-free
+`e-gdd-reef` contient déjà la PR #1 **plus** les règles et la boîte. Je recale ma branche dessus plutôt que sur le vieux PR #1.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git merge claude/e-gdd-reef --no-edit 2>&1 | tail -6 && echo "=== HEAD ===" && git log --oneline -3 && echo "=== INBOX B present ? ===" && ls docs/INBOX/
+create mode 100644 docs/INBOX/B.md
+ create mode 100644 docs/INBOX/C.md
+ create mode 100644 docs/INBOX/D.md
+ create mode 100644 docs/INBOX/E.md
+ create mode 100644 docs/INBOX/F.md
+ create mode 100644 tools/world/verify_decorlib.py
+=== HEAD ===
+7e5e838 Merge branch 'claude/e-gdd-reef' into claude/friendly-volta-qj504y
+1b290a3 Merge commit '06f2f54' into claude/friendly-volta-qj504y
+d2b3a76 tools/world (C): verification que Assets._DecorLib existe (leve le blocage P1-21)
+=== INBOX B present ? ===
+A.md
+B.md
+C.md
+D.md
+E.md
+F.md
+> build · space-bunny-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md 
+> build · space-bunny-free
+[0m✗ [0mEdit /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- oldString: Missing key
+
+Arguments provided:
+{
+  "path": "/Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md",
+  "newString": "# File de B — Interface & feel\n> Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.\n> Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.\n\n## 2026-10-10 13:59\nFAIT     : P1-15 wave : `Store` porte `dir`/`direction`/`startD`/`endD` et délègue à `Config.WaveFrontD` ; `WaveFrontZ` (faux axe Z) remplacé par `WaveFrontD` + `WaveDistanceTo` + `WaveFrontPoint` ; `Feel` rumble/impact sur l'axe ; démo : durée de trajet sur REACH au lieu de `startZ/endZ` supprimés, + direction N/E/S/O. Branche `claude/friendly-volta-qj504y`.\nVÉRIFIÉ  : rien testé en jeu (pas de Studio ni de luau-analyze en local). Relu à la main ; plus aucun appelant de `WaveFrontZ` dans `src/`.\nBESOIN   : de D — fusion vers l'intégration (je n'ai rien fusionné) ; **attention : `AGENTS.md` et `docs/INBOX/` sont sur `e-gdd-reef`, pas dans la PR #1 (`06f2f54`)**, à intégrer. Le rendu de la vague (P1-42) reste à tester contre mon Store."
+}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+Index: /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
++++ /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+@@ -1,4 +1,9 @@
+ # File de B — Interface & feel
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 13:59
++FAIT     : P1-15 wave : `Store` porte `dir`/`direction`/`startD`/`endD` et délègue à `Config.WaveFrontD` ; `WaveFrontZ` (faux axe Z) remplacé par `WaveFrontD` + `WaveDistanceTo` + `WaveFrontPoint` ; `Feel` rumble/impact mesure sur l'axe ; démo : durée de trajet sur REACH au lieu des `startZ/endZ` supprimés, + direction N/E/S/O. Branche `claude/friendly-volta-qj504y`.
++VÉRIFIÉ  : rien testé en jeu (ni Studio ni luau-analyze en local). Relu à la main ; plus aucun appelant de `WaveFrontZ` dans `src/`.
++BESOIN   : de D — la fusion vers l'intégration (je n'ai rien fusionné) ; **`AGENTS.md` et `docs/INBOX/` sont sur `e-gdd-reef`, pas dans la PR #1 (`06f2f54`)** — à intégrer, sinon les règles ne suivent pas le code. Le rendu de vague P1-42 reste à tester contre mon Store.
++
+
+> build · space-bunny-free
+Je commite uniquement mes fichiers de zone, sur ma branche.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git add src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua docs/UI_B_preparation.md docs/INBOX/B.md && git status --short && echo "=== commit ===" && git commit -q -m "B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+
+Le store normalisait encore la vague sur l'ancien axe Z : il lisait
+Config.Wave.startZ/endZ, qui n'existent plus depuis l'ile ouverte (GDD 3 bis).
+Feel (rumble + waveImpact) mesurait donc la distance du joueur sur Z et
+tournait sur un faux front.
+
+- normalizeWave expose dir / direction / startD / endD (source : Config.WaveTravel)
+- Store.WaveFrontZ supprimee, remplacee par WaveFrontD + WaveDistanceTo + WaveFrontPoint
+  (meme formule que le serveur : Config.WaveFrontD / Config.WaveAxis)
+- Feel mesure sur l'axe et pose le son au vrai point du front
+- mode demo : duree de trajet calculee sur REACH, + une direction par cycle
+  (elle ne calculait travel sur des champs nil)
+
+Co-authored-by: B (Interface & feel)" && git log --oneline -1
+M  docs/INBOX/B.md
+A  docs/UI_B_preparation.md
+M  src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua
+M  src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+=== commit ===
+967a9c8 B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git push origin claude/friendly-volta-qj504y 2>&1 | tail -5 && echo "=== verifie ===" && git log --oneline -1 origin/claude/friendly-volta-qj504y
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   20e883b..967a9c8  claude/friendly-volta-qj504y -> claude/friendly-volta-qj504y
+=== verifie ===
+967a9c8 B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+> build · space-bunny-free
+Poussé. Je vérifie que je n'ai pas perturbé la session de C dans le dossier principal.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== dossier principal intact ? ===" && git branch --show-current && git status --short && echo "" && echo "=== worktrees ===" && git worktree list
+=== dossier principal intact ? ===
+claude/e-gdd-reef
+?? docs/INBOX/logs/
+?? docs/UI_B_preparation.md
+?? tools/box
+
+=== worktrees ===
+/Users/admin/Documents/claude code/tide-rush      d2b3a76 [claude/e-gdd-reef]
+/Users/admin/Documents/claude code/tide-rush-b    967a9c8 [claude/friendly-volta-qj504y]
+/Users/admin/Documents/claude code/tide-rush-p42  4955d92 [claude/wave-client-p42]
+> build · space-bunny-free
+Compte-rendu écrit dans `docs/INBOX/B.md` et poussé.
+
+**FAIT** — P1-15 vague : `Store` porte maintenant `dir`/`direction`/`startD`/`endD` et délègue le calcul à `Config.WaveFrontD` ; `WaveFrontZ` (faux axe Z) remplacée par `WaveFrontD` + `WaveDistanceTo` + `WaveFrontPoint` ; `Feel` mesure le grondement et l'impact sur l'axe ; mode démo : durée de trajet sur REACH au lieu des `startZ`/`endZ` supprimés, + une direction par cycle. Commit `967a9c8` sur `claude/friendly-volta-qj504y`. Je n'ai pas touché P1-42 ni l'intégration.
+
+**VÉRIFIÉ** — rien testé en jeu : ni Studio ni `luau-analyze` en local. Relu à la main, et plus aucun appelant de `WaveFrontZ` dans `src/`.
+
+**BESOIN** — de D : la fusion, et deux points que tu dois trancher.
+
+Deux choses que j'ai trouvées en route :
+
+1. **`AGENTS.md` et `docs/INBOX/` ne sont pas dans la PR #1.** Ils sont sur `e-gdd-reef` (`d82de60`), qui contient bien `06f2f54` mais dont les 4 commits suivants ne sont pas dans l'intégration. Tant que ce n'est pas fusionné, les règles et la boîte ne suivent pas le code — et un agent qui part de `06f2f54` ne lit rien.
+
+2. **J'ai créé un worktree** `tide-rush-b`, comme `tide-rush-p42`. Pas un choix : le dossier principal est partagé et C écrivait dedans au moment où j'ai commencé (`docs/INBOX/C.md` + `verify_decorlib.py`). Un `git checkout` de ma branche aurait écrasé son travail. Son travail est intact (`d2b3a76`).
+
+Un point d'honnêteté : mon correctif fait ce que le contrat demande, mais **je ne l'ai pas vu tourner**. La première vérification à faire en jeu, c'est une vague venant de l'est ou de l'ouest — c'est exactement le cas où l'ancien code mentait, et le seul que ma correction change vraiment.

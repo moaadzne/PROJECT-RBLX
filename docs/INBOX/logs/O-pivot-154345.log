@@ -1,0 +1,25 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/O.md
+Wrote file successfully: docs/INBOX/O.md
+> build · nemotron-3-ultra-free
+Mis à jour `docs/INBOX/O.md` avec le **PIVOT MAJEUR** intégré (§9 DECISIONS_MARCHE.md).
+
+**Nouveau scope O (Story & Lore Lead) — 3 piliers narratifs :**
+1. **Histoire centrale** : Archipel des Marées, Ancien Roi (Léviathan), Malédiction des Marées
+2. **Quêtes/PNJ/choix** : Campagne 10 chapitres 20-30h, 100+ quêtes annexes à branches + conséquences persistantes, PNJ mémorables
+3. **Lore par exploration** : Ruines, journaux, échos, secrets découverts en explorant (environnemental)
+
+**Aligné planning 12 sem :** Phase 2 (sem 3-5) = Monde & Histoire (chapitres 1-3, PNJ, quêtes, cinématiques) — Phase 3/4/5 suivent.
+
+**Besoins critiques (BESOIN) :**
+- **D** : validation scope Phase 1 vs post-lancement
+- **E** : sync classes ↔ lore (Gardien Vagues, Chasseur Abysses, Maître Marées, Tisseur Écume)
+- **S** : contrat moteur cinématique (intro 3 min, chapitres 2-3 min, boss intros, replay)
+- **P** : quêtes = source XP principale
+- **T** : ancres exploration monde (ruines, journaux, météo dynamique)
+- **A** : DataStore v3 schéma (`questLog`, `choices`, `loreDiscovered`, `cinematicSeen`, `reputation`)
+
+D lit au prochain tour et transmet les consignes.

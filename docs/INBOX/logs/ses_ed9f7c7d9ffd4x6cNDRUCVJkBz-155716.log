@@ -1,0 +1,33 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/O.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/O.md
+Index: docs/INBOX/O.md
+===================================================================
+--- docs/INBOX/O.md
++++ docs/INBOX/O.md
+@@ -7,5 +7,10 @@
+ 
+ ## 2026-10-10 15:05
+ FAIT     : **PIVOT MAJEUR intégré** — Vision « 1er vrai MMORPG Roblox » (DECISIONS_MARCHE.md §9). Scope O étendu : Campagne 10 chapitres 20-30h + 100+ quêtes branches + lore environnemental + événements mondiaux (Éveil Léviathan raid 20, Marée Noire PvP) + choix persistants + PNJ mémorables. Architecture narrative : **3 piliers** (1) Histoire centrale Léviathan/Malédiction, (2) Quêtes/PNJ/choix à conséquences, (3) Lore découverte par exploration (ruines/journaux/échos). Cinématiques avec S : intro 3 min, chapitres 2-3 min, boss intros, replay system.
+ VÉRIFIÉ  : Aligné sur Planning 12 sem — Phase 2 (sem 3-5) = Monde & Histoire : Archipel complet, Chapitres 1-3, PNJ, quêtes, cinématiques. Phase 3 = Progression & Boss. Phase 4 = PvP & Économie. Phase 5 = Endgame & Polish. ZÉRO P2W : tout cosmétique/QoL. Rien testé en jeu.
+-BESOIN   : **[D]** validation scope narratif Phase 1 (lancement sem 12) vs Phase 2+ (post-lancement). **[E]** sync design : classes (Gardien Vagues/Chasseur Abysses/Maître Marées/Tisseur Écume) ↔ lore — quelle classe connaît quels secrets ? **[S]** contrat moteur cinématique : camera scriptée, verrou joueur, choix, export replay. **[P]** progression narrative XP : quêtes = source XP principale (pas grind vague). **[T]** ancres exploration : ruines, journaux, échos placés dans monde (îles, secrets, météo dynamique). **[A]** DataStore schéma v3 : `state.questLog`, `state.choices`, `state.loreDiscovered`, `state.cinematicSeen`, `state.reputation`.
+\ No newline at end of file
++BESOIN   : **[D]** validation scope narratif Phase 1 (lancement sem 12) vs Phase 2+ (post-lancement). **[E]** sync design : classes (Gardien Vagues/Chasseur Abysses/Maître Marées/Tisseur Écume) ↔ lore — quelle classe connaît quels secrets ? **[S]** contrat moteur cinématique : camera scriptée, verrou joueur, choix, export replay. **[P]** progression narrative XP : quêtes = source XP principale (pas grind vague). **[T]** ancres exploration : ruines, journaux, échos placés dans monde (îles, secrets, météo dynamique). **[A]** DataStore schéma v3 : `state.questLog`, `state.choices`, `state.loreDiscovered`, `state.cinematicSeen`, `state.reputation`.
++
++## 2026-10-10 15:10
++FAIT     : Reçu brief D — prêt pour lundi 12/10 21h, branche `claude/e-gdd-reef`, sync Rojo lundi soir. 14 agents core (A-N+J) ont plans livrés. Quota Moaad épuisé, reset 21h. Aucun test lourd / capture / luau-analyze.
++VÉRIFIÉ  : Plan O (Story & Lore) complet, aligné PIVOT MAJEUR, Phase 2 (sem 3-5) = Monde & Histoire. Scope figé dans INBOX. Rien à lancer avant Studio.
++BESOIN   : **[D]** confirmation que scope narratif Phase 1 = Chapitres 1-3 + PNJ principaux + cinématiques intro/chap1-3 + lore environnemental îles de base. Repos jusqu'à lundi.
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+Mis à jour `docs/INBOX/O.md` — entrée ajoutée confirmant readiness pour lundi.
+
+**Résumé :**
+- **FAIT** : Brief D reçu — branche `claude/e-gdd-reef`, sync Rojo lundi 21h, 14 agents core prêts
+- **VÉRIFIÉ** : Plan O complet, aligné PIVOT MAJEUR, Phase 2 (sem 3-5) = Monde & Histoire. Rien à lancer avant Studio
+- **BESOIN** : **D** confirmation scope narratif Phase 1 = Chapitres 1-3 + PNJ principaux + cinématiques intro/chap1-3 + lore environnemental îles de base. Repos jusqu'à lundi.
+
+Session en pause. Prochain tour = lundi en Studio.

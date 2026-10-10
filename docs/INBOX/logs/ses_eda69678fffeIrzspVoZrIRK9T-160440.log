@@ -1,0 +1,280 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/IMPORT_LUNDI.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git branch --show-current && git log --oneline -1 && git status --porcelain | head -20
+claude/e-gdd-reef
+d6dc27b A : alignment monétisation finalisée — ShopService ChoosePick, PolicyService, cosmetiques, zero P2W
+ M docs/INBOX/D.md
+ M src/ServerScriptService/Services/ShopService.lua
+ M src/StarterPlayer/StarterPlayerScripts/TideClient/Hud.lua
+ M src/StarterPlayer/StarterPlayerScripts/TideClient/Onboarding.lua
+ M src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua
+ M src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+ M src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+?? docs/BRIEF_NOUVEAUX_AGENTS.md
+?? docs/INBOX/G.md
+?? docs/INBOX/H.md
+?? docs/INBOX/I.md
+?? docs/INBOX/J.md
+?? docs/INBOX/K.md
+?? docs/INBOX/L.md
+?? docs/INBOX/M.md
+?? docs/INBOX/N.md
+?? docs/INBOX/O.md
+?? docs/INBOX/P.md
+?? docs/INBOX/Q.md
+?? docs/INBOX/R.md
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== Services dans src/ServerScriptService/Services ==="; ls src/ServerScriptService/Services/ | wc -l && ls src/ServerScriptService/Services/; echo; echo "=== Modules client dans TideClient ==="; ls src/StarterPlayer/StarterPlayerScripts/TideClient/ | wc -l && ls src/StarterPlayer/StarterPlayerScripts/TideClient/; echo; echo "=== Config SUNK_POOLS ==="; grep -n "SUNK_POOLS\|SunkPool" src/ReplicatedStorage/Shared/Config.lua; echo; echo "=== FontAwesome6 / RobotoCondensed ==="; grep -rn "FontAwesome\|RobotoCondensed" src/ | head -10
+=== Services dans src/ServerScriptService/Services ===
+      17
+CreatureFactory.lua
+CreatureService.lua
+DataService.lua
+DebugService.lua
+IntroService.lua
+LagoonService.lua
+MountService.lua
+Net.lua
+PetService.lua
+PlotService.lua
+RoyalService.lua
+SelfTest.lua
+ShopService.lua
+Stats.lua
+StealService.lua
+UpgradeService.lua
+WaveService.lua
+
+=== Modules client dans TideClient ===
+      27
+Ambience.lua
+CameraIntro.lua
+ChatStyle.lua
+Codex.lua
+Components.lua
+CreatureRenderer.lua
+Feel.lua
+Fx.lua
+Hud.lua
+IconResolver.lua
+MountButton.lua
+NameTags.lua
+Notifications.lua
+Onboarding.lua
+PoolBillboards.lua
+Prompts.lua
+RoyalHud.lua
+Settings.lua
+Sfx.lua
+Shop.lua
+StealHud.lua
+Store.lua
+Theme.lua
+Util.lua
+Wave.lua
+World.lua
+init.client.lua
+
+=== Config SUNK_POOLS ===
+87:-- Bassins creusés (SUNK_POOLS, decision D 09/10, accord direct A 10/10) : decalage vertical
+89:Config.SunkPoolOffset = -3.5
+
+=== FontAwesome6 / RobotoCondensed ===
+src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua:2:-- panneaux sombres translucides, coins de 6 a 10 px, police condensee nette (RobotoCondensed), titres en MAJUSCULES espacees,
+src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua:52:-- Polices : RobotoCondensed (SIL OFL, upload sur Creator Hub) pour titres/chiffres, Builder Sans pour corps
+src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua:54:local ROBOTO_CONDENSED_REGULAR = "rbxassetid://0" -- RobotoCondensed-Regular
+src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua:55:local ROBOTO_CONDENSED_BOLD = "rbxassetid://0"   -- RobotoCondensed-Bold
+src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua:230:-- Texte blanc, RobotoCondensed (Body) par defaut, ombre fine
+src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua:248:-- Titre : RobotoCondensed Bold, MAJUSCULES espacees
+src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua:382:-- Bouton plein a la couleur d'accent, libelle RobotoCondensed Bold en MAJUSCULES espacees
+src/StarterPlayer/StarterPlayerScripts/TideClient/IconResolver.lua:327:local function tryLoadFontAwesome(): boolean
+src/StarterPlayer/StarterPlayerScripts/TideClient/IconResolver.lua:360:	if tryLoadFontAwesome() and faFontFace and FA_ICONS[key] then
+src/StarterPlayer/StarterPlayerScripts/TideClient/IconResolver.lua:444:	task.spawn(tryLoadFontAwesome)
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== Wave.lua P0 fix ==="; grep -n "local frame = base" src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua; echo; echo "=== Store.lua v2.1 contracts ==="; grep -n "StartSteal\|ChoosePick\|WaveFrontD" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | head -8; echo; echo "=== merge validation ==="; git log --oneline -1 ada8300 2>/dev/null; git merge-base --is-ancestor ada8300 HEAD && echo "ada8300 is ancestor: YES" || echo "ada8300 is ancestor: NO"
+=== Wave.lua P0 fix ===
+404:	local frame = base * CFrame.new(0, sink, -front)
+
+=== Store.lua v2.1 contracts ===
+509:-- Position du front de vague SUR SON AXE (Config.WaveFrontD : d = startD + speed * (t - startTime)).
+511:function Store.WaveFrontD(now: number?): number?
+518:	return Config.WaveFrontD(wave, now or Store.Now())
+524:	local front = Store.WaveFrontD(now)
+533:	local front = Store.WaveFrontD(now)
+719:-- Contrat v2.1 : StartSteal -> (true, holdEndsAt) ; le serveur prend la creature a holdEndsAt si on n'a pas bouge
+720:function Store.StartSteal(plot: number, slot: number): (boolean, any)
+721:	return call("StartSteal", plot, slot)
+
+=== merge validation ===
+ada8300 Integration : dernier commit de B (demande a D)
+ada8300 is ancestor: YES
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== INBOX conflicts check ==="; for f in A E F; do echo "--- INBOX/$f.md ---"; git diff ada8300 HEAD -- docs/INBOX/$f.md | head -30; done; echo; echo "=== TABLEAU.md diff ==="; git diff ada8300 HEAD -- docs/TABLEAU.md | head -20
+=== INBOX conflicts check ===
+--- INBOX/A.md ---
+diff --git a/docs/INBOX/A.md b/docs/INBOX/A.md
+index 5aeeac6..1d03c19 100644
+--- a/docs/INBOX/A.md
++++ b/docs/INBOX/A.md
+@@ -2,6 +2,69 @@
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 15:59
++FAIT     : Alignment monétisation finalisée (G) — **ShopService** : ajoute remote `ChoosePick` (déjà dans contrat v2.1), check `PolicyService` AVANT chaque achat Produit Développeur, crée `RewardCheck` remote pour Rewarded Ads. **Config.Shop** déjà à jour (prix finaux, probas TideEgg, pity, Vault, BattlePass, RewardedAd). **DataService** : nouveaux champs `cosmeticsInventory`, `battlePassProgress`, `rewardedAdCooldown` persistés cross-device. **Zéro puissance vendue** — Bag/Speed/VIP = QoL/confort, créatures/montures/power = temps + skill only. L'existant couvre 90% ; seul `ChoosePick` + `PolicyService` + champs cosmetiques à coder.
++VÉRIFIÉ  : Config.Shop relue (prix 79/149/99/249/199/399, probas 60/25/10/4/1, pity 50, Vault, BP, RewardedAd, PolicyService). **Rien testé en jeu** — pas Studio.
++BESOIN   : G livre ShopService complet (remotes + PolicyService + RewardedAd) pour câblage serveur ; B/L confirment UI probas AVANT achat + pity counter + Vault + Battle Pass responsive ; D greenlight merge Config + ShopService avant lundi.
++
++---
++
++## 2026-10-10 15:57
++FAIT     : Semaine close. Branche d'intégration = claude/e-gdd-reef. Tous les plans core (A–N+J) écrits dans leurs INBOX. Config stable (Shop top 50, SUNK_POOLS -3.5, inscription épave, double plateforme, pivot MMORPG §9). Zéro code lancé après le plan — pas de test lourd, pas de capture, pas de luau-analyze. Prêt pour sync Rojo lundi 12/10 21h en Studio.
++VÉRIFIÉ  : Lecture D confirmée. Quota Moaad épuisé, reset 21h. Arrêt net.
++BESOIN   : Lundi — ouverture Studio, `git pull`, `rojo serve`, Accept, Playtest 5 min. Le serveur n'a JAMAIS été lancé : première vraie session.
++
++---
++
++## 2026-10-10 15:36
++FAIT     : Pivot MMORPG lu (§9). Nouveau scope serveur : **single shard 200-500 joueurs** (streaming/instancing avec V), Data architecture (ProfileService + GlobalDataStore + OrderedDataStore + MessagingService), **Progression 1-100+** (classes/specs, talents, respec), **Equipment** (craft/enchant/runes/sets), **50+ créatures** (évolution ramifiée, mutations héréditaires), **Montures** (arbre progression), **Housing/Guild halls** (construction/défense/production), **Économie joueur** (hotel ventes, trading, taxes guilde), **PvP** (zones, arènes classées, guerres guilde), **Quêtes backend** (avec O), **Boss/Raid data** (avec Q), **Cinematic triggers** (avec S), Netcode étendu. Ancien scope (vague/collection) = Phase 1 seulement, livrable semaine 2.
++VÉRIFIÉ  : §9 lu en entier. Aucun code lancé — le plan est structurel, pas d'implémentation.
++BESOIN   : D valide que A reprend TOUTE la progression/systèmes (P est renfort, pas propriétaire) ; V aligne architecture single-shard/streaming sur Net.lua ; O/Q/S/R livrent leurs contrats d'interface (quests, boss, cinématiques, économie) pour que A les câble côté serveur ; G confirme modèle revenus 0 P2W (cosmétiques/QoL only).
++
++---
++
++## 2026-10-10 15:30
+--- INBOX/E.md ---
+diff --git a/docs/INBOX/E.md b/docs/INBOX/E.md
+index 0a2cc71..9b5a758 100644
+--- a/docs/INBOX/E.md
++++ b/docs/INBOX/E.md
+@@ -1,14 +1,55 @@
+-# File de E — Concept & game design
+-> Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+-> Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
+-## 2026-10-10 14:12
+-FAIT     : **§14 nº 2 TRANCHÉ** — les 6 espèces rares restent hors Phase 1 (`GDD_REEF.md`), un Whali Shark Titan à 12 000/s sauterait le palier 4 (seuil 5 000) et viderait `LagoonTiers` de son sens ; ordre de retour Phase 2 fixé (nuit → épave → Légendaires, avec le Deep Dive). **Semaine 2 posée : `docs/SEMAINE_2.md`.**
+-VÉRIFIÉ  : **écart réel trouvé dans le code** — la décision de D du 09/10 promet des créatures « rares » au récif, or `Config.ExtremeTide.creatures` ne contient que 2 `Uncommon`, et 0,7⁶ ≈ 12 % des récifs n'ont aucune mutée. **[A]** la parade est déjà écrite par A dans `IntroService:156-164` (« au moins une mutée ») : la reprendre telle quelle pour le récif, 0 modèle, 0 Config. Rien testé en jeu.
+-BESOIN   : **[D]** les règles de monétisation Roblox en vigueur (seul vrai risque de calendrier, semaine 1, pas semaine 2) ; **[D]** Codex semaine 1 : 7 espèces en « ? » ou 3 connues seulement — ça se voit sur les captures du test public ~26/10 ; **[C]** le Deep Dive remplace le `Tide Egg`, ne pas garder les deux.
++## 2026-10-10 20:10
++FAIT     : Alignement monétisation finalisée validé — rôle E = skins lore-friendly (Abyssal, Corail, Aurore, Éveil Léviathan) pour que le cosmétique porte l'histoire. GDD scope MMORPG déjà prévoit : cosmetics = valeur perçue via lore (Story O + Cinematics S), Battle Pass paliers cosmétiques, drops boss/raid cosmétiques uniques, zéro P2W.
++VÉRIFIÉ  : Tous les systèmes listés (Tide Egg probas/pity, Battle Pass 12 sem, Rewarded Ads, Vault, PolicyService, Hotel ventes 5%, trading, A/B test) sont compatibles avec le GDD pivot 12 sem. Aucune puissance vendue. Rien testé en jeu.
++BESOIN   : **[D]** feu vert lundi pour réécrire GDD complet scope MMORPG (incluant systèmes cosmetics/lore/battle pass/économie joueur) + briefs agents O→V. G code, je documente.
+ 
+-## 2026-10-10 13:56
+-FAIT     : GDD_REEF **prêt à intégrer : OUI** — mais fusionner le sommet `8964cc7` (476 l.), **pas** `f908348` (418 l.) : ce dernier contient 4 erreurs corrigées depuis (sac 2→10, paliers Codex, réserve, rebirth).
+-VÉRIFIÉ  : chaque chiffre Phase 1 revérifié contre `Config.lua` + `review/review_context.md` ; **0 `[À DÉFINIR]` bloquant** — les 4 restants (récompense Léviathan, courbe rangs 6+) portent sur le Tide Rank, entierement hors Phase 1. Rien testé en jeu.
+-BESOIN   : **D** — fusionner `claude/e-gdd-reef` vers l'intégration **avant lundi 12/10**, sinon le sync Rojo part sans le GDD. Un seul point à échéance : §14 nº 2 (espèces Rare/Epic/Legendary hors marée extrême), à confirmer avant le test fermé ~20/10 ; le reste est Phase 2.
++## 2026-10-10 19:25
++FAIT     : BRIEF D reçu — 14 agents core (A-N+J) prêts, branche integration = claude/e-gdd-reef, sync Rojo lundi 12/10 21h. Quota Moaad épuisé, reset 21h. Aucun test lourd, aucune capture, aucun luau-analyze. Repos.
++VÉRIFIÉ  : Plan E pivot MMORPG écrit (INBOX 19:15), GDD_REEF à jour, SEMAINE_2.md dual-platform. Attend feu vert D lundi pour réécrire GDD scope complet + briefs O→V.
++BESOIN   : **[D]** lundi 21h : feu vert réécriture GDD + création agents O→V. Rien à faire avant.
+ 
++## 2026-10-10 19:15
++FAIT     : Lu §9 pivot majeur — **ce n'est plus un mobile game, c'est un VRAI MMORPG Roblox** (vision : "premier vrai MMORPG qui ne fait pas semblant"). Monde persistant 100h+, 50+ créatures évolution ramifiée, classes 4 + talents, World Boss 20j, Donjons 5j, Raids 10/20j, PvP zones/arènes/guerres guilde, économie joueur (HV, craft, trading), cinématiques 3 min intro + chapitres + boss + replay, serveur unique 200-500j, 12 semaines lancement, 21 agents. Ancien scope = Phase 1 seulement (2 sem).
++VÉRIFIÉ  : Pivot total validé par D/Moaad. Planning 12 sem : Fondations (2) → Monde/Histoire (3) → Progression/Boss (3) → PvP/Economie (2) → Endgame/Polish (2). Revenus 100% cosmétique/QoL, ZERO P2W. 8 nouveaux agents O→V à créer MAINTENANT.
+--- INBOX/F.md ---
+diff --git a/docs/INBOX/F.md b/docs/INBOX/F.md
+index 9d85795..f747265 100644
+--- a/docs/INBOX/F.md
++++ b/docs/INBOX/F.md
+@@ -1,9 +1,35 @@
+-# File de F — Controle qualite (lecture)
+-> Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+-> Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
+-## 2026-10-10 14:28
+-FAIT     : Contrôle de Wave.lua (4955d92) : **P0 non corrigé**. Ligne 404 `base + Vector3.new(0, sink, -front)` est une translation en coordonnées MONDE ; le commentaire ligne 403 annonce une translation locale. Il faut `base * CFrame.new(0, sink, -front)`.
+-VÉRIFIÉ  : reproduit numériquement, front à 200 studs — N = −200 au lieu de +200 (vague à l'envers), E et W = 0 (vague immobile au centre de l'île), S correct par coïncidence. `SelfTest.lua:159` ne le voit pas car il ne teste que N et S. 967a9c8 de B est validé (nil−nil supprimé, REACH calculé, WaveFrontZ → WaveFrontD/WaveDistanceTo/WaveFrontPoint, `dir` exposé). Rien testé en jeu.
+-BESOIN   : [auteur P1-42] une seule ligne à changer, P0 du même niveau que la vague invisible que ce commit devait corriger — [C] `waveBoom` et `ambientBeach` n'existent dans aucun `Assets.Sounds` (dossier absent), la vague sera muette tant qu'ils manquent — [B] `Store.lua:276` `startZ` est un champ mort, écrit jamais relu, sans conséquence.
++## 2026-10-10 16:00
++FAIT     : Alignment F sur monétisation finalisée par G — QA test plan étendu : (1) Achat mobile+PC : VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199, PickCreature 399 — flux complet sans erreur console. (2) Probabilités TideEgg affichées AVANT achat (60/25/10/4/1), pity counter 50→guaranteed, pas de duplicata → Essence. (3) PolicyService appelé AVANT chaque achat Produit Développeur. (4) Battle Pass 12 sem : gratuit 12 paliers vs Premium 499 (+12 paliers skins rares/épique, mount exclusif). (5) Rewarded Ads opt-in : 1 TideEgg/jour, cooldown 24h. (6) ZERO Pay-to-Win vérifié : tout cosmétique/QoL, puissance = temps+skill. (7) Cross-platform : shop UI responsive, même prix/mêmes drops mobile=PC.
++VÉRIFIÉ  : Config.Shop prix finaux lus, ShopService.lua remotes ChoosePick créées, PolicyService check codé. Rien testé en jeu.
++BESOIN   : [G] ShopService + BattlePassService + RewardedAdsService déployés sur branche d'intégration avant lundi. [B] Shop.lua affiche probabilités AVANT achat + pity counter + Vault + Battle Pass UI. [H] Icones shop (coffre/vague/couronne/étoile) + RobotoCondensed prix. [M] Checklist lundi inclut test achat complet mobile+PC.
+ 
++## 2026-10-10 15:50
++FAIT     : Prêt pour lundi 12/10 21h — branche d'intégration claude/e-gdd-reef synchronisée, merge ada8300 validé (Wave.lua P0 corrigé, Store.lua contrats v2.1, Shop.lua ChoosePick). 14 agents core plans écrits. Rôle F = infrastructure QA MMORPG (Phase 1 baseline : Netcode, ProfileService, Streaming, GlobalDataStore). Cross-platform test plan 5+5 min prêt.
++VÉRIFIÉ  : Merge fait, code corrigé, INBOX à jour, VERIFS_LUNDI.md baseline Phase 1. Rien testé en jeu.
++BESOIN   : [D] Sync Rojo lundi soir. Repos jusqu'à lundi.
++
++## 2026-10-10 15:45
++FAIT     : Nouveau plan F selon DECISIONS_MARCHE.md §9 — PIVOT MAJEUR vers VRAI MMORPG ROBLOX (12 sem, 21 agents, lancement Semaine 12). Rôle F change : de "valider vague lundi" à "infrastructure QA pour MMORPG 100+ h, 50+ créatures, World Boss 20j, Donjons 5j, Raids 10/20j, PvP zones, économie joueur, cinématiques 3 min, serveur unique 200-500j". Priorités F : (1) Framework test automatisé cross-platform mobile/PC/Console, (2) Pipeline CI/CD tests serveur unique + streaming + instancing, (3) Métriques QA temps réel (FPS, latence, erreurs, désynchro), (4) Checklist Phase 1 (semaines 1-2) : Netcode interpolation/prediction, ProfileService, GlobalDataStore, StreamingEnabled, combat base. Les 10 vérifs lundi deviennent la baseline Phase 1, pas le livrable final.
++VÉRIFIÉ  : §9 lu intégral (lignes 212-351). Vision "premier vrai MMORPG Roblox qui ne fait pas semblant" comprise. 5 piliers : Histoire/Lore, Progression/Builds, Boss/Raid, PvP/Economie, Cinématiques. 8 nouveaux agents O-V requis.
++BESOIN   : [D] Architecture technique §9 validée (Net.lua étendu, ProfileService, MessagingService, single shard 200-500j). [O-V] Briefs agents créés MAINTENANT. [A] Base combat + Netcode interpolation = fondations QA. [V] Streaming/Instancing/Netcode = priorité technique absolue. Budget 12 sem = critique, pas de dérive.
++
++## 2026-10-10 15:30
++FAIT     : Plan cross-platform lundi — 5 min mobile + 5 min PC à CHAQUE sync Rojo. Checklist 10 points : (1) mouvement joystick/WASD fluide, (2) caméra touch drag+pinch / clic droit+molette, (3) vol mobile→PC et PC→mobile identiques, (4) boutique achat mobile+PC identiques, (5) HUD lisible mobile bas / PC latéral, (6) trading/vol mêmes protections, (7) Marée Royale classement global, (8) Daily Rewards synchro, (9) 0 erreur console les deux, (10) 30+ FPS mobile / 60 FPS PC. Rollback si fail sur l'un des deux.
+
+=== TABLEAU.md diff ===
+diff --git a/docs/TABLEAU.md b/docs/TABLEAU.md
+index ae2e0f3..4596dcf 100644
+--- a/docs/TABLEAU.md
++++ b/docs/TABLEAU.md
+@@ -1,6 +1,7 @@
+ # Tableau des tâches — Tide Rush : Reef Keepers (tenu par D)
+ 
+-Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7` (D y fusionne les branches de l'équipe).
++Mis à jour le 2026-10-10 14:45 (intégration au sommet `43b7ce2`). Branche d'intégration : `claude/epic-pasteur-q323d7` (D y fusionne les branches de l'équipe).
++État vérifié de l'intégration dans `docs/ETAT_INTEGRATION.md` ; liste Rojo du lundi dans `docs/IMPORT_LUNDI.md` (revérifiée le 10/10).
+ 
+ ## Sessions (cloud, sans Studio jusqu'au lundi 12/10 21 h)
+ | Lettre | Session | Branche |
+@@ -79,7 +80,7 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
+ | P1-32 | B | Renommer TideClient.client.lua en init.client.lua (sinon aucun module client ne se charge avec Rojo) | fait (53a9f71) |
+ | P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | fait (c9b95d2, créées au démarrage) |
+ | P1-41 | E | Appliquer DIRECTION_V2 au GDD : roster de vraies espèces, noms, ton des textes, onboarding, miniatures cinématiques | fait (GDD v3, LagoonTiers) |
+-| **P1-42** | **B** | **P0 lundi — vague visible.** B a déjà un rendu provisoire dans `testbuild/TestWaveRenderer.client.lua` (144e50e) : ne pas repartir de zéro, ne pas le paralléliser. Reste à faire : (1) le sortir de `testbuild/` vers le module client normal, (2) le passer sur les 4 directions N/E/S/O du serveur (1ba0aa3) au lieu de l'ancien axe Z, (3) houle + ombre + sons. Tant que ce n'est pas fait, le serveur attrape des joueurs avec une vague invisible. **Zone B exclusivement — aucune autre session n'y touche.** | **en cours (B)** |
++| **P1-42** | **B** | **P0 lundi — vague visible.** | **livré (`9f10adb`, dans l'intégration).** `src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua` (493 l.), appelé par `init.client.lua` ligne 18, sur les 4 directions N/E/S/O du serveur (1ba0aa3), houle + ombre + sons. **Le P0 trouvé par F est corrigé** : ligne 404 `base * CFrame.new(0, sink, -front)` au lieu de `base + Vector3.new(...)` — le `+` donnait une position monde, donc N à l'envers et E/W immobiles. ⚠️ **Ne pas merger `claude/wave-client-p42`** : ce commit n'est pas un ancêtre de l'intégration, il ne diffère que par cette ligne et la ramènerait au bug. `testbuild/TestWaveRenderer.client.lua` est un doublon périmé, non mappé par Rojo ; personne ne l'édite. Reste : contrôle qualité ligne à ligne (non fait) et test en jeu lundi. |
+ | P1-23 | C | Appliquer DIRECTION_V2 : DA du monde, fiches et prompts des créatures réalistes, vague à grande échelle, sons | fait (1a0bd8f) |
+> build · nemotron-3-ultra-free
+Now I have a complete picture. Let me write the 3 INBOX entries and update the verification documents.
+[0m→ [0mRead docs/VERIFS_LUNDI.md 
+> build · nemotron-3-ultra-free
+[0m✗ [0mEdit docs/INBOX/F.md failed
+[91m[1mError: [0mCould not find oldString in /Users/admin/Documents/claude code/tide-rush/docs/INBOX/F.md. It must match exactly, including whitespace and indentation.
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/F.md 
+> build · nemotron-3-ultra-free
+[0m✗ [0mEdit docs/INBOX/F.md failed
+[91m[1mError: [0mCould not find oldString in /Users/admin/Documents/claude code/tide-rush/docs/INBOX/F.md. It must match exactly, including whitespace and indentation.
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && head -5 docs/INBOX/F.md | od -c | head -30
+0000000   \n   #   #       2   0   2   6   -   1   0   -   1   0       1
+0000020    6   :   0   0  \n   F   A   I   T                       :    
+0000040    A   l   i   g   n   m   e   n   t       F       s   u   r    
+0000060    m   o   n 303 251   t   i   s   a   t   i   o   n       f   i
+0000100    n   a   l   i   s 303 251   e       p   a   r       G     342
+0000120  200 224       Q   A       t   e   s   t       p   l   a   n    
+0000140  303 251   t   e   n   d   u       :       (   1   )       A   c
+0000160    h   a   t       m   o   b   i   l   e   +   P   C       :    
+0000200    V   I   P       7   9   ,       S   p   e   e   d       1   4
+0000220    9   ,       B   a   g       9   9   ,       S   t   a   r   t
+0000240    e   r   P   a   c   k       2   4   9   ,       T   i   d   e
+0000260    E   g   g       1   9   9   ,       P   i   c   k   C   r   e
+0000300    a   t   u   r   e       3   9   9     342 200 224       f   l
+0000320    u   x       c   o   m   p   l   e   t       s   a   n   s    
+0000340    e   r   r   e   u   r       c   o   n   s   o   l   e   .    
+0000360    (   2   )       P   r   o   b   a   b   i   l   i   t 303 251
+0000400    s       T   i   d   e   E   g   g       a   f   f   i   c   h
+0000420  303 251   e   s       A   V   A   N   T       a   c   h   a   t
+0000440        (   6   0   /   2   5   /   1   0   /   4   /   1   )   ,
+0000460        p   i   t   y       c   o   u   n   t   e   r       5   0
+0000500  342 206 222   g   u   a   r   a   n   t   e   e   d   ,       p
+0000520    a   s       d   e       d   u   p   l   i   c   a   t   a    
+0000540  342 206 222       E   s   s   e   n   c   e   .       (   3   )
+0000560        P   o   l   i   c   y   S   e   r   v   i   c   e       a
+0000600    p   p   e   l 303 251       A   V   A   N   T       c   h   a
+0000620    q   u   e       a   c   h   a   t       P   r   o   d   u   i
+0000640    t       D 303 251   v   e   l   o   p   p   e   u   r   .    
+0000660    (   4   )       B   a   t   t   l   e       P   a   s   s    
+0000700    1   2       s   e   m       :       g   r   a   t   u   i   t
+0000720        1   2       p   a   l   i   e   r   s       v   s       P
+> build · nemotron-3-ultra-free
+[0m✗ [0mEdit docs/INBOX/F.md failed
+[91m[1mError: [0mCould not find oldString in /Users/admin/Documents/claude code/tide-rush/docs/INBOX/F.md. It must match exactly, including whitespace and indentation.
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/F.md
+Wrote file successfully: docs/INBOX/F.md
+> build · nemotron-3-ultra-free
+[91m[1mError: [0mRate limit exceeded. Please try again later.

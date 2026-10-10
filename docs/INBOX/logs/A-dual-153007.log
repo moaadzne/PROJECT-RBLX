@@ -1,0 +1,39 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/A.md [90m[limit=30][0m
+> build · nemotron-3-ultra-free
+[0m$ [0mdate "+%Y-%m-%d %H:%M"
+2026-10-10 15:30
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/A.md
+Index: docs/INBOX/A.md
+===================================================================
+--- docs/INBOX/A.md
++++ docs/INBOX/A.md
+@@ -1,8 +1,15 @@
+ # File de A — Serveur (Gameplay & serveur)
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 15:30
++FAIT     : Plan double plateforme mobile/PC — serveur inchangé (même DataStore, même économie, mêmes Remotes v2.1). Aucune modification de Config, Net, DataService, ShopService, StealService, RoyalService, MountService, PlotService, WaveService, CreatureService, LagoonService, UpgradeService, PetService, IntroService, DebugService. Détection plateforme côté client uniquement (B/L). Anti-cheat serveur déjà commun (SpeedGuard + position). Vol mobile↔PC : même logique, même protections, bouclier revanche 24h déjà codé. Marée Royale : classement global unique, score = revenu/s contrat sans gamepass. Daily Rewards : synchro instantanée cross-device via DataStore existant. Plan = zéro code serveur, validation que l'existant couvre déjà tout.
++VÉRIFIÉ  : lecture de Net.lua (client attend remotes identiques), DataService (DataStore unique), ShopService (PolicyService déjà appelé), StealService (aucune ref plateforme), RoyalService (score global). **Rien testé en jeu**.
++BESOIN   : de B/L confirmation que la détection plateforme client n'envoie rien au serveur (remotes identiques). Greenlight D pour valider qu'aucun ticket serveur n'est nécessaire.
++
++---
++
+ ## 2026-10-10 15:23
+ FAIT     : SUNK_POOLS — **accord direct donné**. Config.SunkPoolOffset = -3.5 ajoute dans Config.lua. C peut maintenant build_lagoon r=30 avec les bassins creusés. Decision D validée, TABLEAU maj.
+ VÉRIFIÉ  : Config relue, commit 2eddd84 pousse.
+ BESOIN   : Aucun de ma part. C debloque.
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/A.md && git commit -q -m "A : plan double plateforme — zero code serveur, l'existant couvre deja tout" && git push origin claude/e-gdd-reef 2>&1 | tail -2
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   b6d2433..638dadb  claude/e-gdd-reef -> claude/e-gdd-reef
+> build · nemotron-3-ultra-free
+```
+FAIT     : Plan double plateforme — serveur inchangé. Mêmes Remotes v2.1, DataStore, économie, anti-cheat. Détection plateforme côté client (B/L). Vol mobile↔PC : même logique, bouclier 24h déjà codé. Marée Royale : classement global unique. Daily Rewards : synchro DataStore. Zéro code serveur nécessaire — l'existant couvre tout.
+VÉRIFIÉ  : Net.lua, DataService, ShopService, StealService, RoyalService relus. Rien testé en jeu.
+BESOIN   : B/L confirment détection client n'envoie rien serveur. Greenlight D qu'aucun ticket serveur n'est requis.
+```

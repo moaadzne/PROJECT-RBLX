@@ -1,0 +1,28 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/N.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/N.md
+Index: docs/INBOX/N.md
+===================================================================
+--- docs/INBOX/N.md
++++ docs/INBOX/N.md
+@@ -9,5 +9,10 @@
+ 
+ ## 2026-10-10 16:35
+ FAIT     : Plan cross-plateforme lu dans docs/DECISIONS_MARCHE.md §7. Spécs retenues : 3 niveaux GraphicsQuality (Auto/High/Low, défaut Auto) ; LOD créatures 3 niveaux (Near=80, Mid=160, Far=300), suppression mesh >200 studs ; Particules max 50 mobile / 200 PC ; Ombres ShadowMap PC, désactivées mobile (ou Distance=100) ; Eau WaveSize/Transparency ×0.5 mobile ; Target 60 FPS PC / 30+ mobile 3 ans. Config.CrossPlatform à ajouter dans Config.lua (table fournie §7). Responsables : N (perf/qualité graphique), K (LOD/particules créatures).
+ VÉRIFIÉ  : §7 lu intégralement. Config.CrossPlatform table prête à intégrer. Détection plateforme via UserInputService.TouchEnabled. Rendu vague adaptatif : 30 segments PC / 15 mobile (Wave.lua client). Touch targets ≥44×44 px iOS / 48×48 dp Android — à valider avec B.
+-BESOIN   : A — intégrer Config.CrossPlatform dans Config.lua (source unique). N — implémenter GraphicsQuality selector (Auto/High/Low) côté client, hook Lighting/Atmosphere/Particles/LOD selon niveau. K — LOD créatures (near/mid/far) + suppression >200 studs dans CreatureFactory/Client. B — HUD responsive (bas mobile / latéral PC), onboarding tap vs WASD. Test device farm : iPhone 12 / Android mid-range 2021 / PC GTX 1060.
+\ No newline at end of file
++BESOIN   : A — intégrer Config.CrossPlatform dans Config.lua (source unique). N — implémenter GraphicsQuality selector (Auto/High/Low) côté client, hook Lighting/Atmosphere/Particles/LOD selon niveau. K — LOD créatures (near/mid/far) + suppression >200 studs dans CreatureFactory/Client. B — HUD responsive (bas mobile / latéral PC), onboarding tap vs WASD. Test device farm : iPhone 12 / Android mid-range 2021 / PC GTX 1060.
++
++## 2026-10-10 17:05
++FAIT     : Plan double plateforme affiné — GraphicsQuality 3 niveaux (Auto/High/Low, défaut Auto) ; LOD créatures DIFFÉRENCIÉS : mobile Near=80/Mid=160/Far=300, PC Near=120/Mid=250/Far=500 (Config.CrossPlatform.LODDistances) ; suppression mesh >200 studs commun ; Ombres ShadowMap PC, désactivées mobile (Distance=100 si forcée) ; Eau WaveSize/Transparency ×0.5 mobile / 1.0 PC ; Particules max 50 mobile / 200 PC ; Target 30+ FPS mobile 3 ans / 60 FPS PC récent ; Hero shot même caméra, rendu vague adaptatif 30 segments PC / 15 mobile. Config.CrossPlatform à ajouter dans Config.lua.
++VÉRIFIÉ  : Spécs claires et différenciées mobile/PC. LOD distances doublées PC vs mobile. Shadows mobile off par défaut. Water quality scalaire. Détection UserInputService.TouchEnabled. Wave.lua client : segments = isMobile and 15 or 30.
++BESOIN   : A — Config.CrossPlatform table complète avec LODDistances mobile/PC séparés, WaterQualityMobile/PC, ShadowsMobile/PC, MaxParticlesMobile/PC, TargetFPSMobile/PC. N — GraphicsQualityManager client (Auto détecte device tier, High force PC preset, Low force mobile preset) ; hooks Lighting/Atmosphere/Water/Particles/LOD au changement. K — CreatureLOD system (3 meshes ou simplification procédurale) avec distances Config.CrossPlatform.LODDistances[platform]. B — valider touch targets 44×44/48×48 sur device farm.
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/N.md 
+> build · nemotron-3-ultra-free
+Fait. Troisième entrée ajoutée dans `docs/INBOX/N.md` (17:05) avec le plan double plateforme affiné : LOD distances différenciées mobile (80/160/300) vs PC (120/250/500), ombres/eau/particules scalaires, GraphicsQualityManager côté client, et besoins précis pour A/N/K/B.

@@ -1,0 +1,14 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md [90m[offset=200][0m
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/H.md
+Wrote file successfully: docs/INBOX/H.md
+> build · nemotron-3-ultra-free
+Done. Written `docs/INBOX/H.md` with the new 3-line plan for the MMORPG pivot:
+
+**FAIT** — Read §9 full pivot: 21 agents, 12 weeks, single shard 200-500 players, 5 pillars (Story/Progression/Bosses/PvP-Economy/Cinematics); H scope expands from "wave+collection" to global MMORPG visual language system
+
+**VÉRIFIÉ** — Theme.lua + IconResolver.lua foundations in place (RobotoCondensed, Font Awesome 6 via Glyph.lua asset 12187624912, primitive fallback); cross-platform mobile/PC/console compatible
+
+**BESOIN** — Define complete icon atlas (50+ creatures, 4 classes×3 specs, talents, gear, spells, craft, trading, PvP, guild, housing, cinematics); responsive scale 12pt→72pt RobotoCondensed; damage numbers/combat log font; validate with O (Story), P (Systems), Q (Boss), S (Cinematics), V (Tech)

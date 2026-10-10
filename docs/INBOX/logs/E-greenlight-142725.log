@@ -1,0 +1,276 @@
+[0m
+> build · space-bunny-free
+Feu vert reçu. Je travaille les deux points. D'abord, j'ancre sur ce qui existe déjà pour ne rien inventer.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && grep -n "^#\+ " docs/GDD.md | head -40
+1:# GDD — Ride the Tsunami: Steal & Ride (concept Reef Keepers) · v3
+12:## 0. Hook : titre et miniatures
+14:### 3 titres (verbe + objet)
+26:### 3 miniatures à tester en A/B
+32:## 1. Univers et histoire courte
+40:## 1 bis. Les piliers du fun (ce qui décide de tout le reste)
+51:## 1 ter. Les 30 premières secondes, image par image (v3 : tendu et spectaculaire)
+76:## Ton des textes du jeu (v3)
+82:## 2. Boucle principale
+92:## 3. Couches de progression
+102:## 3 bis. Île ouverte (Phase 1, légère)
+109:### 1. Plan de l'île cible (Phase 2 : 800 × 800 ; le lancement en est la version réduite)
+144:### 2. La vague dans un monde ouvert
+151:### 3. Ce qui pousse à explorer
+157:### 4. Impact et calendrier
+183:## 4. Contenu
+185:### 4.1 Zones (reprend Config.Zones, mêmes limites Z)
+196:### 4.2 Créatures : **10 vraies espèces, 10 modèles** (v3, Direction v2)
+214:### 4.3 Croissance (même hors ligne)
+236:### 4.4 Types de marée et mutations
+254:### 4.5 Compagnons (système existant, rhabillé)
+257:### 4.6 Monture
+264:### 4.7 Vol entre lagons (version complète)
+290:### 4.8 Marée Royale (compétition sans vol)
+296:## 5. Économie (prête pour Config)
+298:### 5.1 Revenu
+307:### 5.2 Améliorations : inchangées (Speed, Bag, Slots dans Config.Upgrades)
+310:### 5.3 Œufs de compagnons : inchangés (2 500 / 60 000 / 1 500 000)
+313:### 5.4 Reef Codex : 10 espèces × 5 variantes (Normal, Golden, Glow, Storm, Rainbow) = **50 cases**
+321:### 5.5 Le Léviathan (but des semaines)
+326:### 5.6 Tide Rank (rebirth)
+337:## 6. Méta
+344:## 6 bis. Secrets et plot twists (à découvrir, compris sans lire)
+361:## 6 ter. Ne jamais avoir fait le tour
+365:### 1. Des combinaisons au lieu de contenu (zéro modèle en plus)
+370:### 2. Un monde qui s'agrandit
+374:### 3. Toujours un objectif devant (jamais « plus rien à faire »)
+384:### 4. Le contenu que les joueurs créent eux-mêmes
+390:### 5. Le rythme de mises à jour (réaliste pour l'équipe)
+395:## 7. Social
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && grep -n -i "9 bis\|deep dive\|Pearl\|epave\|échange" docs/GDD.md | head -25
+6:**Changements v3 (Direction v2, 09/10)** : secrets et plot twist (§6 bis), contenu sans fin (§6 ter), île ouverte (§3 bis), tirage Deep Dive (§9 bis), vraies espèces (§4.2), stades Juvenile/Adult/Elder/Titan, 30 s tendues (§1 ter), ton des textes, Config (§13).
+120:W   ~  EPAVE    ##########         ^^^^^^         .  ~   E
+386:- **Les échanges** (semaine 2) : une économie qui bouge chaque jour (« combien vaut une Lionfish Storm albinos ? »).
+441:## 9 bis. Deep Dive : le tirage (demande de Moaad, 09/10)
+443:> **Calendrier (décision de D, 09/10)** : Deep Dive sort en **semaine 2** (première mise à jour), réglé avec les données de la semaine 1. Au lancement : boutique minimale du §9 (3 passes + Tide Egg / Pick a Creature).
+446:> Ride the Tsunami a un système de tirage au sort, **Deep Dive**, qui est le moteur principal de collection rare et de revenu.
+448:> Les objets les plus rares (créatures et variantes **exclusives**) s'obtiennent **surtout en payant** : la monnaie premium, les **Pearls**, s'achète en Robux.
+452:### Monnaie : Pearls
+459:Joueur régulier gratuit : environ **20–30 Pearls par semaine**, donc environ 1 plongée gratuite par semaine. Les packs Robux ne donnent pas de bonus caché : le prix au Pearl baisse visiblement avec la taille du pack.
+462:- **1 plongée = 100 Pearls**, **10 plongées = 900 Pearls** (une gratuite).
+472:| Mythic | 0,1 % | **Variante exclusive Abyssal** (peau noire, bioluminescence rouge) : uniquement par Deep Dive |
+480:- **Deep Dive** (payante en Pearls) : le seul accès aux Legendary et Mythic par tirage.
+481:- **Les plongées gratuites font avancer la pity** des Deep Dive à 50 % : un joueur gratuit fidèle progresse aussi vers sa Legendary.
+482:- **Le pouvoir reste gagnable en jouant** : les Legendary normales existent aussi sur l'île (anneau extérieur, futures îles), en Juvenile. Deep Dive fait gagner du **temps** (Adult directement) et donne l'**exclusif** (Abyssal). Un gratuit peut tout faire ; un payeur va plus vite et se montre.
+483:- **Indicateurs pour régler** : si D7 chute, +1 Shallow Dive le week-end ou plus de Pearls par défi ; si la conversion est trop basse, plus de visibilité sur l'Abyssal (en jeu, sur les autres joueurs), pas de pression.
+486:- Les créatures **Abyssal** et toutes celles obtenues par Deep Dive sont **liées** : on ne peut ni les voler ni les échanger. Un joueur qui paie ne se fait pas prendre ce qu'il a payé, et ça empêche la revente contre de l'argent réel.
+488:- **Pays restreints** (`ArePaidRandomItemsRestricted`) : Deep Dive est caché et remplacé par la **Pearl Shop**, l'achat direct d'un objet précis du pool à prix fixe (Legendary 1 500 Pearls, Abyssal 8 000 Pearls).
+489:- **À partir de la semaine 2**, le **Tide Egg** du §9 est remplacé par Deep Dive. Pick a Creature devient une ligne de la Pearl Shop.
+493:- Écran Deep Dive : probabilités sur l'écran principal (pas cachées), compteurs de pity, solde de Pearls, boutons ×1 et ×10.
+561:**Dehors** : zones 2–5, autres mutations, Codex complet, Léviathan, Tide Rank, échanges (semaine 2), visites, quêtes, compagnons.
+583:	Shell = "GhostCrab", Starfish = "CushionStar", Pearl = "Lionfish", BlueCrab = "HawksbillTurtle",
+585:	AbyssCrystal = "LionsManeJelly", MoonPearl = "MantaRay", TideHeart = "WhaleShark",
+> build · space-bunny-free
+[0m→ [0mRead docs/GDD.md [90m[limit=60, offset=441][0m
+[0m→ [0mRead docs/GDD.md [90m[limit=22, offset=344][0m
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && grep -n "ExtremeTide\|mutationTide\|Reef" src/ServerScriptService/Services/WaveService.lua | head -20; echo "=== garantie existante ? ==="; grep -n "anyMutated\|au moins une" src/ServerScriptService/Services/*.lua | head
+75:		local e = Config.ExtremeTide
+76:		local center, radius = WaveService.Reef()
+248:-- Recif de la maree extreme : Map.Reef (Center + Radius) construit par C, sinon le repli de Config
+249:function WaveService.Reef()
+251:	local reef = map and map:FindFirstChild("Reef")
+257:	return Config.ExtremeTide.reef.center, Config.ExtremeTide.reef.radius
+=== garantie existante ? ===
+src/ServerScriptService/Services/IntroService.lua:4:-- 2. Au calme global suivant : maree Golden personnelle, avec des creatures personnelles dont au moins une mutee.
+src/ServerScriptService/Services/IntroService.lua:156:	-- promesse de l'intro : au moins une creature mutee dans cette maree
+src/ServerScriptService/Services/IntroService.lua:157:	local anyMutated = false
+src/ServerScriptService/Services/IntroService.lua:159:		anyMutated = anyMutated or entry.mutation ~= ""
+src/ServerScriptService/Services/IntroService.lua:162:	if not anyMutated and list[1] and odds[1] then
+src/ServerScriptService/Services/StealService.lua:93:	-- on laisse toujours au moins une creature au vole
+> build · space-bunny-free
+[0m→ [0mRead src/ServerScriptService/Services/WaveService.lua [90m[limit=28, offset=72][0m
+> build · space-bunny-free
+Vérifié : la garantie « au moins une mutée » existe pour la marée Golden personnelle (`IntroService:156-164`) mais **pas** pour le récif. Je tranche le §14 nº 2.
+[0m← [0mEdit docs/GDD_REEF.md
+Index: docs/GDD_REEF.md
+===================================================================
+--- docs/GDD_REEF.md
++++ docs/GDD_REEF.md
+@@ -443,9 +443,9 @@
+ 
+ | # | Sujet | Qui tranche | Quand |
+ |---|---|---|---|
+ | 1 | Récompense exacte du **Léviathan** (rang 3+) | D + Moaad | Phase 2 |
+-| 2 | Les 6 espèces **Rare / Epic / Legendary** : absentes de la nature en Phase 1 (choix par défaut), ou ajoutées à `Config.ExtremeTide.creatures` | D | **avant le test fermé** |
++| 2 | ~~Les 6 espèces **Rare / Epic / Legendary** : absentes ou ajoutées au récif ?~~ | **TRANCHÉ par E le 10/10** — voir ci-dessous | clos |
+ | 3 | Contenu du Deep Dive (`GDD.md` §9 bis) au-delà de ce que A a déjà écrit dans `Config.Shop` | D | Phase 2 |
+ | 4 | Rangs 6+ : courbe | D | Phase 2 |
+ | 5 | Prix Robux finaux | Moaad | Lancement |
+ 
+
+> build · space-bunny-free
+[0m← [0mEdit docs/GDD_REEF.md
+Index: docs/GDD_REEF.md
+===================================================================
+--- docs/GDD_REEF.md
++++ docs/GDD_REEF.md
+@@ -463,10 +463,36 @@
+ 
+ 4. **`SeaStar` vs `CushionStar` — l'id de l'étoile de mer.**
+    `Config.Creatures` s'appelle **`CushionStar`**, et c'est déjà l'id **validé par D le 09/10** (`TABLEAU.md`). Mais `CREATURES_ART.md` §3 et `SOURCING_C.md` §1 proposent encore **`SeaStar`** (y compris l'asset candidat `5088223335`). → **`CushionStar` gagne.** C range ses modèles dans `Assets.Creatures.CushionStar` et corrige ses deux documents ; s'il garde `SeaStar` en nom de fichier local, il lui faut un alias, sinon `Assets.Creatures` ne résoudra pas à l'exécution.
+ 
+-### Deux valeurs manquantes, signalées plutôt que comblées
++### §14 nº 2 — TRANCHÉ : les 6 espèces rares restent hors de la Phase 1, et le récif gagne une garantie
+ 
++**Décision E, 10/10.** Les 6 espèces `BlueRingedOctopus`, `LeopardRay`, `GiantPacificOctopus`, `LionsManeJelly`, `MantaRay`, `WhaleShark` **n'apparaissent pas dans la nature en Phase 1**. Elles reviennent en Phase 2, dans cet ordre.
++
++**Pourquoi, en trois arguments — le premier est arithmétique, pas goût :**
++
++1. **Un Whali Shark en semaine 1 casse l'économie.** Il vaut 1 500 /s juvénile. Le seuil du palier 5 de lagon est **100 000 /s** et le palier 4 est **5 000 /s** (`Config.LagoonTiers`). Un seul Whali Shark Titan dans un bassin — 12 000 /s — **saute le palier 4**. Le joueur gagne les deux tiers de sa courbe de richesse en une capture, et `Config.LagoonTiers` cesse de mesurer quoi que ce soit. La rareté ne se régle pas en Phase 1 : **la Phase 1 est le lieu où l'économie se cale.**
++2. **C n'a pas les modèles, et ce n'est pas le moment.** P1-20 fait 3 créatures. P1-42 (la vague rendue côté client) est P0 pour lundi. Six modèles de plus avant lundi coûtent exactement ce qui bloque le jeu.
++3. **Un Rare doit arriver préparé.** Quand une Manta Ray apparaît en Phase 2, le joueur doit déjà connaître le cycle des stades et avoir vu le récif. Sinon c'est un objet rare dans un jeu où la rareté ne veut rien dire encore.
++
++**En revanche, le récif ne doit pas sembler vide.** C'est le vrai sujet derrière la question, et il a une réponse qui ne coûte **aucun modèle** :
++
++> ⚠️ **Écart trouvé en vérifiant le code.** La décision de D du 09/10 dit « des créatures **rares** pendant un temps limité ». Or `Config.ExtremeTide.creatures = { HawksbillTurtle 70, Lionfish 30 }` : **les deux sont `Uncommon`.** Le secret du jeu, une fois par heure, ne donne donc rien de plus rare que l'anneau extérieur. Et `mutationTide = "Golden"` necorrige pas le tir : avec 6 créatures à 30 %, la probabilité qu'**aucune** ne soit mutée est de 0,7⁶ ≈ **12 %**. Douze pour cent d'heures déçues, une fois par heure.
++>
++> **A : la correction est la même que celle que tu as déjà écrite pour la marée Golden personnelle.** `IntroService` (lignes 156-164) force « au moins une créature mutée » quand le tirage n'en donne aucune. **Reprends cette garantie telle quelle pour le récif.** Une seule règle, pas de nouvelle entrée de Config, aucun modèle pour C. Le récif devient alors un rendez-vous qui paie vraiment : une **Golden** y est garantie, une fois par heure, pendant 25 s.
++
++**Ordre de retour en Phase 2** (pour ne pas rouvrir la question à chaque session) :
++
++| Vague | Espèces | Pourquoi dans cet ordre |
++|---|---|---|
++| 1re mise à jour | `BlueRingedOctopus`, `LionsManeJelly` | Ce sont les **créatures de nuit** de `GDD.md` §6 bis : elles se voient de loin par leur lueur, donc la décision « je vais là-bas » est visuelle, sans texte. Un seul preset (`Night`) à faire pour les deux. |
++| 2e | `LeopardRay`, `GiantPacificOctopus` | Le **secret complet de l'épave** (`TABLEAU.md`, semaine 2). Le contenu de l'épave est donc à écrire avec elles, pas avant. |
++| 3e | `MantaRay`, `WhaleShark` | Les Légendaires montables. Elles supposent que le joueur ait déjà vu les 8 autres, et une économie qui tienne. **C'est aussi la promesse du Deep Dive** (`GDD.md` §9 bis) : elles doivent arriver *avec*, pas avant. |
++
++**Conséquence à acter dans l'interface (B), semaine 1** : le Codex affiche 10 espèces, 3 accessibles. **Les 7 autres sont montrées en « ? », pas masquées.** C'est le crochet de rétention normal d'un jeu de collection, et c'est gratuit. Mais si D préfère ne rien annoncer, le Codex n'affiche que les 3 connues — c'est un choix de 10 lignes côté B, à confirmer, pas un blocage.
++
++
++
+ | Manque | Où | Pourquoi ce n'est pas tranché ici |
+ |---|---|---|
+ | **Preset de lumière `RainbowTide`** | `DA_MONDE.md` §4 donne `Normal`, `Golden`, `Night`, `Storm` — **pas `Rainbow`** | `Rainbow` est un ajout d'E (§3.1), C n'a jamais eu de valeurs. C est libre de proposer un écart à partir de `Normal`. **À DÉFINIR par C**, Phase 2, sans urgence. |
+ | **Récompense du Léviathan** | §10 | Cf. §14 nº 1. |
+
+> build · space-bunny-free
+[0m← [0mEdit docs/GDD_REEF.md
+Index: docs/GDD_REEF.md
+===================================================================
+--- docs/GDD_REEF.md
++++ docs/GDD_REEF.md
+@@ -489,8 +489,9 @@
+ | 3e | `MantaRay`, `WhaleShark` | Les Légendaires montables. Elles supposent que le joueur ait déjà vu les 8 autres, et une économie qui tienne. **C'est aussi la promesse du Deep Dive** (`GDD.md` §9 bis) : elles doivent arriver *avec*, pas avant. |
+ 
+ **Conséquence à acter dans l'interface (B), semaine 1** : le Codex affiche 10 espèces, 3 accessibles. **Les 7 autres sont montrées en « ? », pas masquées.** C'est le crochet de rétention normal d'un jeu de collection, et c'est gratuit. Mais si D préfère ne rien annoncer, le Codex n'affiche que les 3 connues — c'est un choix de 10 lignes côté B, à confirmer, pas un blocage.
+ 
++### Deux valeurs manquantes, signalées plutôt que comblées
+ 
+ 
+ | Manque | Où | Pourquoi ce n'est pas tranché ici |
+ |---|---|---|
+
+> build · space-bunny-free
+Maintenant la préparation de la semaine 2.
+[0m← [0mWrite docs/SEMAINE_2.md
+Created file successfully: docs/SEMAINE_2.md
+> build · space-bunny-free
+[0m✗ [0mEdit docs/SEMAINE_2.md failed
+[91m[1mError: [0mCould not find oldString in /Users/admin/Documents/claude code/tide-rush/docs/SEMAINE_2.md. It must match exactly, including whitespace and indentation.
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && python3 -c "
+import re
+p='docs/SEMAINE_2.md'
+t=open(p).read()
+for i,l in enumerate(t.split(chr(10)),1):
+    if re.search(r'[一-鿿]',l) or 'Species' in l: print(i,repr(l))
+"
+20 "- **Vérifier les règles de monétisation Roblox avant d'ouvrir la boutique.** Elles ont bougé pendant l'année. Un tirage payant avec Pearls + une variante « Mythic » exclusive peut être纤维 ou non selon le texte en vigueur. **À faire lire par D et Moaad en semaine 1, pas en semaine 2** — au pire, on découvre le problème au moment de publier."
+28 "- Les creatures tirées naissent **directement au stade `Adult`** pour les Legendary (Deep Dive fait gagner du temps, pas de l Species). C'est la règle qui justifie le prix face au gratuit."
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && python3 - <<'PY'
+p='docs/SEMAINE_2.md'
+t=open(p).read()
+t=t.replace("peut être纤维 ou non","peut être accepté ou non")
+t=t.replace("pas de l Species","pas de l'espèce rare")
+open(p,'w').write(t)
+print("ok")
+PY
+grep -n "accepté ou non\|l'espèce rare" docs/SEMAINE_2.md
+ok
+20:- **Vérifier les règles de monétisation Roblox avant d'ouvrir la boutique.** Elles ont bougé pendant l'année. Un tirage payant avec Pearls + une variante « Mythic » exclusive peut être accepté ou non selon le texte en vigueur. **À faire lire par D et Moaad en semaine 1, pas en semaine 2** — au pire, on découvre le problème au moment de publier.
+28:- Les creatures tirées naissent **directement au stade `Adult`** pour les Legendary (Deep Dive fait gagner du temps, pas de l'espèce rare). C'est la règle qui justifie le prix face au gratuit.
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && python3 -c "
+import re
+for p in ['docs/SEMAINE_2.md','docs/GDD_REEF.md']:
+    t=open(p).read()
+    bad=[(i,l[:70]) for i,l in enumerate(t.split(chr(10)),1) if re.search(r'[一-鿿]',l)]
+    print(p, 'lignes:', len(t.split(chr(10))), '| anomalies:', bad or 'aucune')
+"
+docs/SEMAINE_2.md lignes: 55 | anomalies: aucune
+docs/GDD_REEF.md lignes: 504 | anomalies: aucune
+> build · space-bunny-free
+[0m← [0mEdit docs/INBOX/E.md
+Index: docs/INBOX/E.md
+===================================================================
+--- docs/INBOX/E.md
++++ docs/INBOX/E.md
+@@ -1,8 +1,13 @@
+ # File de E — Concept & game design
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 14:12
++FAIT     : **§14 nº 2 TRANCHÉ** — les 6 espèces rares restent hors Phase 1 (`GDD_REEF.md`), un Whali Shark Titan à 12 000/s sauterait le palier 4 (seuil 5 000) et viderait `LagoonTiers` de son sens ; ordre de retour Phase 2 fixé (nuit → épave → Légendaires, avec le Deep Dive). **Semaine 2 posée : `docs/SEMAINE_2.md`.**
++VÉRIFIÉ  : **écart réel trouvé dans le code** — la décision de D du 09/10 promet des créatures « rares » au récif, or `Config.ExtremeTide.creatures` ne contient que 2 `Uncommon`, et 0,7⁶ ≈ 12 % des récifs n'ont aucune mutée. **[A]** la parade est déjà écrite par A dans `IntroService:156-164` (« au moins une mutée ») : la reprendre telle quelle pour le récif, 0 modèle, 0 Config. Rien testé en jeu.
++BESOIN   : **[D]** les règles de monétisation Roblox en vigueur (seul vrai risque de calendrier, semaine 1, pas semaine 2) ; **[D]** Codex semaine 1 : 7 espèces en « ? » ou 3 connues seulement — ça se voit sur les captures du test public ~26/10 ; **[C]** le Deep Dive remplace le `Tide Egg`, ne pas garder les deux.
++
+ ## 2026-10-10 13:56
+ FAIT     : GDD_REEF **prêt à intégrer : OUI** — mais fusionner le sommet `8964cc7` (476 l.), **pas** `f908348` (418 l.) : ce dernier contient 4 erreurs corrigées depuis (sac 2→10, paliers Codex, réserve, rebirth).
+ VÉRIFIÉ  : chaque chiffre Phase 1 revérifié contre `Config.lua` + `review/review_context.md` ; **0 `[À DÉFINIR]` bloquant** — les 4 restants (récompense Léviathan, courbe rangs 6+) portent sur le Tide Rank, entierement hors Phase 1. Rien testé en jeu.
+ BESOIN   : **D** — fusionner `claude/e-gdd-reef` vers l'intégration **avant lundi 12/10**, sinon le sync Rojo part sans le GDD. Un seul point à échéance : §14 nº 2 (espèces Rare/Epic/Legendary hors marée extrême), à confirmer avant le test fermé ~20/10 ; le reste est Phase 2.
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/GDD_REEF.md docs/SEMAINE_2.md docs/INBOX/E.md && git commit -q -F - <<'EOF'
+docs(E): tranche le 14 n2 (especes rares hors Phase 1) + prepare la semaine 2
+
+14 n2 : les 6 especes Rare/Epic/Legendary restent hors de la nature en
+Phase 1. Argument arithmetique, pas gout : un Whale Shark Titan vaut
+12 000/s et le seuil du palier 4 est 5 000/s (Config.LagoonTiers), donc
+une seule capture dans un bassin fait sauter les deux tiers de la courbe
+de richesse. La Phase 1 est le moment ou l'economie se cale, pas ou elle
+se dilue. Ordre de retour Phase 2 fixe pour ne pas rouvrir la question.
+
+Ecart trouve en verifiant le code : la decision de D du 09/10 promet des
+creatures "rares" au recif, mais Config.ExtremeTide.creatures ne contient
+que deux Uncommon, et 0,7^6 ~ 12% des recifs n'ont aucune creature
+mutee. La parade est deja ecrite par A dans IntroService (156-164) :
+reprendre la garantie "au moins une mutee". Zero modele, zero Config.
+
+docs/SEMAINE_2.md : Deep Dive sort, echanges entre joueurs glisse (aucune
+base technique, risque d'arnaque). Les 3 decisions bloquantes, dont les
+regles de monetisation Roblox, qui releve de D et Moaad en semaine 1.
+EOF
+git log --oneline -1 && git status --short
+951f3b2 docs(E): tranche le 14 n2 (especes rares hors Phase 1) + prepare la semaine 2
+ M tools/world/build_lagoon.luau
+ M tools/world/build_mutation_fx.luau
+ M tools/world/build_wave.luau
+?? docs/INBOX/logs/
+> build · space-bunny-free
+Commit `951f3b2`. Je n'ai touché que mes fichiers — les scripts `tools/world/` modifiés sont ceux de C, je n'y touche pas.
+
+```
+FAIT     : §14 nº 2 TRANCHÉ — les 6 espèces rares restent hors Phase 1 ; ordre de retour Phase 2 fixé. Semaine 2 posée dans docs/SEMAINE_2.md.
+VÉRIFIÉ  : écart réel trouvé dans le code — `Config.ExtremeTide.creatures` ne contient que 2 Uncommon, et 0,7⁶ ≈ 12 % des récifs n'ont aucune mutée. La parade est déjà écrite par A dans IntroService:156-164. Rien testé en jeu.
+BESOIN   : [D] règles de monétisation Roblox (semaine 1) ; [D] Codex : 7 espèces en « ? » ou 3 seulement ; [C] le Deep Dive remplace le Tide Egg.
+```
+
+**Sur le §14 nº 2 — tranché, et l'argument n'est pas du goût :**
+
+Un Whali Shark Titan vaut 1 500 × 8 = **12 000 /s**. Le seuil du palier 4 est **5 000 /s**, le palier 5 est **100 000 /s** (`Config.LagoonTiers`). Donc **une seule capture rare dans un bassin fait sauter les deux tiers de la courbe de richesse**. `LagoonTiers` cesserait de mesurer quoi que ce soit, et la sensation de progression — le pilier du jeu — disparaît avant même le premier test public. La Phase 1 est précisément l'endroit où l'économie se cale ; les rares reviennent en Phase 2, dans l'ordre nuit → épave → Légendaires, ces dernières **avec** le Deep Dive et pas avant, pour que le tirage ait une raison d'exister.
+
+**Mais la vraie découverte était ailleurs.** En vérifiant le code pour cette décision, j'ai trouvé que ta décision du 09/10 dit « des créatures **rares** pendant un temps limité », alors que `Config.ExtremeTide.creatures` ne contient que `HawksbillTurtle` et `Lionfish` — **les deux sont Uncommon**. Le secret du jeu, une fois par heure, ne donne donc rien de plus rare que l'anneau extérieur. Et `mutationTide = "Golden"` ne rattrape pas : à 30 % sur 6 créatures, **12 % des récifs n'ont aucune mutée**.
+
+La parade ne coûte rien, et elle existe déjà : A a écrit dans `IntroService:156-164` la garantie « au moins une créature mutée » pour la marée Golden personnelle. **Reprendre cette garantie telle quelle pour le récif** — une règle, pas de Config, pas de modèle pour C.
+
+**Sur la semaine 2, mon avis va contre l'envie :** les **échanges entre joueurs glissent**. C'est le seul morceau prévu qui n'a aucune base technique — pas de marché, pas de validation anti-triche, et un risque réel de revente contre de l'argent réel. Ça mérite sa propre mise à jour, pas une troisième brique à côté d'un Deep Dive.
+
+Et le risque qui peut tout arrêter n'est pas technique : ce sont les **règles de monétisation Roblox**, qui ne dépendent pas de nous et ont bougé pendant l'année. Si le Deep Dive + la variante Abyssal ne passent pas, il faut le savoir **en semaine 1**, pas au moment de publier.

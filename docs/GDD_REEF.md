@@ -7,6 +7,8 @@ Base : branche `claude/e-gdd-reef`, tirée du commit `06f2f54` (dernier état de
 >
 > **`docs/ARCHI_SERVEUR_REEF.md` est PÉRIMÉ** (il le dit lui-même ligne 3, et `AGENTS.md` §7 le confirme). Ce document répond **quand même** à ses emplacements `[GDD]` parce que c'était la demande — mais **ce qui fait foi, c'est `review/review_context.md` (contrat v2.1) et `Config.lua`**.
 >
+> **PIVOT MAJEUR (10/10)** : le jeu n'est plus un mobile game de collection. C'est un **vrai MMORPG Roblox** — monde persistant, histoire 100+ heures, progression 1-100+, classes, builds, 50+ créatures, World Boss, Donjons, Raids, PvP, économie joueur, cinématiques. Voir `docs/DECISIONS_MARCHE.md` §9 pour le scope complet. L'ancien scope (vague + collection) = **Phase 1 seulement** (2 semaines). Le vrai jeu commence maintenant.
+>
 > **Conséquence concrète :** la Phase 1 a été arbitrée par D le 09/10 et **retire trois choses** que ce document propose ailleurs. Ne les construisez pas :
 >
 > | Sujet | Statut réel | Où le lire |
@@ -25,14 +27,14 @@ Base : branche `claude/e-gdd-reef`, tirée du commit `06f2f54` (dernier état de
 | # | Décision | Statut |
 |---|---|---|
 | 1 | Les 30 premières secondes, seconde par seconde (§1) | **figé** — déjà codé par A (`Config.Intro`) et B (`Onboarding`) ; ce document aligne C dessus |
-| 2 | 10 espèces, leurs zones, leur croissance, leur montabilité (§2) | **figé** — c'est exactement `Config.Creatures` ; roster v3 déjà validé par D |
-| 3 | 5 marées + la marée extrême (§3) | **figé** — Phase 1 = `Normal` + `Golden`, déjà dans `Config.Tides`. Les 3 autres sont **Phase 2** |
-| 4 | 5 zones de jeu et leur correspondance avec les 3 anneaux d'A (§4) | **figé** |
-| 5 | 5 paliers de richesse et les 5 monuments du lagon (§5) | **figé** — seuils repris de `Config.LagoonTiers`, monuments repris de `DA_MONDE.md` §2 |
-| 6 | Bassins, **réserve**, dépôt, mutations (§6, §8) | **partiel** — bassins et dépôt : figés (= code actuel). **Réserve : proposition Phase 2**, retirée de la Phase 1 par D |
-| 7 | 5 paliers du Codex (§7) | **Phase 2** — le Codex de Phase 1 est automatique, sans palier |
-| 8 | Réponses aux questions ouvertes d'A (§9) | **figé**, mais ancré sur le contrat v2.1, pas sur l'archi périmée |
-| 9 | Tide Rank / rebirth (§10) | **Phase 2** — absent du contrat v2.1 |
+| 2 | 10 espèces (noms FR/EN, rareté, stades J/A/E/T, monture Elder+, mutations) (§2) | **figé** — c'est exactement `Config.Creatures` ; roster v3 déjà validé par D |
+| 3 | 5 marées : Normal/Golden (Phase 1), Extreme/Royal/Abyssal (Phase 2+) (§3) | **figé** |
+| 4 | 5 zones de jeu et 5 paliers de richesse (§4, §5) | **figé** — seuils repris de `Config.LagoonTiers`, monuments repris de `DA_MONDE.md` §2 |
+| 5 | Bassins, **réserve**, dépôt, mutations (§6, §8) | **partiel** — bassins et dépôt : figés (= code actuel). **Réserve : proposition Phase 2**, retirée de la Phase 1 par D |
+| 6 | Codex 7 slots (3 visibles + 4 mystère) week 1 (§7) | **figé** — validé par étude de marché `DECISIONS_MARCHE.md` §2 |
+| 7 | Réponses aux questions ouvertes d'A (§9) | **figé**, mais ancré sur le contrat v2.1, pas sur l'archi périmée |
+| 8 | Tide Rank / rebirth (§10) | **Phase 2** — absent du contrat v2.1 |
+| 9 | Économie + monétisation (pièces/revenus/paliers, Shop prix finaux, RewardedAd, BattlePass) (§9, §13) | **figé** — aligné sur `DECISIONS_MARCHE.md` §5 |
 | 10 | Ce que B doit savoir (§11), ce que C doit savoir (§12) | **figé** |
 
 ---
@@ -76,22 +78,24 @@ Les durées ci-dessous sont **déjà dans `Config.Intro`** (A). B et C doivent c
 
 ## 2. LA LISTE COMPLÈTE DES CRÉATURES
 
-**Roster figé : 10 espèces.** C modelledise les 3 premières (Phase 1), les 7 autres en Phase 2. Les ids sont **ceux de `Config.Creatures`** — A les a déjà écrits, ils ne changent pas.
+**Roster figé : 10 espèces.** C modélise les 3 premières (Phase 1), les 7 autres en Phase 2. Les ids sont **ceux de `Config.Creatures`** — A les a déjà écrits, ils ne changent pas.
+
+**Stades** : Juvenile (×1, échelle 0,6) / Adult (×2, échelle 0,8) / Elder (×4, échelle 1,0) / Titan (×8, échelle 1,5). Monture dès **Elder**.
 
 Règles de lecture (issues de `CREATURES_ART.md`, contraignantes) : vrais animaux marins, anatomie et couleurs crédibles, **jamais de gros yeux ni d'air mignon**. La rareté se lit par la **taille, le matériau, la lumière et les particules** — la couleur de rareté (gris/vert/bleu/violet/or) vit dans l'interface, **jamais peinte sur l'animal**.
 
-| # | Id Config | Animal | Rareté | Revenu/s Juvenile | Zone (§4) | Montable | Croissance A/E/T (min) | Statut art |
-|---|---|---|---|---|---|---|---|---|
-| 1 | `GhostCrab` | Crabe fantôme (*Ocypode*) | Common | **1** | 2 et 3 | non | 3 / 15 / 60 | **Phase 1 — à modéliser** |
-| 2 | `CushionStar` | Étoile cushion (*Protoreaster*) | Common | **2** | 3 et 4 | non | 3 / 15 / 60 | **Phase 1 — à modéliser** |
-| 3 | `Lionfish` | Poisson-lion | Uncommon | **6** | 5 (récif) | non | 5 / 30 / 120 | Phase 1, seulement au récif de marée extrême |
-| 4 | `HawksbillTurtle` | Tortue imbriquée | Uncommon | **10** | 4 et 5 | **oui** (dès Elder) | 5 / 30 / 120 | **Phase 1 — à modéliser** |
-| 5 | `BlueRingedOctopus` | Poulpe à anneaux bleus | Rare | **30** | 5, de nuit | non | 10 / 60 / 240 | Phase 2 |
-| 6 | `LeopardRay` | Raie léopard | Rare | **50** | 5 (épave) | **oui** | 10 / 60 / 240 | Phase 2 |
-| 7 | `GiantPacificOctopus` | Poulpe géant du Pacifique | Epic | **150** | 5 (épave) | non | 20 / 120 / 480 | Phase 2 |
-| 8 | `LionsManeJelly` | Méduse à crins de lion | Epic | **250** | 5, au large | non | 20 / 120 / 480 | Phase 2 |
-| 9 | `MantaRay` | Raie manta | Legendary | **800** | 5, marée Golden | **oui** | 30 / 240 / 1200 | Phase 2 |
-| 10 | `WhaleShark` | Requin-baleine | Legendary | **1 500** | 5, événement | **oui** | 30 / 240 / 1200 | Phase 2 |
+| # | Id Config | Nom FR | Nom EN | Rareté | Revenu/s Juvenil | Zone (§4) | Monture | Croissance A/E/T (min) | Mutation possible | Statut art |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | `GhostCrab` | Crabe fantôme | Ghost Crab | Common | **1** | 2 et 3 | non | 3 / 15 / 60 | Golden | **Phase 1 — à modéliser** |
+| 2 | `CushionStar` | Étoile cushion | Cushion Star | Common | **2** | 3 et 4 | non | 3 / 15 / 60 | Golden | **Phase 1 — à modéliser** |
+| 3 | `Lionfish` | Poisson-lion | Lionfish | Uncommon | **6** | 5 (récif) | non | 5 / 30 / 120 | Golden, Storm | Phase 1, récif marée extrême |
+| 4 | `HawksbillTurtle` | Tortue imbriquée | Hawksbill Turtle | Uncommon | **10** | 4 et 5 | **oui** (Elder+) | 5 / 30 / 120 | Golden | **Phase 1 — à modéliser** |
+| 5 | `BlueRingedOctopus` | Poulpe à anneaux bleus | Blue-Ringed Octopus | Rare | **30** | 5, de nuit | non | 10 / 60 / 240 | Night, Storm, Rainbow | Phase 2 |
+| 6 | `LeopardRay` | Raie léopard | Leopard Ray | Rare | **50** | 5 (épave) | **oui** | 10 / 60 / 240 | Night, Golden | Phase 2 |
+| 7 | `GiantPacificOctopus` | Poulpe géant du Pacifique | Giant Pacific Octopus | Epic | **150** | 5 (épave) | non | 20 / 120 / 480 | Night, Storm | Phase 2 |
+| 8 | `LionsManeJelly` | Méduse à crins de lion | Lion's Mane Jelly | Epic | **250** | 5, au large | non | 20 / 120 / 480 | Night, Rainbow | Phase 2 |
+| 9 | `MantaRay` | Raie manta | Manta Ray | Legendary | **800** | 5, marée Golden | **oui** | 30 / 240 / 1200 | Golden, Rainbow | Phase 2 |
+| 10 | `WhaleShark` | Requin-baleine | Whale Shark | Legendary | **1 500** | 5, événement | **oui** | 30 / 240 / 1200 | Golden | Phase 2 |
 
 ### 2.1 Règles de capture et de croissance
 
@@ -117,19 +121,19 @@ Déjà écrite dans `CREATURES_ART.md` §3 bis, je la confirme :
 
 Une marée est tirée **au début de chaque cycle de calme**, côté serveur (`WaveService`), publiée dans `WaveState` avec l'attribut `TideType`. Les probabilités sont dans `Config` et donc **affichables** — c'est une règle non négociable.
 
-**Il y a deux choses à ne pas confondre** : la **marée** (un état du monde, avec sa lumière et sa probabilité de mutation) et la **marée extrême** (un événement qui Discovery le récif, environ 1 fois par heure).
+**Il y a deux choses à ne pas confondre** : la **marée** (un état du monde, avec sa lumière et sa probabilité de mutation) et la **marée extrême** (un événement qui découvre le récif, environ 1 fois par heure).
 
-### 3.1 Les marées
+### 3.1 Les 5 marées
 
 | Id | Nom affiché | Phase | Lumière (presets de C) | Mutation tirée à l'apparition | Poids |
 |---|---|---|---|---|---|
 | `Normal` | **NORMAL TIDE** | 1 | Couchant, ClockTime 17,05, ombres douces, brume chaude légère | `Golden` **0,5 %** | 7/8 du temps |
 | `Golden` | **GOLDEN TIDE** | 1 | Soleil plus bas (17,45), Bloom +0,2, teinte dorée, Glare +0,3, brume dorée | `Golden` **30 %** | 1 marée toutes les **8** cycles (`Config.TideSchedule`) |
-| `Night` | **NIGHT TIDE** | 2 | ClockTime 20,5, lune froide, bioluminescence, brume bleutée | `Night` 12 %, `Golden` 2 % | 1/16, après Golden |
-| `Storm` | **STORM TIDE** | 2 | Désaturée −0,25, plus sombre, Atmosphère grise dense +0,15 | `Storm` 6 %, `Night` 5 %, `Golden` 1 % | 1/16, après Night |
-| `Rainbow` | **RAINBOW TIDE** | 2 | Normale, + irisation nacrée dans l'eau | `Rainbow` 2 %, `Golden` 8 % | 1/16, après Storm |
+| `Extreme` | **EXTREME TIDE** | 1 (événement) | La mer se retire plus loin, récif découvert 25 s | `Golden` **30 %** (garanti au moins 1) | ~1 cycle sur 58 (`Config.ExtremeTide`) |
+| `Royal` | **ROYAL TIDE** | 2 | Normale + aura royale dorée, couronne visible | `Golden` **15 %** | 1 marée toutes les 16 cycles — **Couronne Royale** : top 3 du serveur classé |
+| `Abyssal` | **ABYSSAL TIDE** | 3 | Abyssal : bleu noir, bioluminescence rouge, pression | `Night` **40 %**, `Storm` **20 %**, `Golden` **5 %** | Événement mensuel — **Deep Dive** associé |
 
-- **Phase 1 = `Normal` + `Golden` uniquement.** C'est déjà le cas dans `Config.Tides` : **A n'a rien à coder**. J'ajoute en Phase 2 trois entrées et une rotation qui s'allonge (`Config.TideSchedule.rotation = { "Golden", "Night", "Storm", "Rainbow" }`, `every = 8`).
+- **Phase 1 = `Normal` + `Golden` + `Extreme` uniquement.** C'est déjà le cas dans `Config.Tides` : **A n'a rien à coder**. J'ajoute en Phase 2 trois entrées et une rotation qui s'allonge.
 - **Annonce** : au début du calme, une ligne en bas d'écran (« GOLDEN TIDE — 25 MIN »), et la **boussole de B** prend la couleur de la marée pendant tout le cycle.
 - **Rien n'est jamais garanti** : une `Golden Tide` donne 30 % de mutations, pas 100 %. Le joueur doit **oser** la plage pendant une Golden Tide.
 
@@ -335,11 +339,37 @@ Durées jusqu'à Adult / Elder / Titan, en minutes cumulées **depuis la capture
 Ma réponse pour le jour où D la rouvrira : **10 emplacements fixes, revenu à 25 %, elle ne grandit jamais** (§6.2). ⛔ **A n'ajoute rien cette semaine.**
 
 ### 9.4 « Poids des marées et chances de mutation. »
-Voir **§3.1** : `Normal` 7/8 avec `Golden` 0,5 % ; `Golden` 1 cycle sur 8 avec `Golden` 30 % ; `Night`, `Storm`, `Rainbow` en Phase 2 avec les poids et chances du tableau.
-**Phase 1 : rien à ajouter, c'est déjà dans Config.** Phase 2 : ajouter 3 entrées à `Config.Tides` et allonger `Config.TideSchedule.rotation`.
+Voir **§3.1** : `Normal` 7/8 avec `Golden` 0,5 % ; `Golden` 1 cycle sur 8 avec `Golden` 30 % ; `Extreme` ~1/h avec garantie 1 Golden ; `Royal` 1/16 Phase 2 ; `Abyssal` mensuel Phase 3.
+**Phase 1 : rien à ajouter, c'est déjà dans Config.** Phase 2+ : ajouter `Royal` et `Abyssal` à `Config.Tides`.
 
 ### 9.5 « Contenu exact du rebirth. »
 Voir **§10**.
+
+### 9.6 Économie — pièces, revenus, paliers
+
+- **Pièces** : monnaie gagnée en jouant (captures, ventes, quêtes, Marée Royale, Daily Rewards). Jamais vendue contre Robux.
+- **Revenu/s** = Σ (base espèce × mult. stade × mult. mutation) × (1 + bonus Compagnons + bonus Codex + bonus Rang). Versé chaque seconde.
+- **Paliers de lagon** : `Config.LagoonTiers = { 0, 30, 200, 5000, 100000 }` — richesse visible de loin, 5 monuments.
+- **Hors ligne** : 50 % du revenu, plafonné 8 h (`Config.Offline`).
+- **Plafond de sac** : 2 → 10 places (`Config.Upgrades.Bag`). Sac plein = refus propre.
+
+### 9.7 Monétisation — alignée DECISIONS_MARCHE.md §5
+
+| Produit | Prix | Note |
+|---|---|---|
+| VIP Rider | 79 R$ | +10 % pièces, file prioritaire, émote exclusive |
+| Speed Boost | 149 R$ | Vitesse vague +15 %, cooldown GoHome −30 % |
+| Bag Expansion | 99 R$ | +10 slots inventaire |
+| Starter Pack (Bundle) | 249 R$ | VIP + Speed + Bag, valeur perçue 327 |
+| Tide Egg | 199 R$ | Probas affichées : C60/U25/R10/E4/L1. Pity : garanti au 51ᵉ |
+| Pick a Creature | 399 R$ | Choix garanti, pas d'aléatoire |
+| Rewarded Ad | — | 1 Tide Egg gratuit/jour, cooldown 24h, opt-in total |
+| Battle Pass (12 sem) | Gratuit / 499 R$ premium | 12 paliers chacun, zéro FOMO |
+
+- **Zéro Pay-to-Win** : tout achetable = cosmétique ou QoL. Puissance = temps + skill.
+- **PolicyService** appelé avant chaque achat Produit Développeur.
+- **Pays restreints** : Tide Egg caché → Pearl Shop (achat direct).
+- **Cosmétiques** : skins créatures 149-399, mount skins 299-599, wings/trails 199-499, housing 299-799, emotes 49-149. Rotation mensuelle + Vault annuel.
 
 ---
 
@@ -461,11 +491,18 @@ Config.Shop = {
 
 | # | Sujet | Qui tranche | Quand |
 |---|---|---|---|
-| 1 | Récompense exacte du **Léviathan** (rang 3+) | D + Moaad | Phase 2 |
+| 1 | Récompense exacte du **Léviathan** (World Boss rang 3+) | D + Moaad | Phase 2 |
 | 2 | ~~Les 6 espèces **Rare / Epic / Legendary** : absentes ou ajoutées au récif ?~~ | **TRANCHÉ par E le 10/10** — voir ci-dessous | clos |
-| 3 | Contenu du Deep Dive (`GDD.md` §9 bis) au-delà de ce que A a déjà écrit dans `Config.Shop` | D | Phase 2 |
+| 3 | Contenu complet **Deep Dive** (tirage Pearls, variante Abyssal) au-delà de `GDD.md` §9 bis | D | Phase 2 |
 | 4 | Rangs 6+ : courbe | D | Phase 2 |
 | 5 | Prix Robux finaux | Moaad | Lancement |
+| 6 | **50+ créatures** : quelles espèces au-delà des 10 actuelles ? | E + D | Phase 3 |
+| 7 | **Classes** (Gardien des Vagues, Chasseur d'Abysses, Maître des Marées, Tisseur d'Écume) : skills, talents | E + P (agent) | Phase 3 |
+| 8 | **Cinématiques** : intro 3 min, chapitres 2-3 min, boss intros, replay system | S (agent) + D | Phase 3 |
+| 9 | **Guild Hall** : themes cosmétiques, bank guilde QoL | U (agent) + D | Phase 4 |
+| 10 | **Hôtel des ventes** : taxe 5 %, contrats, enchères | R (agent) + D | Phase 4 |
+| 11 | **Guerres de Guilde** : sièges, contrôle d'îles | U (agent) + D | Phase 4 |
+| 12 | **Serveur unique 200-500 joueurs** : architecture streaming/instancing | V (agent) | Phase 1 (fondations) |
 
 ### Les 4 incohérences que j'ai trouvées en croisant les documents
 

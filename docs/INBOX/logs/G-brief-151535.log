@@ -1,0 +1,13 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/G.md
+Wrote file successfully: docs/INBOX/G.md
+> build · nemotron-3-ultra-free
+Done. The monetization implementation is complete:
+
+**Updated files:**
+- `src/ReplicatedStorage/Shared/Config.lua` — Config.Shop with final prices, `PickCreature.species` list, `RewardedAd`, `priceVariants` for A/B testing
+- `src/ServerScriptService/Services/ShopService.lua` — Handles bundle (StarterPack grants 3 passes), `TideEgg.chances` by rarity, `RewardedAd` claim (1/day, 24h cooldown), `PolicyService` gating, idempotent `ProcessReceipt`
+- `src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua` — Displays new passes, bundle, odds by rarity, Rewarded Ad card, Pick a Creature fallback
+
+**INBOX/G.md** written with the 3-line report. Awaiting Moaad's 6 Creator Hub IDs to activate purchases.

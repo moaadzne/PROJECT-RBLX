@@ -1,0 +1,36 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/F.md [90m[limit=12][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/F.md
+Index: docs/INBOX/F.md
+===================================================================
+--- docs/INBOX/F.md
++++ docs/INBOX/F.md
+@@ -1,5 +1,10 @@
+ 
++## 2026-10-10 15:30
++FAIT     : Plan cross-platform lundi — 5 min mobile + 5 min PC à CHAQUE sync Rojo. Checklist 10 points : (1) mouvement joystick/WASD fluide, (2) caméra touch drag+pinch / clic droit+molette, (3) vol mobile→PC et PC→mobile identiques, (4) boutique achat mobile+PC identiques, (5) HUD lisible mobile bas / PC latéral, (6) trading/vol mêmes protections, (7) Marée Royale classement global, (8) Daily Rewards synchro, (9) 0 erreur console les deux, (10) 30+ FPS mobile / 60 FPS PC. Rollback si fail sur l'un des deux.
++VÉRIFIÉ  : Merge ada8300 validé (Store.lua/StartSteal/ChoosePick, Wave.lua P0 corrigé). Rien testé en jeu.
++BESOIN   : [D] Lundi = double session Studio (device emulator mobile + PC). [M] build_creatures.luau + build_sounds.luau prêts avant sync.
++
+ ## 2026-10-10 15:15
+ FAIT     : Reprise du plan F selon DECISIONS_MARCHE.md + BRIEF_NOUVEAUX_AGENTS.md. Les 8 nouveaux agents (G-N) livrent le visuel/UX/monétisation ; F valide que le niveau visé est atteint. Mes 10 vérifs lundi sont enrichies : visuel "Fortnite/Sea of Thieves", onboarding 0-31.5s sans texte, Codex 3+4 mystère, Shop <100 Robux, Rewarded Ads, police RobotoCondensed + Font Awesome. La liste finale de validation est dans docs/VERIFS_LUNDI.md.
+ VÉRIFIÉ  : docs/DECISIONS_MARCHE.md lu, 132 lignes de briefs G-N lues. Rien testé en jeu.
+ BESOIN   : [D] Merger l'intégration (ada8300) dans la branche courante avant lundi, sinon Rojo part sans Wave.lua corrigé, sans Store.lua corrigé, sans visuel niveau visé. [G-N] Livrer dans leurs zones respectives ; F valide à la réception.
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/F.md && git commit -q -m "INBOX(F): plan cross-platform obligatoire lundi
+
+5 min mobile + 5 min PC, checklist 10 points. Rollback si fail.
+
+Documentation uniquement." && git push -q origin claude/e-gdd-reef && git log --oneline -1
+b6d2433 INBOX(F): plan cross-platform obligatoire lundi
+> build · nemotron-3-ultra-free
+Poussé (`b6d2433`). Écrit dans `docs/INBOX/F.md` — D lit ce fichier.
+
+```
+FAIT      : Plan cross-platform lundi — 5 min mobile + 5 min PC à CHAQUE sync. Checklist 10 points écrite dans INBOX/F.md.
+VÉRIFIÉ  : Merge ada8300 déjà validé (code corrigé). Rien testé en jeu.
+BESOIN   : [D] Double session Studio (émulateur mobile + PC) lundi. [M] build_creatures.luau + build_sounds.luau prêts avant sync.
+```

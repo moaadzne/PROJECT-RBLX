@@ -1,0 +1,160 @@
+[0m
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && ls docs/DIRECTIVE_NIVEAU.md && wc -l docs/DIRECTIVE_NIVEAU.md
+docs/DIRECTIVE_NIVEAU.md
+      89 docs/DIRECTIVE_NIVEAU.md
+> build · space-bunny-free
+[0m→ [0mRead docs/DIRECTIVE_NIVEAU.md 
+> build · space-bunny-free
+Directive lue en entier. Ma tâche devient étroite : la première heure, en français simple, GDD intact.
+[0m← [0mWrite docs/PREMIERE_HEURE.md
+Created file successfully: docs/PREMIERE_HEURE.md
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && python3 - <<'PY'
+p='docs/PREMIERE_HEURE.md'
+t=open(p).read()
+fix=[("Purchases principales","dépenses principales"),
+     ("première vraieOy，身体 de ملك","première vraie sensation d'être quelqu'un"),
+     ("Un vieil animalданные Titans assez costaud pour surfing la vague","Un animal titan est assez costaud pour surfer la vague"),
+     ("uneIe cible atteinte","un seuil atteint"),
+     ("Il peut se faire prendre aussi. Un lagon，新建, un animal sur la tête","Il peut se faire prendre aussi. Un lagon volé, un animal sur la tête"),
+     ("soit il le rate. C'est un événement qu'on peut manquer completely","soit il le rate. C'est un événement qu'on peut manquer complètement"),
+     ("elle ne doit pas.velocity de;twork tant que","elle ne doit pasBecquer de;twork tant que")]
+for a,b in fix: t=t.replace(a,b)
+open(p,'w').write(t)
+PY
+python3 -c "
+import re
+t=open('docs/PREMIERE_HEURE.md').read()
+print('lignes:',len(t.split(chr(10))))
+bad=[(i,l[:75]) for i,l in enumerate(t.split(chr(10)),1) if re.search(r'[一-鿿]|Purchases|Oy，|данные|新建|velocity|completely|；|；',l)]
+print('suspects:',bad or 'aucun')
+"
+lignes: 102
+suspects: aucun
+> build · space-bunny-free
+[0m← [0mEdit docs/PREMIERE_HEURE.md
+Index: docs/PREMIERE_HEURE.md
+===================================================================
+--- docs/PREMIERE_HEURE.md
++++ docs/PREMIERE_HEURE.md
+@@ -93,9 +93,9 @@
+ ## Ce que ce document n'est pas
+ 
+ Ce n'est pas une liste de tâches, et ce n'est pas une spécification. **Le jeu est déjà décidé ailleurs** — ce document ne dit que l'ordre dans lequel le joueur le découvre.
+ 
+-Il n'y a **aucune mécanique Phase 2** ici. Rien à ajouter, rien à préparer. Si une ligne de ce document ne se voit pas à l'écran lundi, c'est qu'elle est fausse, ou pas encore construite — dans les deux cas elle ne doit pasBecquer de;twork tant que le reste n'a pas été regardé.
++Il n'y a **aucune mécanique Phase 2** ici. Rien à ajouter, rien à préparer. Si une ligne de ce document ne se voit pas à l'écran lundi, c'est qu'elle est fausse, ou pas encore construite — dans les deux cas elle n'appelle aucun travail tant que le reste n'a pas été regardé.
+ 
+ ---
+ 
+ *Écrit par E le 10/10/2026, à partir du GDD figé. Les durées citées sont des fourchettes de jeu, pas des garanties : elles se règlent en test.*
+
+> build · space-bunny-free
+Je vérifie un point avant de commiter : le GDD dit la croissance à la capture, le contrat dit au dépôt.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && grep -n "born = \|born=" src/ServerScriptService/Services/*.lua | head; echo "=== contexte ==="; grep -n -B3 "born = os.time\|born = now" src/ServerScriptService/Services/Stats.lua src/ServerScriptService/Services/CreatureService.lua 2>/dev/null | head -20
+src/ServerScriptService/Services/CreatureFactory.lua:129:--          slot = number?, uid = string?, born = number?, owner = number?, royal = boolean?, noSpin = boolean? }
+src/ServerScriptService/Services/CreatureService.lua:262:	return { uid = tostring(d.creatureSeq), id = entry.species, mut = entry.mutation, born = now, royal = entry.royal }
+src/ServerScriptService/Services/DataService.lua:188:	local born = num(raw.born, nil, 0, now) -- jamais dans le futur (horloges de serveurs differentes)
+src/ServerScriptService/Services/DataService.lua:192:	return { uid = raw.uid, id = id, mut = mut, born = math.floor(born), royal = raw.royal == true or nil }
+src/ServerScriptService/Services/DataService.lua:464:		born = creature.born,
+src/ServerScriptService/Services/PlotService.lua:209:				born = creature.born,
+src/ServerScriptService/Services/SelfTest.lua:31:	return { uid = uid or "1", id = id, mut = mut or "", born = born or T0 }
+src/ServerScriptService/Services/SelfTest.lua:195:			{ uid = "4", id = "PebbleCrab", mut = "", born = future },
+src/ServerScriptService/Services/SelfTest.lua:197:			{ uid = "4", id = "SandStar", mut = "", born = 1 },
+src/ServerScriptService/Services/SelfTest.lua:198:			{ uid = "9", id = "Ghost", mut = "", born = 1 },
+=== contexte ===
+src/ServerScriptService/Services/CreatureService.lua-259-
+src/ServerScriptService/Services/CreatureService.lua-260-local function newCreature(d, entry, now)
+src/ServerScriptService/Services/CreatureService.lua-261-	d.creatureSeq += 1
+src/ServerScriptService/Services/CreatureService.lua:262:	return { uid = tostring(d.creatureSeq), id = entry.species, mut = entry.mutation, born = now, royal = entry.royal }
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && grep -n "newCreature(" src/ServerScriptService/Services/CreatureService.lua
+260:local function newCreature(d, entry, now)
+283:		table.insert(newcomers, newCreature(d, entry, now))
+> build · space-bunny-free
+[0m→ [0mRead src/ServerScriptService/Services/CreatureService.lua [90m[limit=18, offset=272][0m
+> build · space-bunny-free
+Vérifié : `born` est créé au **dépôt** (`CreatureService:278-283`), pas à la capture. J'aligne mon document sur le code réel.
+[0m← [0mEdit docs/PREMIERE_HEURE.md
+Index: docs/PREMIERE_HEURE.md
+===================================================================
+--- docs/PREMIERE_HEURE.md
++++ docs/PREMIERE_HEURE.md
+@@ -47,9 +47,9 @@
+ 
+ Deux choses lui arrivent vite :
+ 
+ - **Son sac est petit au début.** Deux emplacements. Il capture deux animaux, il va dans son lagon, ça se dépose tout seul dans un bassin vide, il revient. C'est un aller-retour, et c'est le rythme voulu. Agrandir le sac et l'arrivée en sontdépenses principales.
+-- **Son lagon a cinq bassins.** Ils se remplissent d'animaux qu'on voit **grandir dans l'eau** devant lui. Un crabe capturé à la première minute devient adulte en trois minutes, vieux en quinze. Le joueur ne fait rien pour ça : il regarde juste ses bassins se remplir et vieillir. C'est le premier « whaou » du lagon.
++- **Son lagon a cinq bassins.** Ils se remplissent d'animaux qu'on voit **grandir dans l'eau** devant lui. Un crabe déposé à la première minute devient adulte en trois minutes, vieux en quinze. Le joueur ne fait rien pour ça : il regarde juste ses bassins se remplir et vieillir. C'est le premier « whaou » du lagon.
+ 
+ ---
+ 
+ ## De la minute 15 à la minute 30 : il commence à être riche
+
+> build · space-bunny-free
+[0m← [0mEdit docs/PREMIERE_HEURE.md
+Index: docs/PREMIERE_HEURE.md
+===================================================================
+--- docs/PREMIERE_HEURE.md
++++ docs/PREMIERE_HEURE.md
+@@ -53,9 +53,9 @@
+ ---
+ 
+ ## De la minute 15 à la minute 30 : il commence à être riche
+ 
+-Vers la quinzaine de minutes, ses animaux les plus courants sont vieux. Vers la **trentième minute**, une tortue qu'il a capturée très tôt devient **vieille** — et c'est le moment où **on peut monter dessus**.
++Vers la quinzaine de minutes, ses animaux les plus courants sont vieux. Vers la **trentième minute**, une tortue qu'il a déposée très tôt devient **vieille** — et c'est le moment où **on peut monter dessus**.
+ 
+ **Monter sur une tortue.** Il grimpe sur son dos, elle nage, et il va plus vite que ses jambes. Il découvre qu'il peut **emmener un animal avec lui** : c'est sa première vraie sensation d'être quelqu'un.
+ 
+ **Une marée dorée toutes les huit minutes environ**, à peu près à chaque fois que le calendrier revient sur lui. À chaque marée speciale, il y a une **Couronne royale** : les trois meilleurs du serveur sur ce cycle sont classés, et le premier gagne des pièces et une couronne visible au-dessus de la tête.
+
+> build · space-bunny-free
+[0m← [0mEdit docs/INBOX/E.md
+Index: docs/INBOX/E.md
+===================================================================
+--- docs/INBOX/E.md
++++ docs/INBOX/E.md
+@@ -1,8 +1,13 @@
+ # File de E — Concept & game design
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 15:38
++FAIT     : **`docs/PREMIERE_HEURE.md`** — la première heure en français simple, minute par minute, sans Phase 2 et sans nom de service. GDD non retouché. `SEMAINE_2.md` et `SECRET_EPAVE.md` restent écrits mais **sont garés** : rien ne s'ouvre avant que la Phase 1 soit jouable.
++VÉRIFIÉ  : chaque affirmation recalée sur le code avant d'écrire (35 s de calme / 7 s d'alerte, sac de 2, 5 bassins, 1/2/10 pièces par seconde, vieux à 15 min pour un commun et 30 pour une tortue, torches au palier 30/s, marée dorée toutes les 8 min, Couronne royale à chaque marée spéciale, récif 25 s). Rien testé en jeu.
++BESOIN   : **[D] un écart à trancher** — le GDD figé dit que l'âge d'une créature compte **dès la capture**, mais `CreatureService.lua:278-283` crée la créature au **dépôt**. Le code et le contrat v2.1 disent dépôt ; c'est le GDD qui dit capture. Conséquence réelle : **le temps passé à courir avec l'animal dans le sac ne compte pas** — le sac n'est pas un risque, c'est juste une limite de place. J'ai écrit le document sur le dépôt (le code). Si tu veux l'inverse, c'est une ligne à changer et ça redonne son sens à « le risque du sac ».
++
+ ## 2026-10-10 15:04
+ FAIT     : **`SEMAINE_2.md` réécrit pour Moaad** — semaine par semaine, ce que le joueur voit et ce qui change dans son expérience. Plus aucun nom de service, plus aucun tableau technique. Le détail équipe est resté dans `SECRET_EPAVE.md`.
+ VÉRIFIÉ  : les faits n'ont pas bougé au passage — plongée qui remplace la boutique, gratuit quotidien, probabilités affichées, garantie anti-malchance, ce qui est acheté ne peut être volé, épave pendant la marée horaire avec raie + poulpe, gravure sans récompense, échanges repoussés. Rien testé en jeu.
+ BESOIN   : **[D]** rien de neuf — tes 2 questions sont déjà portées à Moaad. Le doc est prêt à lui être montré tel quel ; dis-moi s'il veut la coupe finale (quatre parties : lancement / semaine 2 / direction semaine 3 / questions ouvertes).
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/PREMIERE_HEURE.md docs/INBOX/E.md && git commit -q -F - <<'EOF'
+docs(E): la premiere heure en francais simple
+
+Ce que vit un joueur de sa premiere seconde a sa premiere heure :
+les 30 premieres secondes sans interface, la maree doree personnelle a
+moins d'une minute, le remplissage du lagon, le montage sur la tortue a
+la demi-heure, la Couronne royale toutes les 8 minutes, le lagon qui
+s'embellit, et le recif qu'on peut manquer.
+
+Aucune mecanique Phase 2, aucun nom de service. Regale chaque affirmation
+sur le code avant d'ecrire, pas sur une estimation.
+
+Ecart signale a D : le GDD fige date l'age d'une creature a la capture,
+CreatureService.lua:278-283 la date au depot. Le document suit le code.
+EOF
+git log --oneline -1 && git status --short docs/
+5c21b22 docs(E): la premiere heure en francais simple
+ M docs/INBOX/C.md
+?? docs/INBOX/logs/
+> build · space-bunny-free
+C'est écrit dans la boîte de D — commit `5c21b22`. Je ne réponds plus ici.
+
+**`docs/PREMIERE_HEURE.md`** — la première heure, en français simple, minute par minute : les 30 secondes sans interface, la marée dorée personnelle avant la première minute, le lagon qui se remplit tout seul, le montage sur la tortue vers la demi-heure, la Couronne royale toutes les 8 minutes, le lagon qui s'embellit, le récif qu'on peut manquer. GDD non retouché, aucune Phase 2, aucun nom de service.
+
+J'ai recalé chaque affirmation sur le code avant d'écrire plutôt que de recopier le GDD — 35 s de calme, sac de 2, 5 bassins, 1/2/10 pièces par seconde, vieux à 15 min, torches au seuil de 30/s. Une phrase s'est écroulée au passage, d'ailleurs : le GDD date l'âge d'une créature à la **capture**, le code le date au **dépôt**. J'ai écrit sur le dépôt et signalé l'écart à D, parce que ça change ce que vit le joueur — dans le code, le temps passé à courir avec l'animal dans le sac ne compte pas, et le sac perd son seul intérêt.

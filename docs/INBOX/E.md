@@ -1,4 +1,9 @@
 
+## 2026-10-10 21:05
+FAIT     : GDD_REEF.md complet §1-14 aligné MMORPG — 10 espèces (FR/EN, rareté, J/A/E/T, monture Elder+, mutations), 5 marées (Normal/Golden/Extreme/Royal/Abyssal), 5 zones/tiers, bassins/réserve/Codex/mutations Phase 2, économie §9.6, monétisation §9.7 (Shop prix finaux, RewardedAd, BattlePass). PREMIERE_HEURE.md, SEMAINE_2.md, SECRET_EPAVE.md alignés sur D (Codex 7 slots, gravure exacte, Config.Shop prix). AUDIT_TOP10_v2.md rédigé + validation DIRECTION_V2.md.
+VÉRIFIÉ  : GDD_REEF complet, les 3 doc alignés, AUDIT_TOP10_v2 (Phase 1 ≈ 6,4/10, 8,5/10 après Phase 5), DIRECTION_V2 validée (RobotoCondensed approuvé, Font Awesome + fallback). Rien testé en jeu.
+BESOIN   : **[D]** valider AUDIT_TOP10_v2 et la validation DIRECTION_V2 avant de diffuser aux agents G→V.
+
 ## 2026-10-10 20:10
 FAIT     : Alignement monétisation finalisée validé — rôle E = skins lore-friendly (Abyssal, Corail, Aurore, Éveil Léviathan) pour que le cosmétique porte l'histoire. GDD scope MMORPG déjà prévoit : cosmetics = valeur perçue via lore (Story O + Cinematics S), Battle Pass paliers cosmétiques, drops boss/raid cosmétiques uniques, zéro P2W.
 VÉRIFIÉ  : Tous les systèmes listés (Tide Egg probas/pity, Battle Pass 12 sem, Rewarded Ads, Vault, PolicyService, Hotel ventes 5%, trading, A/B test) sont compatibles avec le GDD pivot 12 sem. Aucune puissance vendue. Rien testé en jeu.

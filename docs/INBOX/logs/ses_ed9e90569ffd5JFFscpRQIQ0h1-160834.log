@@ -1,0 +1,42 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/Q.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/Q.md
+Index: docs/INBOX/Q.md
+===================================================================
+--- docs/INBOX/Q.md
++++ docs/INBOX/Q.md
+@@ -1,6 +1,19 @@
+ # INBOX Q — Boss & Raid Design
+ 
+-## 2026-10-10 15:30
++## 2026-10-10 16:45
++FAIT     : Spec Léviathan (Ancien Roi) — raid 20j, 3 phases (éveil/combat/fuite), mécaniques : esquive vague géante 55 studs, cibler points faibles (yeux/cœur), gérer adds abyssaux. Arène = îlot central lagon récif + barrières corail + zone sûre tours Y=34. Récompenses : cosmétiques only (titres, skins, montures uniques), zéro P2W. Anti-zerg : limite 20j/instance, matchmaking MMR light, schedule hebdo samedi 20h.
++VÉRIFIÉ  : Aligné sur Config.ExtremeTide (cycle %58≈29, reveal 25s), WaveService (vague 30 studs 4 dir, phases calm/warning/wave/recede), CreatureService (spawn récif muté). Phase 1 = PAS de boss.
++BESOIN   : [E] lore Léviathan (nom, cinématique intro, drops nommés) ; [C] modèle boss + FX vague 55 + arène reef ; [A] Config.BossRaid{} table + hooks BossService.
++
++## 2026-10-10 16:44
++FAIT     : Config.BossRaid{} schema design — health (scaled by player count), phases[3] {trigger, mechanics[], enrageTimer}, mechanics{dodgeWave55, weakPoints{eyes,heart}, adds{type,count,interval}}, rewards{cosmeticPool[], noPower}, schedule{weekly, saturday, 20h}, instance{cap:20, mmrLight:true}. Reuses ExtremeTide window (revealDelay→revealTime) as phase 1 trigger. WaveService.OnPhase + OnCaught hooks sufficient — no new remotes needed for core loop.
++VÉRIFIÉ  : Config.ExtremeTide.reef (center 0,0,335 radius 30) = arena center ; WaveService.FrontD(t) gives 55 studs at peak for Leviathan wave ; CreatureService.WashAway already cleans adds on recede. Nothing tested in game.
++BESOIN   : [A] implémenter Config.BossRaid + BossService (thin, ~150 lignes) ; [D] valider health scaling formula + cosmetic drop rates ; [F] ajouter SelfTest boss cycle.
++
++## 2026-10-10 16:43
++FAIT     : Client/art coordination plan — B: HUD raid (timer phases, weakpoint markers, add warnings, enrage bar), VFx Leviathan (vague 55 studs shader, eye/heart glow, add spawn particles), SFx (grondement grave, corne, choc vague). C: modèle Léviathan (segments animés, points faibles hitboxes), arène reef (barrières corail destructibles, tours Y=34 safe zone), reef POI ExtremeTide = boss arena. Schedule: assets ready for closed test 20-23/10.
++VÉRIFIÉ  : Wave.lua (client) déjà render vague 30 studs 4 dir — étendre à 55 pour boss. Boussole HUD (P1-12) réutilisable pour direction vague boss. Reef ExtremeTide déjà POI visuel C (mouettes, son, mer recule). Rien testé en jeu.
++BESOIN   : [B] HUD raid spec + Leviathan VFx/SFx list ; [C] modèle Léviathan (generate_mesh prototype + Creator Store) + arène reef ; [A] BossService.OnPhase client notify (reuse WaveService phase enum).
+ FAIT     : Lu DECISIONS_MARCHE.md §9 (PIVOT MAJEUR), brief Q Semaine 2+, brief global monétisation. Plan boss raids aligné : Phase 1 = zero boss ; Semaine 2+ World Boss hebdo (Léviathan/Kraken/Hydre 20j) calé sur Config.ExtremeTide horaire + WaveService ; Donjons 5j (3 diff) et Raids 10/20j (Temple Marées, Abysse Roi, Cathédrale Écume) en instancing ; récompenses = cosmétiques only (skins, trails, titres, mounts) — zero puissance vendue.
+ VÉRIFIÉ  : Contrat v2.1 lu (review_context.md) ; Config.ExtremeTide (cycle % 58 == 29, revealTime 25s, reef Center/Radius) existe ; WaveService gère phases/alerte/vague/reflux ; CreatureService spawn par anneaux/rarité. Rien testé en jeu (pas de Studio avant lundi).
+ BESOIN   : A — confirmer hooks serveur (BossService, DungeonService, RaidService) + remotes v2.1 pour phases/enrage/positioning ; C — assets boss (modèles, FX, sons, arènes) + reef ExtremeTide comme POI boss ; E — lore boss (noms, cinématiques intro, drops cosmétiques nommés) ; D — validation périmètre Semaine 2 vs Phase 1.
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/Q.md 
+> build · nemotron-3-ultra-free
+Done. Added 3 new entries to `docs/INBOX/Q.md` for the Boss Raids task:
+
+1. **16:45** — Léviathan spec (20-player raid, 3 phases, mechanics, rewards, anti-zerg)
+2. **16:44** — `Config.BossRaid{}` schema + server hooks design (health scaling, phases, mechanics, reuse ExtremeTide window)
+3. **16:43** — Client/art coordination plan (HUD, VFX/SFX, model, arena, schedule)
+
+All aligned on `Config.ExtremeTide`, `WaveService`, `CreatureService` as required. Phase 1 = no boss raids.

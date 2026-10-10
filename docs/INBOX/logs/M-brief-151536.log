@@ -1,0 +1,14 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/M.md
+Wrote file successfully: docs/INBOX/M.md
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md 
+> build · nemotron-3-ultra-free
+Fait. `docs/INBOX/M.md` mis à jour avec :
+
+- **20 points** copier-coller prêts pour Studio lundi (sauvegarde → git pull → rojo → vérifications contrat v2.1 → Wave.lua P0 → Store.lua → Config.Shop prix 79/149/99/249/199/399 → Theme.lua RobotoCondensed + IconResolver → Codex 3+4 → QuestService/DailyReward → CreatureRenderer 10 modèles → Onboarding 31.5s → SelfTest → Playtest 5 min 0 erreur → Avatar R15 min=max → Lighting Future → _DecorLib → sons waveBoom/ambientBeach → Cmd+S Save to Roblox)
+- **Rollback plan** 5 scénarios (liste Rojo anormale, SelfTest FAIL, vague cassée, boutique/codex/monture, Rojo connect)
+- **Entrée 3 lignes** à la fin (FAIT / VÉRIFIÉ / BESOIN) avec la question à D sur la branche d'intégration (`claude/e-gdd-reef` vs `claude/epic-pasteur-q323d7` du TABLEAU.md)

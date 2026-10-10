@@ -1,0 +1,59 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md [90m[limit=50, offset=90][0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md [90m[limit=20, offset=140][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+Index: /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
++++ /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+@@ -2,8 +2,26 @@
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
+ ## 2026-10-10 15:45
++FAIT     : P1-14 pousse (`8d0ec39`). Font Awesome 6 Free Solid (Creator Store, Asset 12187624912, SIL OFL) integre dans Glyph.lua : charge via InsertService, 19 cles mappees, resolution C image > Font Awesome > dessin > rien. Theme.Icon et Theme.SetIconColor gerent les TextLabel FA. Merge e-gdd-reef fait. RobotoCondensed deja en place.
++VÉRIFIÉ  : lecture seule, rien testé en jeu. Les 19 cles UI (alert, arrow, bolt, clock, close, coin, crown, dot, down, info, lock, moon, net, revenge, ride, shield, shop, spark, unlock, wave) ont toutes un codepoint FA.
++BESOIN   : [H] — confirme que l'asset FA 12187624912 est le bon (Free Solid) ; [D] — capture : le blocage StudioMCP persiste (session D cablee, pas la mienne).
++
++## 2026-10-10 15:45
++FAIT     : Lecture DECISIONS_MARCHE.md §7 (cross-plateforme). Plan B pour Interface touch-first :
++- Touch targets : Theme.Button taille min 48×48 (Design px = 58,'échelle 0.85 => 49 px reel) ; Theme.Radius 8 garde coins 6-10 ; Pressable scale 1.03/0.95 valide tap.
++- Pas de hover-only : Theme.Pressable gere MouseEnter/MouseLeave + Touch ; boutons n'ont pas d'action hover-only.
++- Joystick : deja natif Roblox (StarterGui:SetCoreGuiEnabled Backpack/PlayerList off, joystick reste).
++- HUD responsive : Theme.ScaledRoot + UIScale unique ; Theme.List vertical sur mobile (bas ecran), horizontal sur PC (lateral). Branche par UserInputService.TouchEnabled dans Hud.Start().
++- Police : RobotoCondensed >= 12pt — Theme.TextSize.Body = 18 design px = 15.3 reel a 0.85, ok.
++- Icones : Theme.Icon 32 design px = 27 reel ; Glyph.FATextLabel scale auto.
++- Zéro texte "Appuyez sur F" : Glyph + Theme.Caps pour icones universelles ; Onboarding.lua utilise deja fleche visuelle sans texte clavier.
++- Config.CrossPlatform ajoute : TouchTargetMin, detection auto.
++VÉRIFIÉ  : Theme.lua et Hud.lua relus ; rien testé en jeu.
++BESOIN   : [D] — valider que Hud.Start() branche mobile/PC par TouchEnabled ; [L] — Onboarding fleche unique vs texte plateforme (L livre le texte, B l'affiche) ; [H] — Font Awesome asset ID confirme.
++
++## 2026-10-10 15:25
+ FAIT     : P1-14 pousse (`8d0ec39`). Font Awesome 6 Free Solid (Creator Store, Asset 12187624912, SIL OFL) integre dans Glyph.lua : charge via InsertService, 19 cles mappees, resolution C image > Font Awesome > dessin > rien. Theme.Icon et Theme.SetIconColor gerent les TextLabel FA. Merge e-gdd-reef fait. RobotoConfense deja en place.
+ VÉRIFIÉ  : lecture seule, rien testé en jeu. Les 19 cles UI (alert, arrow, bolt, clock, close, coin, crown, dot, down, info, lock, moon, net, revenge, ride, shield, shop, spark, unlock, wave) ont toutes un codepoint FA.
+ BESOIN   : [H] — confirme que l'asset FA 12187624912 est le bon (Free Solid) ; [D] — capture : le blocage StudioMCP persiste (session D cablee, pas la mienne).
+ 
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git add docs/INBOX/B.md && git commit -q -m "B : plan cross-plateforme touch-first (DECISIONS_MARCHE.md §7)
+
+Co-authored-by: B (Interface & feel)" && git push origin claude/friendly-volta-qj504y 2>&1 | tail -3
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   d28d2ae..5719a7d  claude/friendly-volta-qj504y -> claude/friendly-volta-qj504y
+> build · nemotron-3-ultra-free
+Poussé (`5719a7d`). Mon plan cross-plateforme dans `docs/INBOX/B.md` :
+
+**FAIT** — Plan touch-first pour B (Interface) basé sur §7 :
+- **Touch targets** : `Theme.Button` 58 design px (≥ 44/48 réels), coins 6–10, scale 1.03/0.95
+- **Pas de hover-only** : `Theme.Pressable` gère souris + touch ensemble
+- **Joystick** : natif Roblox (déjà le cas)
+- **HUD responsive** : `Theme.ScaledRoot` + `UIScale` unique, `Theme.List` vertical mobile / horizontal PC, branche par `UserInputService.TouchEnabled` dans `Hud.Start()`
+- **Police** : RobotoCondensed 18 design px = 15.3 réels (≥ 12pt OK)
+- **Icônes** : 32 design px = 27 réels, `Glyph.FATextLabel` scale auto
+- **Zéro texte "Appuyez sur F"** : icônes universelles via Glyph, Onboarding = flèche visuelle sans texte clavier
+- **Config.CrossPlatform** : `TouchTargetMin`, détection auto
+
+**BESOIN** : [D] valider `Hud.Start()` branche mobile/PC ; [L] Onboarding flèche unique vs texte plateforme ; [H] Font Awesome asset ID confirmé.

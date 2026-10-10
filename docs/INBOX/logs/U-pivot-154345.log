@@ -1,0 +1,29 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/U.md
+Wrote file successfully: docs/INBOX/U.md
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/U.md 
+> build · nemotron-3-ultra-free
+Done. Updated `/Users/admin/Documents/claude code/tide-rush/docs/INBOX/U.md` with the MMORPG-aligned plan following the 3-line protocol.
+
+**Summary aligned with §9 PIVOT MAJEUR:**
+
+| Component | Scope |
+|---|---|
+| **GuildService** | Core guild management (create, invite/kick, promote/demote, permissions) |
+| **GuildBaseService** | Modular bases: walls, turrets, farms, mines, Guild Hall (Phase 4) |
+| **WarService** | Sieges, îlot control, resources, cooldowns (Phase 4 — Guerres de Guilde) |
+| **ChatService** | Channels: guild, zone, whisper, trade + MessagingService cross-server |
+| **VoiceChatService** | Roblox native — proximity + guild channels |
+| **CalendarService** | Guild events, raids, bosses, PvP, reminders, seasons |
+| **PermissionSystem** | Granular ranks: GM, Officier, Recruteur, Banquier, Architecte, Membre, Recrue |
+| **GuildBank** | Logs, taxes (5% per §9), permissions |
+| **GuildIslands** | Instanced guild islands (Phase 4) |
+
+**Phase 1 (Fondation, 2 sem):** GuildService + Chat + Voice foundations only  
+**Phase 4 (PvP & Économie, 2 sem):** Bases, Guerres, Calendrier complet, Guild Hall, Îles guilde
+
+**Dependencies identified:** D (scope confirmation), A (remotes v2.1), P (Guild XP/Levels/Perks), R (taxes 5%, trading, AH), T (Guild Islands), V (streaming/instancing/netcode), S (cinematic triggers), O (guild quests/lore)

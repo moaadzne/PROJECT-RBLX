@@ -1,0 +1,30 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md [90m[offset=150][0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/N.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/N.md
+Index: docs/INBOX/N.md
+===================================================================
+--- docs/INBOX/N.md
++++ docs/INBOX/N.md
+@@ -19,5 +19,10 @@
+ 
+ ## 2026-10-10 17:30
+ FAIT     : Brief D reçu et validé — SUNK_POOLS **validé** (-3.5 studs, vrais lagons creusés) ; coveRadius **110** (était 70), 8 lagons rayon 30 ; build_lagoon.luau prêt en DRY_RUN ; Lighting Future + Atmosphere (Density=0.3, Haze=2, Glare=1), Bloom 0.5, CC (Sat=1.1, Contrast=0.1) **confirmés** ; Eau #1a7aa6 Transp=0.4 **confirmée** ; 5 zones palettes distinctes ; Hero shot caméra (-112,14,78)→(-60,3,-110) FOV 60 **confirmée** ; Répartition : C construit île (build_island_terrain → build_lagoon), N applique Lighting/Atmosphere/Water/ColorCorrection ; Polices : RobotoCondensed (B, UI), FontAwesome6 (H, icônes) ; Moaad : Lighting.Technology=Future **manuel** (pas par script).
+ VÉRIFIÉ  : Décisions D figées, plus d'ambiguïté sur coveRadius/lagon radius/SUNK_POOLS. Scripts C prêts (build_island_terrain lit Config.Island.coveRadius=110, build_lagoon SUNK_POOLS=false→true). Palettes 5 zones à définir dans build_hero_shot / build_lagoon (Crique turquoise, Dunes sable/or, Récif corail, Falaise gris/vert, Épave bleu nuit).
+-BESOIN   : C — exécuter build_island_terrain.luau (DRY_RUN→false) avec coveRadius=110, puis build_lagoon.luau (SUNK_POOLS=true, PLOTS=1..8) ; importer _DecorLib assets. N — appliquer Lighting/Atmosphere/Bloom/CC/Eau exacts specs post-build ; hero shot caméra + capture. A — figer Config.Island (center, size=600, coveRadius=110, seaMargin=30, spawnYMin/Max, towerRadius=16, rings) et Config.Wave (height=30, thickness=40, speed=46, reach=330). B/H — intégrer RobotoCondensed + FontAwesome6. Moaad — Lighting.Technology=Future avant lundi.
+\ No newline at end of file
++BESOIN   : C — exécuter build_island_terrain.luau (DRY_RUN→false) avec coveRadius=110, puis build_lagoon.luau (SUNK_POOLS=true, PLOTS=1..8) ; importer _DecorLib assets. N — appliquer Lighting/Atmosphere/Bloom/CC/Eau exacts specs post-build ; hero shot caméra + capture. A — figer Config.Island (center, size=600, coveRadius=110, seaMargin=30, spawnYMin/Max, towerRadius=16, rings) et Config.Wave (height=30, thickness=40, speed=46, reach=330). B/H — intégrer RobotoCondensed + FontAwesome6. Moaad — Lighting.Technology=Future avant lundi.
++
++## 2026-10-10 18:15
++FAIT     : **PIVOT MAJEUR LU** — docs/DECISIONS_MARCHE.md §9. CE N'EST PLUS UN JEU MOBILE. C'EST UN VRAI MMORPG ROBLOX. Vision : "Premier vrai MMORPG Roblox qui ne fait pas semblant" — Monde persistant 100h+ histoire, 50+ créatures évolution ramifiée mutations héréditaires, World Boss 20j hebdo, Donjons 5j, Raids 10/20j, PvP zones/arènes/guerres guilde, économie joueur (hôtel ventes, trading), Cinématiques 3 min intro + chapitres 2-3 min + boss intros + replay, Serveur unique 200-500j streaming/instancing, ZERO Pay-to-Win, Lancement Semaine 12 (3 mois), 21 agents. Ancien scope (vague+collection) = Phase 1 Fondation (2 sem) SEULEMENT. 8 nouveaux agents O-V (Story, Progression, Boss/Raid, Economy/PvP, Cinematics, World, Guild, Tech).
++VÉRIFIÉ  : §9 lu intégralement. 5 piliers : 1) Histoire/Lore (O), 2) Progression/Builds 1-100+ classes/talents/gear/50+ créatures (P), 3) Boss/Raid World Boss/Donjons/Raids (Q), 4) PvP/Économie hôtel ventes/trading/guerres guilde (R), 5) Cinématiques moteur/Intro 3min/Replay (S). Architecture : Serveur unique 200-500j, StreamingEnabled, ProfileService/GlobalDataStore/OrderedDataStore/MessagingService. Planning 6 phases 12 sem. Revenus : 25% GamePass QoL, 35% Cosmétiques directs, 20% Battle Pass, 10% Services éco, 10% Événements — TOUT cosmétique/QoL.
++BESOIN   : **NOUVEAU PLAN N (MMORPG VISUAL POLISH) À DÉFINIR AVEC D** — Scope étendu : Lighting/Atmosphere monde persistant (cycles jour/nuit, météo, biomes), Streaming/LOD distance pour 600x600→archipel complet, 50+ créatures + évolutions + montures (ShadowMap, LOD 3 niveaux, materials PBR), World Boss/Raid VFX (phases, enrage, screen-space effects), Cinématiques support (S) : camera scripting, post-process, color grading, letterbox, PvP/Guild zones visual identity, Housing/Guild halls customization visuals, Performance V (Technical) : 60 FPS 500j serveur unique, streaming chunks, netcode interpolation. Phase 1 (2 sem) : livrer hero shot + foundation Lighting/Atmosphere/Water/LOD base. Alignement immédiat avec C (World/T), S (Cinematics), Q (Boss VFX), V (Perf).
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/N.md 
+> build · nemotron-3-ultra-free
+Fait. Cinquième entrée ajoutée dans `docs/INBOX/N.md` (18:15) : **PIVOT MAJEUR ACTÉ**. L'ancien scope (hero shot, lagon, vague) = **Phase 1 Fondation seulement (2 semaines)**. Nouveau rôle N = **MMORPG Visual Polish** étendu : Lighting/Atmosphere monde persistant (jour/nuit, météo, biomes), Streaming/LOD archipel complet, 50+ créatures/évolutions/montures PBR, World Boss/Raid VFX, Cinématiques support (S), PvP/Guild zones identity, Housing visuals, Performance 500j serveur unique. Phase 1 immédiate : livrer hero shot + foundation. Alignement requis avec C/T (World), S (Cinematics), Q (Boss VFX), V (Perf). Nouveau plan à définir avec D.

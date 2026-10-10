@@ -1,0 +1,30 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/T.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/T.md
+Index: docs/INBOX/T.md
+===================================================================
+--- docs/INBOX/T.md
++++ docs/INBOX/T.md
+@@ -1,4 +1,9 @@
++## 2026-10-10 19:00
++FAIT     : Alignment monétisation — Housing zones/Guild Hall plots = cosmetic-only (zéro paywall, zéro puissance) ; Exploration rewards = skins/trails/themes ; Battle Pass cosmetics tied to world events (Extreme Tide, World Boss) ; Free player accès complet monde
++VÉRIFIÉ  : Plan Phase 1 déjà compatible (POI accessibles à tous, marée extrême gratuite, streaming gratuit)
++BESOIN   : C implémente housing/guild plots zones visuelles ; K shader skins créatures ; G BattlePassService events hooks ; O lore skins (Abyssal, Corail, Aurore)
++
+ ## 2026-10-10 18:30
+ FAIT     : INBOX/T.md finalisé — Phase 1 specs prêtes (POI, marée extrême, streaming, météo base), branche claude/e-gdd-reef
+ VÉRIFIÉ  : rien testé en jeu
+ BESOIN   : Sync Rojo lundi 12/10 21h en Studio ; repos jusqu'à lundi
+
+> build · nemotron-3-ultra-free
+Alignement monétisation ajouté dans INBOX/T.md. Points clés pour T :
+
+- **Housing/Guild Hall plots** = zones visuelles cosmetic-only (zéro paywall, zéro puissance)
+- **Exploration rewards** = skins, trails, housing themes (pas de power)
+- **Battle Pass cosmetics** liés aux events monde (Marée Extrême, World Boss)
+- **Accès monde complet** pour joueur gratuit — rien ne bloque l'exploration
+- **Cosmetic anchors** : mount skins visibles en surf, base decorations, housing themes
+
+Prochaine étape : sync Rojo lundi 21h en Studio. Repos jusqu'alors.

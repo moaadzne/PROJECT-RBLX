@@ -1,0 +1,16 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/G.md
+Wrote file successfully: docs/INBOX/G.md
+> build · nemotron-3-ultra-free
+Done. **INBOX/G.md** updated with the radical pivot plan in 3-line format.
+
+**Key shift**: G is no longer "Shop for launch boutique" — now **Monetization & Economy Lead** for the full MMORPG:
+- Revenue model: 25% GamePass QoL/cosmetics, 35% direct cosmetics, 20% Battle Pass, 10% economy services (AH tax 5%, guild fees, insurance), 10% event cosmetics
+- **Zero Pay-to-Win** — power = time + skill only
+- Systems: unified cross-platform shop, auction house, taxed trading, Battle Pass (12-week seasons), anti-RMT, cosmetic pipelines for classes/mounts/housing/bosses/arenas
+- Phase 1 (2 weeks) keeps the TideEgg/PickCreature as placeholder; real MMORPG monetization builds from Phase 2 onward
+
+Awaiting D's confirmation on scope overlap with agent R (Economy & PvP) and Moaad's sign-off on revenue split.

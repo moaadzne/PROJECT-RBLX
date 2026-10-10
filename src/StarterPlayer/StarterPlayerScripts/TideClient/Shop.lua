@@ -1,26 +1,29 @@
--- Shop : boutique de lancement (GDD v2 §9, contrat v2.1). Style console. S'ouvre seulement sur demande
--- (jamais de pop-up), aucun compte a rebours, prix fixes, « Everything here is optional ».
---   - Tide Egg (aleatoire) : probabilites de Config.Shop.TideEgg affichees AVANT l'achat ;
+-- Shop : boutique de lancement (GDD v2 §9, contrat v2.1 + DECISIONS_MARCHE.md). Style console.
+-- S'ouvre seulement sur demande (jamais de pop-up), aucun compte a rebours, prix fixes, "Everything here is optional".
+--   - Tide Egg (aleatoire) : probabilites de Config.Shop.TideEgg.chances affichees AVANT l'achat ;
 --     remplace par Pick a Creature (achat direct, RF ChoosePick avant l'achat) si state.shop.randomAllowed est faux.
---   - Gamepasses de Config.Shop.Passes ; « OWNED » d'apres state.passes.
---   - id = 0 dans Config : produit pas encore cree, carte affichee mais achat coupe (« SOON »).
+--   - Gamepasses de Config.Shop.Passes : VIPRider, SpeedBoost, BagExpand, StarterPack ; "OWNED" d'apres state.passes.
+--   - Rewarded Video Ads : 1 TideEgg gratuit/jour (RF ClaimRewardedAd, cooldown 24h).
+--   - id = 0 dans Config : produit pas encore cree, carte affichee mais achat coupe ("SOON").
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shop = {}
 
-local PANEL_SIZE = Vector2.new(800, 400)
+local PANEL_SIZE = Vector2.new(860, 440)
 local OPEN_TIME = 0.2
 local BLUR_SIZE = 12
-local CARD_H = 300
-local PASS_W = 150
-local RANDOM_W = 260
+local CARD_H = 320
+local PASS_W = 160
+local RANDOM_W = 300
 
--- Textes des gamepasses (6 mots au plus par ligne) ; prix et ids viennent de Config.Shop.Passes
+-- Textes des gamepasses (max ~6 mots par ligne) ; prix et ids viennent de Config.Shop.Passes
 local PASS_INFO = {
-	{ key = "FastGrowth", name = "Fast Growth", icon = "ride", lines = { "Creatures grow", "2x faster" } },
-	{ key = "BigNet", name = "Big Net", icon = "net", lines = { "Catch radius", "x1.5" } },
-	{ key = "VIPRider", name = "VIP Rider", icon = "crown", lines = { "+10% coins", "+10% ride speed", "VIP title" } },
+	{ key = "VIPRider",   name = "VIP Rider",   icon = "crown", lines = { "+10% Coins", "+10% Ride Speed", "Priority Queue", "Exclusive Emote" } },
+	{ key = "SpeedBoost", name = "Speed Boost", icon = "bolt",  lines = { "+15% Wave Speed", "-30% GoHome CD" } },
+	{ key = "BagExpand",  name = "Bag Expand",  icon = "bag",   lines = { "+10 Inventory", "Slots" } },
+	{ key = "StarterPack",name = "Starter Pack",icon = "star",  lines = { "VIP + Speed + Bag", "Best Value" } },
 }
 
 local Util, Theme, Components, Store, Hud, Notifications, Config, Sfx
@@ -32,7 +35,7 @@ local blur: BlurEffect? = nil
 local isOpen = false
 local openToken = 0
 local cardsFrame: Frame
-local builtKey: string? = nil -- la grille suit la politique du joueur et ses gamepasses
+local builtKey: string? = nil
 
 local function shopConfig(): any
 	local s = (Config :: any).Shop
@@ -47,7 +50,7 @@ local function soon()
 	Notifications.Push({ text = "COMING SOON", color = Theme.Colors.Lagoon, icon = "info", key = "shop" })
 end
 
----------------------------------------------------------------- Cartes
+-------------------------------------------------------------- Cartes
 local function passCard(info, order: number)
 	local cfg = (shopConfig().Passes or {})[info.key]
 	local id = cfg and tonumber(cfg.id) or 0
@@ -77,13 +80,15 @@ local function passCard(info, order: number)
 	end)
 end
 
--- Grande carte : Tide Egg (probabilites completes) ou Pick a Creature (choix de l'espece)
-local function randomCard(randomAllowed: boolean)
+-- Grande carte : Tide Egg (probabilites completes) ou Pick a Creature (choix de l'espece) ou Rewarded Ad
+local function randomCard(randomAllowed: boolean, rewardedAdReady: boolean)
 	local cfg = shopConfig()
+	local isRewarded = rewardedAdReady and not randomAllowed -- si pas randomAllowed, on montre Rewarded Ad en priorité
+	local cardName = if isRewarded then "RewardedAd" elseif randomAllowed then "TideEgg" else "PickCreature"
 	local card = Components.Glass({
-		Name = if randomAllowed then "TideEgg" else "PickCreature",
+		Name = cardName,
 		Size = UDim2.fromOffset(RANDOM_W, CARD_H),
-		Accent = Theme.Colors.Gold,
+		Accent = if isRewarded then Theme.Colors.Emerald else Theme.Colors.Gold,
 		Strong = true,
 		LayoutOrder = 0,
 	})
@@ -92,9 +97,9 @@ local function randomCard(randomAllowed: boolean)
 		Name = "Title",
 		Position = UDim2.fromOffset(0, 12),
 		Size = UDim2.new(1, 0, 0, 28),
-		Text = if randomAllowed then "Tide Egg" else "Pick a Creature",
+		Text = if isRewarded then "Free Tide Egg" elseif randomAllowed then "Tide Egg" else "Pick a Creature",
 		TextSize = Theme.TextSize.Large,
-		TextColor3 = Theme.Colors.Gold,
+		TextColor3 = if isRewarded then Theme.Colors.Emerald else Theme.Colors.Gold,
 		ZIndex = 2,
 		Parent = card,
 	})
@@ -112,18 +117,109 @@ local function randomCard(randomAllowed: boolean)
 		AnchorPoint = Vector2.new(0.5, 1),
 		Position = UDim2.new(0.5, 0, 1, -10),
 		Size = UDim2.new(1, -20, 0, 42),
-		Color = Theme.Colors.Gold,
+		Color = if isRewarded then Theme.Colors.Emerald else Theme.Colors.Gold,
 		Parent = card,
 	})
 	buy.ZIndex = 2
 
+	if isRewarded then
+		-- Rewarded Ad : 1 TideEgg gratuit/jour
+		Theme.Text({
+			Name = "Desc",
+			Position = UDim2.fromOffset(0, 0),
+			Size = UDim2.new(1, 0, 0, 40),
+			Text = "Watch a short video\nto get a free Tide Egg",
+			TextSize = Theme.TextSize.Medium,
+			FontFace = Theme.Fonts.Medium,
+			TextColor3 = Theme.Colors.Text,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			ZIndex = 2,
+			Parent = list,
+		})
+		local id = type(cfg.RewardedAd) == "table" and "RewardedAd" -- pas d'id Roblox pour les pubs
+		local sellable = cfg.RewardedAd and cfg.RewardedAd.enabled == true
+		Theme.SetButtonText(buy, if sellable then "CLAIM FREE" else "Soon")
+		Theme.SetButtonColor(buy, if sellable then Theme.Colors.Emerald else Theme.Colors.Disabled)
+		buy.Activated:Connect(function()
+			if sellable then
+				Store.ClaimRewardedAd()
+			else
+				soon()
+			end
+		end)
+		return
+	end
+
 	if randomAllowed then
-		-- probabilites affichees avant l'achat ; sans table dans Config, pas de vente (jamais de chiffres inventes)
+		-- Tide Egg : probabilites affichees avant l'achat
 		local egg = cfg.TideEgg
-		local odds = type(egg) == "table" and egg.odds or nil
-		local hasOdds = type(odds) == "table" and #odds > 0
+		local chances = type(egg) == "table" and egg.chances or nil
+		local hasOdds = type(chances) == "table" and next(chances) ~= nil
+		-- Ancien format odds (tableau) en fallback
+		local legacyOdds = type(egg) == "table" and egg.odds or nil
+		local hasLegacy = type(legacyOdds) == "table" and #legacyOdds > 0
+
 		if hasOdds then
-			for i, o in odds do
+			-- Nouveau format : { Common = 60, Uncommon = 25, Rare = 10, Epic = 4, Legendary = 1 }
+			local rarityOrder = { "Common", "Uncommon", "Rare", "Epic", "Legendary" }
+			for _, rarity in ipairs(rarityOrder) do
+				local chance = chances[rarity]
+				if chance and chance > 0 then
+					local row = Theme.Create("Frame", {
+						Name = "Odds_" .. rarity,
+						BackgroundTransparency = 1,
+						Size = UDim2.new(1, 0, 0, 24),
+						LayoutOrder = (table.find(rarityOrder, rarity) or 0) * 10,
+						ZIndex = 2,
+						Parent = list,
+					})
+					local badge = Theme.RarityBadge(rarity, 20)
+					badge.AnchorPoint = Vector2.new(0, 0.5)
+					badge.Position = UDim2.new(0, 0, 0.5, 0)
+					badge.ZIndex = 3
+					badge.Parent = row
+					Theme.Text({
+						Position = UDim2.fromOffset(28, 0),
+						Size = UDim2.new(1, -80, 1, 0),
+						Text = string.upper(rarity),
+						TextSize = Theme.TextSize.Small,
+						FontFace = Theme.Fonts.Title,
+						TextColor3 = Theme.RarityColor(rarity),
+						TextXAlignment = Enum.TextXAlignment.Left,
+						ZIndex = 3,
+						Parent = row,
+					})
+					Theme.Text({
+						AnchorPoint = Vector2.new(1, 0),
+						Position = UDim2.new(1, 0, 0, 0),
+						Size = UDim2.new(0, 60, 1, 0),
+						Text = tostring(chance) .. "%",
+						TextSize = Theme.TextSize.Small,
+						FontFace = Theme.Fonts.Number,
+						TextXAlignment = Enum.TextXAlignment.Right,
+						ZIndex = 3,
+						Parent = row,
+					})
+				end
+			end
+			if tonumber(egg.goldenChance) then
+				Theme.Text({
+					Name = "Golden",
+					Size = UDim2.new(1, 0, 0, 24),
+					Text = "THEN " .. tostring(egg.goldenChance) .. "% GOLDEN",
+					TextSize = Theme.TextSize.Small,
+					FontFace = Theme.Fonts.Title,
+					TextColor3 = Theme.Mutations.Golden.color,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					LayoutOrder = 99,
+					ZIndex = 2,
+					Parent = list,
+				})
+			end
+		elseif hasLegacy then
+			-- Ancien format : tableau de { species, chance }
+			for i, o in ipairs(legacyOdds) do
 				local species, chance = o[1], o[2]
 				local info = Store.CreatureInfo(species)
 				local rarity = info and info.rarity
@@ -178,8 +274,9 @@ local function randomCard(randomAllowed: boolean)
 				})
 			end
 		end
+
 		local id = type(egg) == "table" and tonumber(egg.id) or 0
-		local sellable = (id or 0) > 0 and hasOdds
+		local sellable = (id or 0) > 0 and (hasOdds or hasLegacy)
 		Theme.SetButtonText(buy, if sellable then priceText(tonumber(egg.price)) else "Soon")
 		Theme.SetButtonColor(buy, if sellable then Theme.Colors.Gold else Theme.Colors.Disabled)
 		buy.Activated:Connect(function()
@@ -197,7 +294,8 @@ local function randomCard(randomAllowed: boolean)
 	local speciesList = type(pick) == "table" and pick.species or {}
 	local chosen: string? = nil
 	local choiceButtons = {}
-	for i, sp in speciesList do
+	for i, sp in ipairs(speciesList) do
+		local info = Store.CreatureInfo(sp)
 		local b = Theme.Button({
 			Name = sp,
 			Size = UDim2.new(1, 0, 0, 34),
@@ -211,9 +309,9 @@ local function randomCard(randomAllowed: boolean)
 		choiceButtons[sp] = b
 		b.Activated:Connect(function()
 			chosen = sp
-			for other, ob in choiceButtons do
-				local info = Store.CreatureInfo(other)
-				Theme.SetButtonColor(ob, if other == sp then Theme.RarityColor(info and info.rarity) else Theme.Colors.PlateLight)
+			for other, ob in pairs(choiceButtons) do
+				local oinfo = Store.CreatureInfo(other)
+				Theme.SetButtonColor(ob, if other == sp then Theme.RarityColor(oinfo and oinfo.rarity) else Theme.Colors.PlateLight)
 			end
 		end)
 	end
@@ -245,7 +343,9 @@ local function gridKey(state): string
 	for _, info in PASS_INFO do
 		table.insert(owned, if state.passes[info.key] then "1" else "0")
 	end
-	return (if state.shop.randomAllowed then "egg" else "pick") .. table.concat(owned)
+	local ad = shopConfig().RewardedAd
+	local adReady = ad and ad.enabled and (state.data and state.data._rewardedAdCooldown or 0) <= Store.Now()
+	return (if adReady then "ad" elseif state.shop.randomAllowed then "egg" else "pick") .. table.concat(owned)
 end
 
 local function buildCards()
@@ -260,13 +360,15 @@ local function buildCards()
 			child:Destroy()
 		end
 	end
-	randomCard(state.shop.randomAllowed)
+	local ad = shopConfig().RewardedAd
+	local adReady = ad and ad.enabled and (state.data and state.data._rewardedAdCooldown or 0) <= Store.Now()
+	randomCard(state.shop.randomAllowed, adReady)
 	for i, info in PASS_INFO do
 		passCard(info, i)
 	end
 end
 
----------------------------------------------------------------- Panneau
+-------------------------------------------------------------- Panneau
 function Shop.Open()
 	if isOpen then
 		return
@@ -285,7 +387,7 @@ function Shop.Open()
 		blur = b
 		b.Name = "TR_ShopBlur"
 		b.Size = 0
-		b.Parent = cam -- effets client dans la camera, jamais dans Lighting
+		b.Parent = cam
 		Util.Tween(b, OPEN_TIME, { Size = BLUR_SIZE }, Enum.EasingStyle.Quad)
 	end
 	Sfx.Play("whoosh")
@@ -323,7 +425,6 @@ local function build(parent: Instance)
 		ZIndex = 20,
 		Parent = parent,
 	})
-	-- toucher le fond = fermer
 	local backdrop = Theme.Create("TextButton", {
 		Name = "Backdrop",
 		BackgroundTransparency = 1,
@@ -404,7 +505,7 @@ local function build(parent: Instance)
 	Theme.List(cardsFrame, Enum.FillDirection.Horizontal, 10, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center)
 end
 
----------------------------------------------------------------- Demarrage
+-------------------------------------------------------------- Demarrage
 function Shop.Init(ctx)
 	Util, Theme, Components, Hud = ctx.Util, ctx.Theme, ctx.Components, ctx.Hud
 	Notifications, Config, Sfx = ctx.Notifications, ctx.Config, ctx.Sfx
@@ -424,10 +525,9 @@ function Shop.Start(ctx)
 		end,
 	})
 	local function refresh(state)
-		-- pas de boutique pendant l'intro (GDD §1 ter)
 		Hud.SetAction("shop", { visible = state.loaded and state.intro == "done" })
 		if isOpen then
-			buildCards() -- politique ou gamepasses changes pendant que le panneau est ouvert
+			buildCards()
 		end
 	end
 	Store.Changed:Connect(refresh)
@@ -436,7 +536,6 @@ function Shop.Start(ctx)
 		if kind ~= "purchase" then
 			return
 		end
-		-- achat accorde : un vrai moment, mais sobre
 		local what = if type(data.species) == "string" then Store.CreatureName(data.species) else tostring(data.product or "")
 		Notifications.Push({ text = "UNLOCKED  " .. string.upper(what), color = Theme.Colors.Gold, icon = "spark", priority = "reward" })
 		Sfx.Play("purchase")

@@ -1,0 +1,47 @@
+[0m
+> build · nemotron-3-ultra-free
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md [90m[offset=150][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/M.md
+Index: docs/INBOX/M.md
+===================================================================
+--- docs/INBOX/M.md
++++ docs/INBOX/M.md
+@@ -153,5 +153,20 @@
+ 
+ ## 2026-10-10 20:15
+ FAIT      : **ALIGNEMENT MONETISATION FINALISÉE (Agent G)** — Checklist M mise à jour : point 8 Config.Shop prix finals (79/149/99/249/199/399) + point 15 test achat complet mobile+PC + cross-platform 10 points (boutique, probabilités, PolicyService, zero erreur). Plan QA 12 sem intègre : Battle Pass 12 sem, Rewarded Ads opt-in, Pity 50, Vault annuel, Hotel ventes 5%, Zero P2W validation.
+ VÉRIFIÉ   : Tous points checklist M compatibles : ShopService remotes (ChoosePick, PolicyService), probabilités AVANT achat, Pity counter UI, Vault rotation, Battle Pass free+premium, Daily J7 Tide Egg gratuit, A/B test VIP 79/99/129 via feature flags V. Hot-reload cosmetiques (pas restart) validé.
+-BESOIN    : G — Config.Shop commitée sur `claude/e-gdd-reef` avec IDs=0 ; B — Shop.lua probabilités/pity/Vault/BattlePass UI mobile (bas ≥44px) / PC (latéral) ; F — Test achat complet mobile+PC ajouté checklist cross-platform point 4 ; V — Feature flags A/B test + hot-reload cosmetiques specs
+\ No newline at end of file
++BESOIN    : G — Config.Shop commitée sur `claude/e-gdd-reef` avec IDs=0 ; B — Shop.lua probabilités/pity/Vault/BattlePass UI mobile (bas ≥44px) / PC (latéral) ; F — Test achat complet mobile+PC ajouté checklist cross-platform point 4 ; V — Feature flags A/B test + hot-reload cosmetiques specs
++
++## 2026-10-12 20:45
++FAIT      : **CHECKLIST 20 POINTS FINALISÉE POUR LUNDI SOIR** — Sauvegarde .rbxl + copie travail, git pull `claude/e-gdd-reef`, rojo serve → Connect → Accept (liste changes = IMPORT_LUNDI.md §112-120), Remotes v2.1 créées (GetState, StateChanged, WaveState, Notify, BuyUpgrade, GoHome, HatchEgg, EquipPet, LockLagoon, StartSteal, ChoosePick, Mount, RoyalBoard), Wave.lua P0 corrigé ligne 404 (`base * CFrame.new(0, sink, -front)`), Store.lua aligné (WaveFrontD, StartSteal, ChoosePick, state.pools dense), Config.Shop prix finaux (79/149/99/249/199/399), Theme.lua RobotoCondensed + IconResolver, Codex 3 connues + 4 mystère, QuestService + DailyRewardService, CreatureRenderer + 10 modèles, Onboarding 0-31.5s, SelfTest PASS, Playtest 5min 0 erreur vague 4 dir interface lisible, Avatar R15 min=max, Lighting Future+Atmosphere+Bloom+CC, Assets._DecorLib, Sons waveBoom+ambientBeach, Cmd+S+Save to Roblox.
++VÉRIFIÉ   : Chaque point binaire PASS/FAIL, zéro tolérance P0. Ordre = procédure IMPORT_LUNDI.md. Branche intégration confirmée = `claude/e-gdd-reef` (pas `epic-pasteur`).
++BESOIN    : Moaad — Exécution dans Studio lundi 21h (suivre checklist 1→20) ; Session locale — `rojo serve` prêt port 34872 ; D — Validation finale liste Rojo changes avant Accept
++
++## 2026-10-12 20:50
++FAIT      : **TEST CROSS-PLATEFORME OBLIGATOIRE DÉFINI** — 5 min mobile (iPhone 12 / Android mid 2021, DevConsole) + 5 min PC (GTX 1060, Output Studio) simultanés, 10 points : 1) Mouvement fluide joystick/WASD+Shift, 2) Caméra touch drag+pinch / clic droit+molette, 3) Vol mobile↔PC identique (StartSteal/ChoosePick/Mount/LockLagoon), 4) Boutique achat identique (prix, PolicyService, ProcessReceipt), 5) HUD lisible mobile bas (safe area ≥44px) / PC latéral (hover), 6) Trading/Vol protections identiques (newbie/revanche/cap/lock), 7) Marée Royale RoyalBoard global, 8) Daily Rewards synchro instantanée, 9) 0 erreur console les deux, 10) Performance Mobile ≥30 FPS / PC ≥60 FPS.
++VÉRIFIÉ   : Règle absolue — échec sur L'UN des deux = rollback complet immédiat. Pas de "ça marche sur PC on ship". Les deux plateformes P0.
++BESOIN    : Moaad — Device mobile + PC prêts pour test simultané ; B — HUD responsive implémenté (mobile bas / PC latéral) ; F — Observation croisée mobile+PC pendant test
++
++## 2026-10-12 20:55
++FAIT      : **ROLLBACK PLAN 5 SCÉNARIOS PRÊT** — 1) Liste Rojo anormale (Workspace/Lighting/Assets…) → Abort avant Accept → fermer sans sauver → rouvrir sauvegarde → prévenir D (1 min). 2) SelfTest FAIL / erreur rouge → arrêter Play, pas Cmd+S, fermer sans sauver, rouvrir sauvegarde, prévenir A+D (2 min). 3) Échec cross-platform (L'UN des deux) → rollback immédiat : arrêter 2 sessions, pas Cmd+S, fermer Studio sans sauver, rouvrir sauvegarde, prévenir A+B+D (3 min). 4) Vague invisible / mauvaise direction → ne pas Accept, revenir sauvegarde, B corrige Wave.lua ligne 404+axes, nouveau push → pull suivant (15 min). 5) Boutique/Codex/Monture cassés → même rollback, A/B/C corrigent repo, pas hotfix Studio (selon fix). 6) Rojo ne connecte pas → vérifier rojo 7.5.1, port 34872, Studio redémarré → reporter mardi, travail branche intégration cloud (10 min).
++VÉRIFIÉ   : Sauvegarde triple (Roblox + SAUVEGARDE + import) = filet de sécurité absolu. Aucune suppression sans accord D. Rollback testé mentalement.
++BESOIN    : Moaad — Ne JAMAIS faire Cmd+S si rollback déclenché ; D — Disponible pour validation rollback si nécessaire ; Tous — Prêts pour bascule Phase 1 Fondation post-lancement
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/M.md [90m[offset=150][0m
+> build · nemotron-3-ultra-free
+Fait. **3 entrées** écrites dans `docs/INBOX/M.md` :
+
+1. **2026-10-12 20:45** — **Checklist 20 points finalisée** : tous les 20 points détaillés (sauvegarde → git pull e-gdd-reef → rojo Accept → Remotes v2.1 → Wave.lua P0 corrigé → Store.lua → Config.Shop 79/149/99/249/199/399 → Theme.lua RobotoCondensed+IconResolver → Codex 3+4 → QuestService+DailyReward → CreatureRenderer 10 modèles → Onboarding 31.5s → SelfTest PASS → Playtest 5min 0 erreur vague 4 dirs → Avatar R15 min=max → Lighting Future+Atmosphere+Bloom+CC → _DecorLib → Sons waveBoom/ambientBeach → Cmd+S Save to Roblox)
+
+2. **2026-10-12 20:50** — **Test cross-platform obligatoire** : 5 min mobile (iPhone 12/Android mid-2021) + 5 min PC (GTX 1060) simultanés, 10 points binaires, **règle absolue : échec sur L'UN = rollback complet immédiat**
+
+3. **2026-10-12 20:55** — **Rollback plan 6 scénarios** : Liste Rojo anormale (1 min), SelfTest FAIL (2 min), Échec cross-platform (3 min), Vague invisible (15 min), Boutique/Codex/Monture cassés (selon fix), Rojo ne connecte pas (10 min) — avec actions immédiates et filet sauvegarde triple
+
+Chaque entrée = 3 lignes FAIT/VÉRIFIÉ/BESOIN. Prêt pour lundi 21h. 🫡

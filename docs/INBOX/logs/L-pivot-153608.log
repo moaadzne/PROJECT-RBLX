@@ -1,0 +1,22 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/L.md
+Wrote file successfully: docs/INBOX/L.md
+> build · nemotron-3-ultra-free
+Done. The pivot is massive — the old 30s onboarding was just **Phase 1 foundation (2 weeks)**. The real game is a **12-week MMORPG** with 21 agents.
+
+**New L role = Cinematics & Presentation** (per §9 pillar 5):
+- Cinematic engine (scripted camera, dialogue, choices, locked player camera)
+- **3-min intro cinematic**: arrival on Archipelago, Ancient King awakens
+- **Chapter cuts**: 2-3 min between chapters, impactful choices
+- **Boss intros**: 30s unique per major boss
+- **World events**: server-synced cinematics (everyone sees simultaneously)
+- **Replay system**: auto-record, free camera, video export
+
+**Key dependencies** (from INBOX/L.md):
+- **O (Story/Lore)** — intro script + chapter dialogues
+- **V (Technical)** — camera engine, streaming for cinematics, netcode for locked camera
+- **E (Concept)** — visual lore direction (Ancient King, Leviathan, Tide Curse)
+- **D** — confirm letter mapping (L = Cinematics, not new agent S)

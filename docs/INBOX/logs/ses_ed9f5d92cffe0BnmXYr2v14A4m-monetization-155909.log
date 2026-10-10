@@ -1,0 +1,38 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/V.md [90m[limit=30][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/V.md
+Index: docs/INBOX/V.md
+===================================================================
+--- docs/INBOX/V.md
++++ docs/INBOX/V.md
+@@ -22,8 +22,15 @@
+ BESOIN   : Lundi — sync Rojo, vérification StreamingEnabled + ModelStreamingMode Atomic + DataService non-régressif. Puis implémentation S1 (Streaming config, NetExtended 30 Hz, ProfileService v4 wrapper).
+ 
+ ---
+ 
++## 2026-10-10 17:25
++FAIT     : Mise à jour globale monétisation reçue (G implémente système complet). **Alignement V confirmé** : Hot-reload cosmetics (pas de restart) — déjà prévu §7 ; A/B test pricing VIP 79/99/129 sans restart — déjà prévu §8 (ABTestService) ; Même serveur/DataStore/remotes mobile/PC — déjà §9 cross-platform ; Zero P2W enforcement technique — DataService/ProfileService ne stockent que cosmétiques/QoL, pas puissance ; Cosmetics = shader/material swap + trail swap (K) — pas nouveaux meshes, streaming compatible.
++VÉRIFIÉ  : Plan V §7 (HotReload), §8 (A/B Test), §9 (CrossPlatform targets) couvrent tous les points techniques demandés à V. Aucune modification d'architecture nécessaire.
++BESOIN   : G livre ShopService/BattlePassService/RewardedAdsService avec remotes ChoosePick + PolicyService check. K confirme shader swap pour skins créatures. F teste achat mobile+PC + probabilités + pity + PolicyService zéro erreur.
++
++---
++
+ ## PLAN V — Single Shard 200-500 joueurs (PIVOT MMORPG)
+ 
+ ### 1. ARCHITECTURE SERVEUR UNIQUE (Single Shard)
+ 
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/V.md [90m[limit=40][0m
+> build · nemotron-3-ultra-free
+Entrée d'alignement ajoutée à **INBOX/V.md** (format 3 lignes protocolaire) :
+
+| Ligne | Contenu |
+|---|---|
+| **FAIT** | Mise à jour globale monétisation reçue. **Alignement V confirmé** : Hot-reload cosmetics (pas restart) — §7 ; A/B test VIP 79/99/129 sans restart — §8 (ABTestService) ; Même serveur/DataStore/remotes mobile/PC — §9 cross-platform ; Zero P2W technique — DataService/ProfileService stockent seulement cosmétiques/QoL ; Cosmetics = shader/material swap + trail swap (K) — pas nouveaux meshes, streaming compatible. |
+| **VÉRIFIÉ** | Plan V §7 (HotReload), §8 (A/B Test), §9 (CrossPlatform targets) couvrent tous les points techniques demandés à V. Aucune modification d'architecture nécessaire. |
+| **BESOIN** | G livre ShopService/BattlePassService/RewardedAdsService avec remotes ChoosePick + PolicyService check. K confirme shader swap skins créatures. F teste achat mobile+PC + probabilités + pity + PolicyService zéro erreur. |
+
+**Session terminée.** Prochain tour = lundi 12/10 en Studio après sync Rojo.

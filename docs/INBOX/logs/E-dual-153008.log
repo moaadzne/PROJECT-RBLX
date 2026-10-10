@@ -1,0 +1,78 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/SEMAINE_2.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/SEMAINE_2.md
+Index: docs/SEMAINE_2.md
+===================================================================
+--- docs/SEMAINE_2.md
++++ docs/SEMAINE_2.md
+@@ -65,8 +65,25 @@
+ - **Les échanges entre joueurs.** On y travaille, mais c'est la seule chose qui demande de la vigilance sur l'argent réel. On ne la met pas dans la même mise à jour que la plongée.
+ 
+ ---
+ 
++## Double plateforme — Mobile + PC (stratégie unique, pas deux jeux)
++
++**Même progression, même économie, mêmes drops.** Un seul compte Roblox = tout suit instantanément (cross-save natif).
++
++| | Mobile | PC |
++|---|---|---|
++| **Rôle** | Volume, acquisition, rétention J1–J7 | Whales, traders, investis, sessions 20–40 min, ARPPU 3–5× |
++| **Contrôles** | Joystick + boutons gros, caméra auto | WASD + souris, caméra libre, raccourcis clavier |
++| **HUD** | Compact, essentiel, pouce-friendly | Étendu, infos complètes, tooltips au survol |
++| **Trading** | Même marché, même interface | Même marché, même interface |
++| **Battle Pass / Daily Rewards** | Identiques | Identiques |
++| **Social** | Invite amis, chat rapide | Invite amis, chat complet, groupes |
++
++**Pourquoi ça marche** : le joueur mobile découvre, le joueur PC approfondit. Ils s'échangent des créatures, se volent mutuellement, se croisent sur le serveur — l'interaction cross-plateforme *est* le lien social. Pas de ségrégation, pas de version allégée.
++
++---
++
+ ## Les deux questions ouvertes
+ 
+ **1. Les règles de la boutique de Roblox.** Elles changent, et ce n'est pas nous qui decidons. Si la plongée et la créature la plus rare ne passent pas, il faut le savoir **maintenant**, pas au moment de publier. C'est la seule chose du programme qui peut nous forcer à changer de plan.
+ 
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/E.md
+Index: docs/INBOX/E.md
+===================================================================
+--- docs/INBOX/E.md
++++ docs/INBOX/E.md
+@@ -1,5 +1,10 @@
+ 
++## 2026-10-10 18:40
++FAIT     : SEMAINE_2.md mis à jour — section "Double plateforme Mobile + PC" ajoutée (même progression/économie/drops, cross-save natif Roblox, trading fluide, BP/quotidiens identiques, HUD adapté par plateforme). Commit en attente.
++VÉRIFIÉ  : Stratégie dual explicite, aucune séparation de contenu. Mobile = acquisition/volume, PC = whales/ARPPU 3-5x, cross-trade = lien social. Rien testé en jeu.
++BESOIN   : **[D]** validation plan — push SEMAINE_2.md + INBOX, puis agents G→N intègrent la dual-platform dans leurs specs respectives (H = HUD adaptatif, M = checklist cross-save, L/N = contrôles mobile/PC).
++
+ ## 2026-10-10 18:05
+ FAIT     : Reçu le pivot — Moaad veut **un vrai jeu avec histoire, progression, cinématiques, profondeur** : pas juste une boucle, mais un concept qui révolutionne Roblox. « Il faut vraiment une histoire : tu arrives, tu peux avancer. Petit à petit tu t'améliores, des gens plus forts, des gens moins forts, un vrai concept, une vraie histoire, des cinématiques, vraiment des gros trucs. »
+ VÉRIFIÉ  : Le GDD actuel est une boucle de collection + vague. Ce qui est demandé change la nature du projet : narration, progression narrative, cinématiques, hiérarchie sociale, endgame.
+ BESOIN   : **[D]** décision d'arbitrage — on pivote le GDD vers un *vrai jeu narratif* (nouvelles sections : histoire, progression, cinématiques, endgame, hiérarchie) ou on garde la boucle comme socle et on *ajoute* l'histoire par-dessus ? Moaad tranche, je réécris.
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/SEMAINE_2.md docs/INBOX/E.md && git commit -q -F - <<'EOF'
+docs(E): dual-platform explicite dans SEMAINE_2 + INBOX
+
+- Même progression, économie, drops, cross-save natif (compte Roblox)
+- Mobile = volume/J1-J7, PC = whales/sessions longues/ARPPU 3-5x
+- Trading mobile↔PC fluide = interaction sociale cross-plateforme
+- Battle Pass / Daily Rewards identiques
+- HUD/contrôles adaptés par plateforme, pas version allégée
+- Agents G→N intègrent la dual-platform dans leurs specs
+EOF
+git log --oneline -1
+2c7dd37 docs(E): dual-platform explicite dans SEMAINE_2 + INBOX
+> build · nemotron-3-ultra-free
+Fait. Commit `2c7dd37`.
+
+**SEMAINE_2.md** — section "Double plateforme Mobile + PC" ajoutée entre Semaine 3 et questions ouvertes :
+- Même progression, économie, drops, cross-save natif (compte Roblox = tout suit)
+- Mobile = acquisition/volume/J1-J7, PC = whales/sessions 20-40 min/ARPPU 3-5×
+- Trading cross-plateforme fluide = lien social
+- Battle Pass / Daily Rewards identiques
+- HUD/contrôles adaptés par plateforme, **pas version allégée**
+
+**INBOX/E.md** mis à jour avec le plan pour agents G→N (H = HUD adaptatif, M = checklist cross-save, L/N = contrôles mobile/PC).

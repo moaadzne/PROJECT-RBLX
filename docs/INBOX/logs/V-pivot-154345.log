@@ -1,0 +1,47 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/V.md
+Index: docs/INBOX/V.md
+===================================================================
+--- docs/INBOX/V.md
++++ docs/INBOX/V.md
+@@ -1,11 +1,16 @@
+ # File de V — Technical & Performance
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 16:45
++FAIT     : Lu `docs/DECISIONS_MARCHE.md` §9 (PIVOT MAJEUR). Vision validée : **VRAI MMORPG Roblox** — serveur unique 200-500 joueurs, streaming/instancing donjons-raids, Netcode étendu (interpolation/prediction/reconciliation), ProfileService + GlobalDataStore + OrderedDataStore + MessagingService, Hotfix hot-reload, A/B test natif. Plan technique aligné sur les 5 piliers (Histoire, Progression, Boss/Raid, PvP/Economie, Cinematiques) et planning 12 semaines.
++VÉRIFIÉ  : §9 lu en entier. Plan INBOX/V.md existant cohérent avec architecture technique §9 (lignes 285-304). Aucune implémentation lancée.
++BESOIN   : D valide que V est propriétaire technique de l'architecture single-shard (streaming, netcode, data, instancing). A confirme que Net.lua existant sert de base pour NetExtended. C livre île 600×600 générée (blocage streaming). F met en place CI load-test 500 bots semaine 1.
++
+ ---
+ 
+-## PLAN V — Single Shard 200-500 joueurs
++## PLAN V — Single Shard 200-500 joueurs (PIVOT MMORPG)
+ 
+ ### 1. ARCHITECTURE SERVEUR UNIQUE (Single Shard)
+ 
+ **Objectif** : 200–500 joueurs simultanés sur un seul serveur Roblox, 60 FPS PC / 30+ FPS mobile.
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/V.md [90m[limit=50][0m
+> build · nemotron-3-ultra-free
+Le plan **INBOX/V.md** est mis à jour avec l'entrée protocolaire (3 lignes FAIT/VÉRIFIÉ/BESOIN) en tête, alignée sur le **PIVOT MAJEUR** (§9 DECISIONS_MARCHE.md) :
+
+| Point | Status |
+|---|---|
+| **FAIT** | Lu §9 complet. Vision validée : VRAI MMORPG Roblox, serveur unique 200-500j, streaming/instancing donjons-raids, Netcode étendu, ProfileService + GlobalDataStore + OrderedDataStore + MessagingService, Hotfix hot-reload, A/B test natif. Plan technique aligné sur 5 piliers + planning 12 semaines. |
+| **VÉRIFIÉ** | §9 lu en entier. Plan existant cohérent avec architecture technique §9 (lignes 285-304). Aucune implémentation lancée. |
+| **BESOIN** | D valide ownership V sur architecture single-shard. A confirme Net.lua base pour NetExtended. C livre île 600×600 générée (blocage streaming). F met en place CI load-test 500 bots semaine 1. |
+
+Le plan technique détaillé (sections 1-12) couvre déjà tous les points du pivot :
+- **StreamingEnabled** chunks 128×128, LOD 256, instancing donjons/raids seulement
+- **NetExtended** : 30 Hz, delta compression, interpolation 100ms, prédiction/réconciliation `serverNow`
+- **ProfileService v4** wrapper sur DataService existant
+- **GlobalDataStore** (économie/marché/guildes) + **OrderedDataStore** (4 classements) + **MessagingService** (6 topics)
+- **HotReload** ModuleScript versioné + **A/B Test** framework natif
+- **Planning 4 semaines** → load test 500 bots semaine 4
+- **Validation lundi** : checklist Rojo + StreamingEnabled + Atomic + DataService non-régressif

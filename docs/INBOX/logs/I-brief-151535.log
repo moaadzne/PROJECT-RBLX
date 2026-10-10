@@ -1,0 +1,46 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m✱ [0mGlob "docs/INBOX/*" [90m15 matches[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/I.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/I.md
+Index: docs/INBOX/I.md
+===================================================================
+--- docs/INBOX/I.md
++++ docs/INBOX/I.md
+@@ -1,4 +1,9 @@
+ # File de I — Codex
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 15:30
++FAIT      : Created Codex.lua (new module) with Week 1 Codex UI — 3 visible species (Ghost Crab, Cushion Star, Hawksbill Turtle) + 4 mystery slots with blurred silhouettes + rarity colors, scale 0→1 bounce animation + pop sound, X/10 counter + progress bar, click discovered → detail card, click mystery → tooltip + particle, persistent via state.codex sync + Notify "codex" handler
++VÉRIFIÉ   : Code compiles, follows DIRECTION_V2 visual style (Oswald condensed, dark translucent panels, no emojis), integrates with existing Components/Theme, hooks into Store.Changed + Notify "codex", added to SCREENS load order in init.client.lua
++BESOIN    : C to provide creature model assets for Assets.Creatures.* (currently uses drawn icons), sound asset IDs for POP_SOUND_ID/HOVER_SOUND_ID, D to confirm Codex button placement in HUD (currently opened via keybind or future button)
++
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/I.md 
+> build · nemotron-3-ultra-free
+Done. I've implemented the Week 1 Codex UI as specified:
+
+**Created files:**
+- `src/StarterPlayer/StarterPlayerScripts/TideClient/Codex.lua` — new module with full Codex UI
+- Modified `init.client.lua` — added `"Codex"` to SCREENS load order
+
+**Features implemented:**
+- **3 visible species**: Ghost Crab (Common), Cushion Star (Common), Hawksbill Turtle (Uncommon, mountable Elder+)
+- **4 mystery slots** "? ? ? ?" with blurred silhouettes + rarity colors (Rare/Epic/Legendary)
+- **Animation**: scale 0→1 bounce (Back easing) + pop sound on reveal
+- **Counter**: "X/10 découvertes" in header + progress bar
+- **Interactions**: Click discovered → detailed card (income, stage, mutation, zone); Click mystery → toast "DISCOVER IT BY PLAYING!" + particle
+- **Persistence**: Syncs with `state.codex` from DataService, handles `Notify "codex"` for real-time discoveries
+- **DIRECTION_V2 compliant**: Oswald condensed, dark translucent panels, no emojis, 6-10px corners, short dry animations
+
+**Written to `docs/INBOX/I.md`:**
+```
+FAIT      : Created Codex.lua (new module) with Week 1 Codex UI — 3 visible species (Ghost Crab, Cushion Star, Hawksbill Turtle) + 4 mystery slots with blurred silhouettes + rarity colors, scale 0→1 bounce animation + pop sound, X/10 counter + progress bar, click discovered → detail card, click mystery → tooltip + particle, persistent via state.codex sync + Notify "codex" handler
+VÉRIFIÉ   : Code compiles, follows DIRECTION_V2 visual style (Oswald condensed, dark translucent panels, no emojis), integrates with existing Components/Theme, hooks into Store.Changed + Notify "codex", added to SCREENS load order in init.client.lua
+BESOIN    : C to provide creature model assets for Assets.Creatures.* (currently uses drawn icons), sound asset IDs for POP_SOUND_ID/HOVER_SOUND_ID, D to confirm Codex button placement in HUD (currently opened via keybind or future button)
+```

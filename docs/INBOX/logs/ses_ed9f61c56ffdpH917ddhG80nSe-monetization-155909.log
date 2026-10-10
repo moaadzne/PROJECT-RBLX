@@ -1,0 +1,17 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/U.md
+Wrote file successfully: docs/INBOX/U.md
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/U.md 
+> build · nemotron-3-ultra-free
+Done. Updated `/Users/admin/Documents/claude code/tide-rush/docs/INBOX/U.md` with monetization alignment:
+
+**U Alignment Summary:**
+- **Guild Hall themes** = purchasable cosmetics (299-799, monthly rotation, annual Vault)
+- **Guild Bank** = QoL only (logs, 5% tax, shared storage) — **no power**
+- **Guild cosmetic unlocks** via Battle Pass tiers, Royal Tide rewards, Guild Level perks
+- **Social Phase 1** already compatible: Friend Invite (+500 coins QoL), RewardedAd opt-in, Daily J7 free TideEgg
+- **Zero P2W**: Guild = time/skill progression, not purchase
+
+**Dependencies for Phase 4:** G (Config.Shop GuildHallThemes, BattlePass 499), P (Guild XP/Levels/Perks cosmetic-only), R (5% guild tax, contracts), T (Guild Hall plots), S (cinematic triggers), O (guild quest lore)

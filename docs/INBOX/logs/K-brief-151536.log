@@ -1,0 +1,84 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/K.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+Now let me create the `CreatureRenderer.lua` client-side module for rendering creatures with stage scaling, mutations, and Rthro animations:
+[0m✱ [0mGlob "src/StarterPlayer/StarterPlayerScripts/TideClient/*.lua" [90m25 matches[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead src/StarterPlayer/StarterPlayerScripts/TideClient/World.lua 
+> build · nemotron-3-ultra-free
+[0m→ [0mRead src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua 
+> build · nemotron-3-ultra-free
+Now I'll create the `CreatureRenderer.lua` client module for Rthro animations and Hero Titan effects:
+[0m← [0mWrite src/StarterPlayer/StarterPlayerScripts/TideClient/CreatureRenderer.lua
+Created file successfully: src/StarterPlayer/StarterPlayerScripts/TideClient/CreatureRenderer.lua
+> build · nemotron-3-ultra-free
+Now let me update the INBOX to reflect the completion:
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+Let me check the init.client.lua to see how modules are initialized:
+[0m→ [0mRead src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua 
+> build · nemotron-3-ultra-free
+I need to add `CreatureRenderer` to the init sequence. Let me update the init.client.lua:
+[0m← [0mEdit src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+Index: src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+===================================================================
+--- src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
++++ src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+@@ -16,8 +16,9 @@
+ 	"PoolBillboards",
+ 	"NameTags",
+ 	"Wave", -- la vague : le serveur ne dessine rien, tout le rendu est ici
+ 	"World",
++	"CreatureRenderer", -- animations Rthro + effets Hero Titan (K)
+ 	"Ambience",
+ 	"Feel",
+ 	"ChatStyle",
+ 	"StealHud",
+
+> build · nemotron-3-ultra-free
+Let me verify the build_creatures.luau is complete and properly formatted:
+[0m→ [0mRead tools/world/build_creatures.luau 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/K.md
+Wrote file successfully: docs/INBOX/K.md
+> build · nemotron-3-ultra-free
+Done. Here's a summary of what was created:
+
+## Created Files
+
+### 1. `tools/world/build_creatures.luau`
+Reproducible build script for all 10 creature models:
+- **10 species**: GhostCrab, CushionStar, HawksbillTurtle, Lionfish, BlueRingedOctopus, LeopardRay, GiantPacificOctopus, LionsManeJelly, MantaRay, WhaleShark
+- **Structure**: `ReplicatedStorage.Assets.Creatures.<Species>` with Root (invisible, Anchored), Body placeholder (rarity-colored), attributes `CreatureId`/`Rarity`
+- **Mountable (4)**: HawksbillTurtle, LeopardRay, MantaRay, WhaleShark get `Saddle` (center carapace, face -Z) + `SurfStand` (+0.3 stud Y)
+- **Stages**: Juvenile 0.6, Adult 0.8, Elder 1.0, Titan 1.5 (via `Model:ScaleTo` client-side)
+- **Animations folder**: `Assets.Animations.RthroBundle356` for manual import of 6 animations
+
+### 2. `src/StarterPlayer/StarterPlayerScripts/TideClient/CreatureRenderer.lua`
+Client renderer module:
+- **Rthro animations** (bundle 356): idle, walk, swim, carry, mount, surf via Animator with fade transitions
+- **Hero Titan**: scale 1.5 + permanent effects (PointLight glow, ParticleEmitter trail, Core/Halo beams) for Golden-mutated mountable Titans
+- **Performance**: only animates within 120 studs of camera; respects reduced motion setting
+- **Integrates** with existing `World.lua` (handles stage scaling + mutations from `Assets.FX.Mutations`)
+
+### 3. `src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua` (updated)
+Added `CreatureRenderer` to the load sequence after `World`.
+
+### 4. `docs/INBOX/K.md`
+3-line report per protocol.
+
+---
+
+## Next Steps (Monday 12/10 in Studio)
+| Task | Owner |
+|------|-------|
+| Import Store candidates to `_DecorLib` (GhostCrab 14303108140, CushionStar 5174450906, HawksbillTurtle 6193860066/4597594292) | C |
+| Run `build_creatures.luau` (DRY_RUN=false), replace Body placeholders with real meshes | C |
+| Import Rthro Animation Pack 356, populate `ANIMATION_IDS` in CreatureRenderer | B |
+| Run `build_mutation_fx.luau` + `build_royal_fx.luau` | C |
+| Validate Phase 1 scope (3 creatures) vs Phase 2 (7) | D |

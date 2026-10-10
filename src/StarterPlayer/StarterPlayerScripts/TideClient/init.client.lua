@@ -8,7 +8,8 @@ local player = Players.LocalPlayer
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 
 -- Ordre de chargement : les briques d'abord, les ecrans ensuite (un module absent est saute)
-local FOUNDATION = { "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components" }
+-- Glyph et IconResolver avant Theme : Theme.Init attend ctx.IconResolver
+local FOUNDATION = { "Glyph", "IconResolver", "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components", "CosmeticIcons" }
 local SCREENS = {
 	"Notifications",
 	"Hud",
@@ -17,6 +18,7 @@ local SCREENS = {
 	"NameTags",
 	"Wave", -- la vague : le serveur ne dessine rien, tout le rendu est ici
 	"World",
+	"CreatureRenderer", -- animations Rthro + effets Hero Titan (K)
 	"Ambience",
 	"Feel",
 	"ChatStyle",
@@ -24,6 +26,7 @@ local SCREENS = {
 	"RoyalHud",
 	"MountButton",
 	"Shop",
+	"Codex", -- Reef Codex collection
 	"Onboarding", -- apres Hud (Hud.Hold)
 }
 

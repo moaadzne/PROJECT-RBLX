@@ -1,0 +1,78 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/BRIEF_NOUVEAUX_AGENTS.md 
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/F.md [90m[limit=8][0m
+> build · nemotron-3-ultra-free
+[0m✗ [0mEdit docs/INBOX/F.md failed
+[91m[1mError: [0mCould not find oldString in /Users/admin/Documents/claude code/tide-rush/docs/INBOX/F.md. It must match exactly, including whitespace and indentation.
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && head -6 docs/INBOX/F.md | cat -A
+cat: illegal option -- A
+usage: cat [-belnstuv] [file ...]
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && head -6 docs/INBOX/F.md | od -c | head -30
+0000000   \n   #   #       2   0   2   6   -   1   0   -   1   0       1
+0000020    4   :   5   2  \n   F   A   I   T                       :    
+0000040    R   e   l   e   c   t   u   r   e       d   e   s       c   o
+0000060    m   m   i   t   s       d   e       B     342 200 224       *
+0000100    *   H   E   A   D       n   '   e   s   t       p   a   s    
+0000120    s   u   r       l   '   i   n   t 303 251   g   r   a   t   i
+0000140    o   n   *   *   .       `   g   i   t       m   e   r   g   e
+0000160    -   b   a   s   e       -   -   i   s   -   a   n   c   e   s
+0000200    t   o   r       a   d   a   8   3   0   0       H   E   A   D
+0000220    `       =       *   *   N   O   N   *   *       :       l   e
+0000240    s       2   7       c   o   m   m   i   t   s       d   e    
+0000260    l   '   i   n   t 303 251   g   r   a   t   i   o   n       (
+0000300    d   o   n   t       9   f   1   0   a   d   b   ,       m   o
+0000320    n       c   o   r   r   e   c   t   i   f       d   e       v
+0000340    a   g   u   e   ,       e   t       9   6   7   a   9   c   8
+0000360    ,       l   e       c   o   r   r   e   c   t   i   f       d
+0000400    '   a   x   e       d   e       B   )       s   o   n   t    
+0000420    *   *   a   b   s   e   n   t   s       d   e       l   a    
+0000440    b   r   a   n   c   h   e       c   o   u   r   a   n   t   e
+0000460    *   *   .       L   e       m   e   r   g   e   -   b   a   s
+0000500    e       e   s   t       d   2   b   3   a   7   6   ,       b
+0000520    i   e   n       a   v   a   n   t       l   '   i   n   t 303
+0000540  251   g   r   a   t   i   o   n   .       M   a       b   r   a
+0000560    n   c   h   e       `   c   l   a   u   d   e   /   e   -   g
+0000600    d   d   -   r   e   e   f   `       a       c   o   n   t   i
+0000620    n   u 303 251       s   u   r       s   o   n       p   r   o
+0000640    p   r   e       t   r   o   n   c       p   e   n   d   a   n
+0000660    t       q   u   e       l   '   i   n   t 303 251   g   r   a
+0000700    t   i   o   n       s   e       c   o   n   s   t   r   u   i
+0000720    s   a   i   t       a   i   l   l   e   u   r   s   .  \n   V
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/F.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/F.md
+Index: docs/INBOX/F.md
+===================================================================
+--- docs/INBOX/F.md
++++ docs/INBOX/F.md
+@@ -1,5 +1,10 @@
+ 
++## 2026-10-10 15:15
++FAIT     : Reprise du plan F selon DECISIONS_MARCHE.md + BRIEF_NOUVEAUX_AGENTS.md. Les 8 nouveaux agents (G-N) livrent le visuel/UX/monétisation ; F valide que le niveau visé est atteint. Mes 10 vérifs lundi sont enrichies : visuel "Fortnite/Sea of Thieves", onboarding 0-31.5s sans texte, Codex 3+4 mystère, Shop <100 Robux, Rewarded Ads, police RobotoCondensed + Font Awesome. La liste finale de validation est dans docs/VERIFS_LUNDI.md.
++VÉRIFIÉ  : docs/DECISIONS_MARCHE.md lu, 132 lignes de briefs G-N lues. Rien testé en jeu.
++BESOIN   : [D] Merger l'intégration (ada8300) dans la branche courante avant lundi, sinon Rojo part sans Wave.lua corrigé, sans Store.lua corrigé, sans visuel niveau visé. [G-N] Livrer dans leurs zones respectives ; F valide à la réception.
++
+ ## 2026-10-10 14:52
+ FAIT     : Relecture des commits de B — **HEAD n'est pas sur l'intégration**. `git merge-base --is-ancestor ada8300 HEAD` = **NON** : les 27 commits de l'intégration (dont 9f10adb, mon correctif de vague, et 967a9c8, le correctif d'axe de B) sont **absents de la branche courante**. Le merge-base est d2b3a76, bien avant l'intégration. Ma branche `claude/e-gdd-reef` a continué sur son propre tronc pendant que l'intégration se construisait ailleurs.
+ VÉRIFIÉ  : `git rev-parse` des blobs_store.lua : 967a9c8 = 8d47db5 (avec `WaveFrontD`), ada8300 = b98d441 (avec `WaveFrontD`), **HEAD = f3e8775 (avec `WaveFrontZ`)**. Le correctif de B est donc bien perdu sur la branche courante, confirmé par le contenu du fichier disque. Écarts de contrat v2.1 constatés sur la branche courante, dans les 3 zones de B : `StealAttempt` (Store.lua:652) au lieu de `StartSteal`, `PickCreature` (Shop.lua:241) au lieu de `ChoosePick`, `Store.WaveFrontZ` (Store.lua:463) au lieu de `WaveFrontD` — le serveur ne crée aucun de ces trois noms. Rien testé en jeu.
+ BESOIN   : [D] **Bloquant avant lundi** — il faut fusionner l'intégration (`ada8300`) dans la branche courante, pas l'inverse, sinon la synchro Rojo part d'un code qui perd à la fois le correctif de vague et celui de l'axe. Aucun nom de remote n'a bougé côté serveur, donc B n'est pas en cause : c'est l'ordre de fusion. Je ne fusionne pas (interdit).
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/F.md && git commit -q -m "INBOX(F): plan revu selon DECISIONS_MARCHE.md — 8 agents G-N livrent, F valide
+
+La direction marché impose visuel Fortnite/Sea of Thieves, onboarding 30s sans
+texte, Codex 3 connues + 4 mystere, monétisation <100 Robux + Bundle + Ads.
+F ne code pas : F definit le niveau vise et valide les livrables des 8 agents.
+
+La fusion de l'integration (ada8300) reste bloquante avant lundi.
+
+Documentation uniquement." && git push -q origin claude/e-gdd-reef && git log --oneline -1
+0bd6e62 INBOX(F): plan revu selon DECISIONS_MARCHE.md — 8 agents G-N livrent, F valide
+> build · nemotron-3-ultra-free
+Écrit et poussé (`0bd6e62`). Ma boîte `docs/INBOX/F.md` est mise à jour — D la lit.

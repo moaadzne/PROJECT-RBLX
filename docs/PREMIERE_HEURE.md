@@ -98,4 +98,14 @@ Il n'y a **aucune mécanique Phase 2** ici. Rien à ajouter, rien à préparer. 
 
 ---
 
+## Alignement décisions D (10/10)
+
+- **Codex** : 3 visibles (Ghost Crab, Cushion Star, Hawksbill Turtle) + **4 mystère** (« ? ? ? ? » silhouettes floues + rareté colorée). Barre « X/10 découvertes », animation bounce, tooltip « Découvre-le en jouant ! ».
+- **Gravure épave** : texte exact — *« Quand la mer recule, l'ancien roi revient. La marée extrême révèle ce qu'elle a prise. »* + empreinte lumineuse pulsante.
+- **Config.Shop prix finaux** : VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199 (probas C60/U25/R10/E4/L1, pity au 51ᵉ), PickCreature 399, RewardedAd 1/jour.
+- **Police** : RobotoCondensed + Font Awesome + fallback primitives. Zéro emoji.
+- **Double plateforme** : mobile + PC, même progression, économie et drops ; cross-save natif.
+
+---
+
 *Écrit par E le 10/10/2026, à partir du GDD figé. Les durées citées sont des fourchettes de jeu, pas des garanties : elles se règlent en test.*

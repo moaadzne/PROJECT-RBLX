@@ -1,0 +1,525 @@
+[0m
+> build · space-bunny-free
+Diagnostic confirmé et corrigé. Je passe à la relecture des commits de B.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== les 13 commits de B ==="; git log --oneline 06f2f54..ada8300 --author="" 2>/dev/null | cat | head -20; echo "--- tous les commits depuis 06f2f54 ---"; git log --oneline 06f2f54..ada8300 | cat
+=== les 13 commits de B ===
+ada8300 Integration : dernier commit de B (demande a D)
+9f10adb P1-42 : Wave.lua sur l'integration + correction P0 du repere de vague
+3e5db56 B : demande a D (fusion, icones, police) + rectification codes v2.1
+4c5f772 Integration : B P1-15, alignement du client sur le contrat v2.1
+f1278b5 Integration : GDD_REEF corrige (8964cc7), AGENTS.md, protocole INBOX
+418a44c B : compte-rendu (stades v2.1, quota atteint, brief perime)
+c10b989 B, P1-15 : noms de stades du contrat v2.1 dans le repli du store
+967a9c8 B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+7e5e838 Merge branch 'claude/e-gdd-reef' into claude/friendly-volta-qj504y
+1b290a3 Merge commit '06f2f54' into claude/friendly-volta-qj504y
+d2b3a76 tools/world (C): verification que Assets._DecorLib existe (leve le blocage P1-21)
+161586f INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+70ce1cd AGENTS.md : 2 corrections signalees par F
+1d10d0f VIPRider majore les pieces, pas le revenu (contrat v2.1)
+0d58d32 Canal commun AGENTS.md + P1-42 vague (B, en cours)
+f908348 docs(E): GDD_REEF, spec de reference de Reef Keepers
+144e50e Version de test : rendu provisoire de la vague + tâche P1-16 pour B
+023778f Intègre marée extrême (claude/inspiring-albattani-8hikpu)
+--- tous les commits depuis 06f2f54 ---
+ada8300 Integration : dernier commit de B (demande a D)
+9f10adb P1-42 : Wave.lua sur l'integration + correction P0 du repere de vague
+3e5db56 B : demande a D (fusion, icones, police) + rectification codes v2.1
+4c5f772 Integration : B P1-15, alignement du client sur le contrat v2.1
+f1278b5 Integration : GDD_REEF corrige (8964cc7), AGENTS.md, protocole INBOX
+418a44c B : compte-rendu (stades v2.1, quota atteint, brief perime)
+c10b989 B, P1-15 : noms de stades du contrat v2.1 dans le repli du store
+967a9c8 B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+7e5e838 Merge branch 'claude/e-gdd-reef' into claude/friendly-volta-qj504y
+1b290a3 Merge commit '06f2f54' into claude/friendly-volta-qj504y
+d2b3a76 tools/world (C): verification que Assets._DecorLib existe (leve le blocage P1-21)
+161586f INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+70ce1cd AGENTS.md : 2 corrections signalees par F
+1d10d0f VIPRider majore les pieces, pas le revenu (contrat v2.1)
+0d58d32 Canal commun AGENTS.md + P1-42 vague (B, en cours)
+f908348 docs(E): GDD_REEF, spec de reference de Reef Keepers
+144e50e Version de test : rendu provisoire de la vague + tâche P1-16 pour B
+023778f Intègre marée extrême (claude/inspiring-albattani-8hikpu)
+2ba7326 Version de test reconstruite avec le client aligné sur le contrat v2.1
+7a28446 Intègre claude/awesome-allen-i2ni7b
+db9f95d Intègre claude/friendly-volta-qj504y
+4ab871c Intègre claude/inspiring-albattani-8hikpu
+a15ef64 Version de test jouable : place Studio avec île générée au démarrage
+1c7f8d1 Intègre B
+20e883b Merge remote-tracking branch 'origin/claude/inspiring-albattani-8hikpu' into claude/friendly-volta-qj504y
+b71fc12 Merge remote-tracking branch 'origin/claude/epic-pasteur-q323d7' into claude/friendly-volta-qj504y
+a6f2ddc docs: UI_REEF v3 (style console, police justifiee, icones, elements Roblox remplaces, import de lundi)
+10936a0 Client : remplacement des elements Roblox par defaut (VISION_TON §6.1)
+500091c Client : alignement sur le contrat v2.1 (vol, monture, Maree Royale, boutique)
+9b1ac36 Client P1-14 (DIRECTION_V2) : systeme visuel « jeu console »
+f2dadf4 Intègre A et B
+9c9325c F : IMPORT_LUNDI, monde de C avant les tests de A (DRY_RUN puis réel, Cmd+S entre chaque), ordre de test de A
+ac697eb docs: règle de décision directe entre sessions, faisabilité de l'île par C
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== HEAD ==="; git log --oneline -1 | cat; echo; echo "=== verify 9f10adb ==="; git show 9f10adb --stat 2>&1 | head -12 | cat; git show 9f10adb -- src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua 2>&1 | grep -E "^[-+].*local frame" | cat
+=== HEAD ===
+a32ad3b docs: brief de l'assistant du chef de projet
+
+=== verify 9f10adb ===
+commit 9f10adbb7b898390516184555d93b7b6bc7a64db
+Author: Moaad Zenoune <moaadzenoune@gmail.com>
+Date:   Sat Oct 10 14:32:52 2026 +0200
+
+    P1-42 : Wave.lua sur l'integration + correction P0 du repere de vague
+    
+    P0 (trouve par F, reproduit numeriquement) :
+      local frame = base + Vector3.new(0, sink, -front)
+    base est un CFrame oriente par dir (ligne 147), donc + Vector3 donnait
+    une position MONDE alors que le commentaire annonce une translation
+    locale. Consequence : N = -200 au lieu de +200 (vague a l'envers),
+    E et W = 0 (vague immobile au centre de l'ile), S correct par
++	local frame = base * CFrame.new(0, sink, -front)
+> build · space-bunny-free
+P0 confirmé et corrigé. Je cible les trois zones à risque : vol, monture, boutique.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== 1. Mount(nil) descend-il ? ==="; grep -n "Mount" src/StarterPlayer/StarterPlayerScripts/TideClient/*.lua | grep -i "invoke\|remote\|Mount(" | cat; echo; echo "=== 2. StartSteal + Notify ==="; grep -rn "StartSteal" src/StarterPlayer/ | cat
+=== 1. Mount(nil) descend-il ? ===
+src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:2:--   RF Mount(mountId) / Dismount() ; state.mounts = {uid...} (creatures montables, Adult et plus) ; state.mount = uid ou nil.
+src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:16:local function bestMount(state): string?
+src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:34:	local available = state.loaded and Store.HasRemote("Mount") and (riding or #state.mounts > 0)
+src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:54:		local uid = bestMount(state)
+src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:56:			ok, code = Store.Mount(uid)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:148:--   state.protection = {active, endsAt} (bouclier debutant). Remotes : StealAttempt, LockLagoon, Mount, Dismount.
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:666:function Store.Mount(mountId: string): (boolean, any)
+
+=== 2. StartSteal + Notify ===
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== diff client integre depuis 06f2f54 (perimetre) ==="; git diff --stat 06f2f54 ada8300 -- src/StarterPlayer/ | cat
+=== diff client integre depuis 06f2f54 (perimetre) ===
+ .../StarterPlayerScripts/TideClient/ChatStyle.lua  |  63 ++
+ .../StarterPlayerScripts/TideClient/Components.lua | 332 ++++-----
+ .../StarterPlayerScripts/TideClient/Feel.lua       | 137 ++++
+ .../StarterPlayerScripts/TideClient/Fx.lua         |  10 +-
+ .../StarterPlayerScripts/TideClient/Hud.lua        | 236 ++++---
+ .../TideClient/MountButton.lua                     |  53 +-
+ .../StarterPlayerScripts/TideClient/NameTags.lua   | 185 +++++
+ .../TideClient/Notifications.lua                   |  96 ++-
+ .../StarterPlayerScripts/TideClient/Onboarding.lua |  30 +-
+ .../TideClient/PoolBillboards.lua                  |  39 +-
+ .../StarterPlayerScripts/TideClient/Prompts.lua    | 179 +++++
+ .../StarterPlayerScripts/TideClient/RoyalHud.lua   | 157 ++---
+ .../StarterPlayerScripts/TideClient/Shop.lua       | 388 +++++------
+ .../StarterPlayerScripts/TideClient/StealHud.lua   | 765 +++++++++++----------
+ .../StarterPlayerScripts/TideClient/Store.lua      | 234 ++++---
+ .../StarterPlayerScripts/TideClient/Theme.lua      | 630 +++++++++++------
+ .../StarterPlayerScripts/TideClient/Wave.lua       | 493 +++++++++++++
+ .../TideClient/init.client.lua                     |  27 +-
+ 18 files changed, 2678 insertions(+), 1376 deletions(-)
+> build · space-bunny-free
+Deux signaux rouges. Je vérifie systématiquement tous les remotes contre le contrat.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== remotes appeles par le client ==="; grep -rhn "InvokeServer\|HasRemote\|:FireServer" src/StarterPlayer/ | grep -o '"[A-Z][A-Za-z]*"' | sort -u | cat; echo; echo "=== remotes du contrat v2.1 ==="; sed -n '10,22p' src/ServerScriptService/Services/Net.lua; echo "=== HasRemote existe ? ==="; grep -n "function Store.HasRemote" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat
+=== remotes appeles par le client ===
+"LockLagoon"
+"Mount"
+"PickCreature"
+"StealAttempt"
+
+=== remotes du contrat v2.1 ===
+	HatchEgg = "RemoteFunction",
+	EquipPet = "RemoteFunction",
+	LockLagoon = "RemoteFunction",
+	StartSteal = "RemoteFunction",
+	Mount = "RemoteFunction",
+	ChoosePick = "RemoteFunction",
+	StateChanged = "RemoteEvent",
+	RoyalBoard = "RemoteEvent",
+	WaveState = "RemoteEvent",
+	Notify = "RemoteEvent",
+}
+
+local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
+=== HasRemote existe ? ===
+695:function Store.HasRemote(name: string): boolean
+> build · space-bunny-free
+Écarts confirmés. Je creuse pour avoir la liste exacte et vérifier le comportement.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== tous les appels remotes du client ==="; grep -rn "InvokeServer\|:FireServer\|HasRemote(\|WaitForChild(\"Remotes\"" src/StarterPlayer/StarterPlayerScripts/TideClient/*.lua | cat
+=== tous les appels remotes du client ===
+src/StarterPlayer/StarterPlayerScripts/TideClient/MountButton.lua:34:	local available = state.loaded and Store.HasRemote("Mount") and (riding or #state.mounts > 0)
+src/StarterPlayer/StarterPlayerScripts/TideClient/Shop.lua:241:	local sellable = id ~= nil and id > 0 and Store.HasRemote("PickCreature")
+src/StarterPlayer/StarterPlayerScripts/TideClient/StealHud.lua:342:	local can = Store.HasRemote("StealAttempt") and stealWindowOpen()
+src/StarterPlayer/StarterPlayerScripts/TideClient/StealHud.lua:481:	local available = Store.HasRemote("LockLagoon") and plot ~= nil and state.loaded
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:616:			return rf:InvokeServer(table.unpack(args, 1, args.n))
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:695:function Store.HasRemote(name: string): boolean
+src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua:845:	local folder = ReplicatedStorage:WaitForChild("Remotes", 10)
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== Store : quelles functions exposent un call ? ==="; grep -n "^function Store\." src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat
+=== Store : quelles functions exposent un call ? ===
+426:function Store.IsDemo(): boolean
+431:function Store.Get()
+435:function Store.GetWave()
+439:function Store.Now(): number
+444:function Store.ServerClock(): number
+449:function Store.WaveTimeLeft(): number
+454:function Store.WaveProgress(): number
+463:function Store.WaveFrontZ(now: number?): number?
+475:function Store.CreatureInfo(species: string?): { name: string, rarity: string?, [string]: any }?
+488:function Store.CreatureName(species: string): string
+496:function Store.StageId(stage: number): string
+506:function Store.StageScale(stage: number): number
+526:function Store.CreatureStage(entry: any, now: number?): (number, number, number?)
+569:function Store.NextUpgrade(): { kind: string, level: number, cost: number }?
+630:function Store.Invoke(name: string, ...: any): (boolean, ...any)
+643:function Store.BuyUpgrade(kind: string): (boolean, any)
+647:function Store.GoHome(): (boolean, any)
+652:function Store.StealAttempt(plot: number, slot: number): (boolean, any)
+666:function Store.Mount(mountId: string): (boolean, any)
+674:function Store.Dismount(): (boolean, any)
+682:function Store.LockLagoon(): (boolean, any)
+695:function Store.HasRemote(name: string): boolean
+703:function Store.Init(ctx)
+843:function Store.Start(_ctx)
+> build · space-bunny-free
+Régression majeure détectée. Je vérifie si le correctif de B a été perdu à l'intégration.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== WaveFrontZ existe-t-il encore sur l'integration ? ==="; grep -n "WaveFrontZ\|WaveFrontD\|startZ\|endZ" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat; echo; echo "=== le commit 967a9c8 avait bien supprime ca ? ==="; git show 967a9c8:src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | grep -n "WaveFrontZ\|WaveFrontD" | cat
+=== WaveFrontZ existe-t-il encore sur l'integration ? ===
+260:		startZ = optNumber(raw.startZ), -- vague d'intro seulement
+361:	local travel = (cfg.endZ - cfg.startZ) / cfg.speed
+463:function Store.WaveFrontZ(now: number?): number?
+469:	local startZ = wave.startZ or cfg.startZ
+471:	return math.min(cfg.endZ, startZ + speed * math.max(0, t - wave.startTime))
+
+=== le commit 967a9c8 avait bien supprime ca ? ===
+507:-- Position du front de vague SUR SON AXE (Config.WaveFrontD : d = startD + speed * (t - startTime)).
+509:function Store.WaveFrontD(now: number?): number?
+516:	return Config.WaveFrontD(wave, now or Store.Now())
+522:	local front = Store.WaveFrontD(now)
+531:	local front = Store.WaveFrontD(now)
+> build · space-bunny-free
+Confirmé — le correctif de B a été perdu. Je remonte la cause exacte.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== quel commit a reintroduit WaveFrontZ ? ==="; git log --oneline -L 463,472:src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua ada8300 2>/dev/null | grep -E "^[0-9a-f]{7} " | head -8 | cat
+=== quel commit a reintroduit WaveFrontZ ? ===
+b03bf21 Client: Store accepte l'etat v2 (creatures, croissance, maree), style console dans Theme
+d60359c Import Tide Rush
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== b03bf21 est-il un ancetre de 967a9c8 ? ==="; git merge-base --is-ancestor b03bf21 967a9c8 && echo "OUI (donc attendu)" || echo "NON"; echo "=== est-il un ancetre de l'integration ? ==="; git merge-base --is-ancestor b03bf21 ada8300 && echo OUI || echo NON; echo; echo "=== ordre : 967a9c8 a-t-il ete fusionne apres ? ==="; git log --oneline --graph 06f2f54..ada8300 2>/dev/null | head -30 | cat
+=== b03bf21 est-il un ancetre de 967a9c8 ? ===
+OUI (donc attendu)
+=== est-il un ancetre de l'integration ? ===
+OUI
+
+=== ordre : 967a9c8 a-t-il ete fusionne apres ? ===
+*   ada8300 Integration : dernier commit de B (demande a D)
+|\  
+| * 3e5db56 B : demande a D (fusion, icones, police) + rectification codes v2.1
+* | 9f10adb P1-42 : Wave.lua sur l'integration + correction P0 du repere de vague
+* | 4c5f772 Integration : B P1-15, alignement du client sur le contrat v2.1
+|\| 
+| * 418a44c B : compte-rendu (stades v2.1, quota atteint, brief perime)
+| * c10b989 B, P1-15 : noms de stades du contrat v2.1 dans le repli du store
+| * 967a9c8 B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+| *   7e5e838 Merge branch 'claude/e-gdd-reef' into claude/friendly-volta-qj504y
+| |\  
+| | * d2b3a76 tools/world (C): verification que Assets._DecorLib existe (leve le blocage P1-21)
+| | * 161586f INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi
+| | * d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+| | * 8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+| | * 70ce1cd AGENTS.md : 2 corrections signalees par F
+| | * 1d10d0f VIPRider majore les pieces, pas le revenu (contrat v2.1)
+| | * 0d58d32 Canal commun AGENTS.md + P1-42 vague (B, en cours)
+| | * f908348 docs(E): GDD_REEF, spec de reference de Reef Keepers
+| * 1b290a3 Merge commit '06f2f54' into claude/friendly-volta-qj504y
+* | f1278b5 Integration : GDD_REEF corrige (8964cc7), AGENTS.md, protocole INBOX
+* | 144e50e Version de test : rendu provisoire de la vague + tâche P1-16 pour B
+* | 023778f Intègre marée extrême (claude/inspiring-albattani-8hikpu)
+* | 2ba7326 Version de test reconstruite avec le client aligné sur le contrat v2.1
+* |   7a28446 Intègre claude/awesome-allen-i2ni7b
+|\ \  
+| * | 9c9325c F : IMPORT_LUNDI, monde de C avant les tests de A (DRY_RUN puis réel, Cmd+S entre chaque), ordre de test de A
+|  /  
+* | db9f95d Intègre claude/friendly-volta-qj504y
+|\|
+> build · space-bunny-free
+La cause est claire : la fusion a pris le **mauvais parent**. Je quantifie l'étendue.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== ce que 4c5f772 a fusionne de B ==="; git diff --stat 06f2f54 ada8300 -- src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua | cat; echo; echo "=== 967a9c8 vs integration sur Store.lua ==="; git diff --stat 967a9c8 ada8300 -- src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua src/StarterPlayer/StarterPlayerScripts/TideClient/Feel.lua | cat
+=== ce que 4c5f772 a fusionne de B ===
+ .../StarterPlayerScripts/TideClient/Feel.lua       | 137 ++++++++++++
+ .../StarterPlayerScripts/TideClient/Store.lua      | 234 ++++++++++++++-------
+ 2 files changed, 293 insertions(+), 78 deletions(-)
+
+=== 967a9c8 vs integration sur Store.lua ===
+ src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== ecart exact 967a9c8 -> integration sur Store.lua ==="; git diff 967a9c8 ada8300 -- src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat
+=== ecart exact 967a9c8 -> integration sur Store.lua ===
+diff --git a/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+index 8d47db5..b98d441 100644
+--- a/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
++++ b/src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua
+@@ -15,8 +15,10 @@ local GETSTATE_ATTEMPTS = 5
+ local ATTRIBUTE_SETTLE = 0.15 -- delai avant de relire les attributs de vague
+ local PHASES = { calm = true, warning = true, wave = true, recede = true }
+ local INTRO_STEPS = { intro = true, golden = true, done = true }
+-local STAGE_IDS = { "Baby", "Juvenile", "Adult", "Giant" }
+--- Croissance du GDD §4.3 (minutes cumulees vers Juvenile, Adult, Giant), tant que Config.GrowthMinutes manque
++-- Stades du contrat v2.1 : Juvenile / Adult / Elder / Titan, indices 1..4.
++-- Source de verite = Config.Stages ; cette liste n'est que le repli.
++local STAGE_IDS = { "Juvenile", "Adult", "Elder", "Titan" }
++-- Repli si Config.GrowthMinutes manque : minutes cumulees vers Adult, Elder, Titan.
+ local GROWTH_FALLBACK = {
+ 	Common = { 3, 15, 60 },
+ 	Uncommon = { 5, 30, 120 },
+@@ -581,7 +583,7 @@ local function growthMarks(species: string): { number }
+ 	local info = Store.CreatureInfo(species)
+ 	local growthTable = (Config :: any).GrowthMinutes or GROWTH_FALLBACK
+ 	local growth = growthTable[info and info.rarity or "Common"] or growthTable.Common or GROWTH_FALLBACK.Common
+-	-- seuils en secondes : Baby 0, Juvenile, Adult, Giant
++	-- seuils en secondes : Juvenile 0, puis Adult, Elder, Titan
+ 	return { 0, growth[1] * 60, growth[2] * 60, growth[3] * 60 }
+ end
+> build · space-bunny-free
+Le diff est plus mince que prévu — je vérifie où j'ai réellement lu.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && for r in ada8300 a32ad3b HEAD; do printf "%-10s " "$r"; git show $r:src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua 2>/dev/null | grep -c "WaveFrontZ" | tr -d '\n'; echo " WaveFrontZ | $(git show $r:src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua 2>/dev/null | grep -c 'WaveFrontD\|WaveDistanceTo') WaveFrontD"; done; echo; echo "=== commits apres ada8300 ==="; git log --oneline ada8300..HEAD | cat
+ada8300    0 WaveFrontZ | 0 WaveFrontD
+a32ad3b    0 WaveFrontZ | 0 WaveFrontD
+HEAD       0 WaveFrontZ | 0 WaveFrontD
+
+=== commits apres ada8300 ===
+a2fc857 docs(E): SEMAINE_2.md en langage joueur, pour Moaad
+a32ad3b docs: brief de l'assistant du chef de projet
+b6dacdb INBOX(C): rapport de tour — contrats A/D/E ratrapés, île reconstruite, 2 points à trancher avec A
+64fafa2 tools/world (C): generateur d'ile ouverte (P1-36), recrit apres perte du 09/10
+53f36c1 docs(E): secret de l'epave (semaine 2) + fermeture des livrables E
+c74028d tools/world (C): 4 sons d'interface pour B, barriere en streaming atomique
+3e12400 INBOX(F): etat des worktrees + question de merge a D
+25840eb docs(C)+vague : roster v3 (CushionStar), stades Elder=1.0, vague 4 directions
+f28cf01 tools/world (C): vague 30 / tours 34, embruns bornes, Night sans plastique, lagons Center+Radius
+951f3b2 docs(E): tranche le 14 n2 (especes rares hors Phase 1) + prepare la semaine 2
+358bdd0 A : tranche les 3 points ouverts (zone serveur uniquement)
+c479cf1 INBOX(F): Wave.lua 4955d92 — P0 non corrige, ligne 404
+b5c884c tools/box : canal vers les autres sessions + UI_B_preparation
+> build · space-bunny-free
+Fausse alerte de ma part — je vérifie la source réelle avant de conclure.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== le fichier de travail est-il sale ? ==="; git status --porcelain src/ | cat; echo "=== HEAD reel ==="; git rev-parse --short HEAD; echo; echo "=== WaveFrontZ dans le FICHIER sur disque ==="; grep -n "WaveFrontZ\|WaveFrontD\|WaveDistanceTo" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat
+=== le fichier de travail est-il sale ? ===
+ M src/ServerScriptService/Services/CreatureService.lua
+=== HEAD reel ===
+3eab2ea
+
+=== WaveFrontZ dans le FICHIER sur disque ===
+463:function Store.WaveFrontZ(now: number?): number?
+> build · space-bunny-free
+HEAD a encore bougé entre mes commandes. Je refais la vérification à un instant stable.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && H=$(git rev-parse HEAD) && echo "HEAD fige = $H" && echo "--- version HEAD (git show) ---" && git show $H:src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | grep -n "WaveFrontZ\|WaveFrontD\|WaveDistanceTo" | cat && echo "--- version disque ---" && grep -n "WaveFrontZ\|WaveFrontD\|WaveDistanceTo" src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat && echo "--- diff git vs disque ---" && git diff --stat $H -- src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat
+HEAD fige = 3eab2eaffb1eea1163395febda4ab6e7652efc2a
+--- version HEAD (git show) ---
+fatal: ambiguous argument '3eab2eaffb1eea1163395febda4ab6e7652efc2aPlayer/StarterPlayerScripts/TideClient/Store.lua': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+--- version disque ---
+463:function Store.WaveFrontZ(now: number?): number?
+--- diff git vs disque ---
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git show HEAD -- src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | grep -n "WaveFrontZ\|WaveFrontD\|WaveDistanceTo" | cat; echo "--- rc=$? (vide = absent) ---"; echo; echo "=== dernier commit ==="; git log --oneline -1 | cat; echo "=== Store.lua est-il modifie vs HEAD ? ==="; git diff --stat HEAD -- src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua | cat; echo "(vide = fichier identique a HEAD)"
+--- rc=0 (vide = absent) ---
+
+=== dernier commit ===
+3eab2ea docs(E): INBOX, deux coquilles dans le compte rendu
+=== Store.lua est-il modifie vs HEAD ? ===
+(vide = fichier identique a HEAD)
+> build · space-bunny-free
+Ma commande précédente était faussée par zsh (`:s`interpreté comme modificateur). Je reprends proprement.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && P="src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua"; for r in 967a9c8 ada8300 HEAD; do echo "--- $r ---"; git show "${r}:${P}" > /private/var/folders/x8/bz8tzhd92d17d891z2lgl9hm0000gn/T/opencode/s_$r.lua 2>/dev/null && grep -c "WaveFrontZ" /private/var/folders/x8/bz8tzhd92d17d891z2lgl9hm0000gn/T/opencode/s_$r.lua | tr -d '\n' && echo " WaveFrontZ / $(grep -c 'WaveFrontD' /private/var/folders/x8/bz8tzhd92d17d891z2lgl9hm0000gn/T/opencode/s_$r.lua) WaveFrontD"; done
+--- 967a9c8 ---
+0 WaveFrontZ / 5 WaveFrontD
+--- ada8300 ---
+0 WaveFrontZ / 5 WaveFrontD
+--- HEAD ---
+1 WaveFrontZ / 0 WaveFrontD
+> build · space-bunny-free
+Le correctif de B **est bien perdu** entre l'intégration et maintenant. Je cherche le commit fautif.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && P="src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua"; git log --oneline ada8300..HEAD -- "$P" | cat; echo "=== fichiers modifies sur cette plage ==="; git log --oneline ada8300..HEAD --stat | head -40 | cat
+=== fichiers modifies sur cette plage ===
+4cddd5e tools/world (C): verifie les 22 ids de sons, retire 4 ids que j'avais inventes
+ tools/world/build_sounds.luau | 23 +++++++++++----
+ tools/world/verify_sounds.py  | 69 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 86 insertions(+), 6 deletions(-)
+360a141 Recif de la maree extreme : au moins une espece mutee (parade de l'intro)
+ docs/INBOX/A.md                                    |  7 +++++++
+ .../Services/CreatureService.lua                   | 22 +++++++++++++++++++++-
+ 2 files changed, 28 insertions(+), 1 deletion(-)
+3eab2ea docs(E): INBOX, deux coquilles dans le compte rendu
+ docs/INBOX/E.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+a2fc857 docs(E): SEMAINE_2.md en langage joueur, pour Moaad
+ docs/INBOX/E.md   |   5 +++
+ docs/SEMAINE_2.md | 112 ++++++++++++++++++++++++++++++++++++------------------
+ 2 files changed, 80 insertions(+), 37 deletions(-)
+a32ad3b docs: brief de l'assistant du chef de projet
+ docs/BRIEF_ASSISTANT.md | 63 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+b6dacdb INBOX(C): rapport de tour — contrats A/D/E ratrapés, île reconstruite, 2 points à trancher avec A
+ docs/INBOX/C.md | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+64fafa2 tools/world (C): generateur d'ile ouverte (P1-36), recrit apres perte du 09/10
+ tools/world/build_island_terrain.luau | 294 ++++++++++++++++++++++++++++++++++
+ tools/world/test_island_terrain.py    | 162 +++++++++++++++++++
+ 2 files changed, 456 insertions(+)
+53f36c1 docs(E): secret de l'epave (semaine 2) + fermeture des livrables E
+ docs/INBOX/E.md      |  5 ++++
+ docs/SECRET_EPAVE.md | 84 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ docs/SEMAINE_2.md    |  2 +-
+ 3 files changed, 90 insertions(+), 1 deletion(-)
+c74028d tools/world (C): 4 sons d'interface pour B, barriere en streaming atomique
+ tools/world/build_lagoon.luau | 5 +++++
+ tools/world/build_sounds.luau | 6 ++++++
+ 2 files changed, 11 insertions(+)
+3e12400 INBOX(F): etat des worktrees + question de merge a D
+ docs/INBOX/F.md | 5 +++++
+ 1 file changed, 5 insertions(+)
+25840eb docs(C)+vague : roster v3 (CushionStar), stades Elder=1.0, vague 4 directions
+ docs/CREATURES_ART.md       |  4 ++--
+ docs/DA_MONDE.md            | 14 +++++++-------
+> build · space-bunny-free
+Contradiction — je vérifie les blobs directement.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && P="src/StarterPlayer/StarterPlayerScripts/TideClient/Store.lua"; echo "blob ada8300: $(git rev-parse "ada8300:$P")"; echo "blob HEAD   : $(git rev-parse "HEAD:$P")"; echo "blob 967a9c8: $(git rev-parse "967a9c8:$P")"; echo; echo "=== branche courante ==="; git branch --show-current; echo "=== ada8300 est-il ancestor de HEAD ? ==="; git merge-base --is-ancestor ada8300 HEAD && echo OUI || echo NON
+blob ada8300: b98d44193e57db356de3af19373e428b338210b9
+blob HEAD   : f3e8775ddfea5d0d36c09ee13b1d85f97e2b1b4b
+blob 967a9c8: 8d47db548067f31f345c69656b07ff96230600fe
+
+=== branche courante ===
+claude/e-gdd-reef
+=== ada8300 est-il ancestor de HEAD ? ===
+NON
+> build · space-bunny-free
+Voilà la cause réelle. Je mesure l'étendue exacte avant d'écrire.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== merge-base HEAD / ada8300 ==="; git merge-base HEAD ada8300 | cat; echo "=== ancetres de ada8300 absents de HEAD ==="; git log --oneline ada8300 ^HEAD | cat; echo; echo "=== nb de commits integrees absentes de HEAD ==="; git log --oneline ada8300 ^HEAD | wc -l | tr -d ' '
+=== merge-base HEAD / ada8300 ===
+d2b3a76d957af22eca343a61acfe7b2d2a4cba24
+=== ancetres de ada8300 absents de HEAD ===
+ada8300 Integration : dernier commit de B (demande a D)
+9f10adb P1-42 : Wave.lua sur l'integration + correction P0 du repere de vague
+3e5db56 B : demande a D (fusion, icones, police) + rectification codes v2.1
+4c5f772 Integration : B P1-15, alignement du client sur le contrat v2.1
+f1278b5 Integration : GDD_REEF corrige (8964cc7), AGENTS.md, protocole INBOX
+418a44c B : compte-rendu (stades v2.1, quota atteint, brief perime)
+c10b989 B, P1-15 : noms de stades du contrat v2.1 dans le repli du store
+967a9c8 B, P1-15 : vague sur son axe (N/E/S/O), plus sur Z
+7e5e838 Merge branch 'claude/e-gdd-reef' into claude/friendly-volta-qj504y
+1b290a3 Merge commit '06f2f54' into claude/friendly-volta-qj504y
+144e50e Version de test : rendu provisoire de la vague + tâche P1-16 pour B
+023778f Intègre marée extrême (claude/inspiring-albattani-8hikpu)
+2ba7326 Version de test reconstruite avec le client aligné sur le contrat v2.1
+7a28446 Intègre claude/awesome-allen-i2ni7b
+db9f95d Intègre claude/friendly-volta-qj504y
+4ab871c Intègre claude/inspiring-albattani-8hikpu
+a15ef64 Version de test jouable : place Studio avec île générée au démarrage
+1c7f8d1 Intègre B
+20e883b Merge remote-tracking branch 'origin/claude/inspiring-albattani-8hikpu' into claude/friendly-volta-qj504y
+b71fc12 Merge remote-tracking branch 'origin/claude/epic-pasteur-q323d7' into claude/friendly-volta-qj504y
+a6f2ddc docs: UI_REEF v3 (style console, police justifiee, icones, elements Roblox remplaces, import de lundi)
+10936a0 Client : remplacement des elements Roblox par defaut (VISION_TON §6.1)
+500091c Client : alignement sur le contrat v2.1 (vol, monture, Maree Royale, boutique)
+9b1ac36 Client P1-14 (DIRECTION_V2) : systeme visuel « jeu console »
+f2dadf4 Intègre A et B
+9c9325c F : IMPORT_LUNDI, monde de C avant les tests de A (DRY_RUN puis réel, Cmd+S entre chaque), ordre de test de A
+ac697eb docs: règle de décision directe entre sessions, faisabilité de l'île par C
+
+=== nb de commits integrees absentes de HEAD ===
+27
+> build · space-bunny-free
+J'ai la cause complète. J'écris ma boîte et je commite.
+[0m→ [0mRead docs/INBOX/F.md [90m[limit=6][0m
+> build · space-bunny-free
+[0m← [0mEdit docs/INBOX/F.md
+Index: docs/INBOX/F.md
+===================================================================
+--- docs/INBOX/F.md
++++ docs/INBOX/F.md
+@@ -1,8 +1,13 @@
+ # File de F — Controle qualite (lecture)
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 14:52
++FAIT     : Relecture des commits de B — **HEAD n'est pas sur l'intégration**. `git merge-base --is-ancestor ada8300 HEAD` = **NON** : les 27 commits de l'intégration (dont 9f10adb, mon correctif de vague, et 967a9c8, le correctif d'axe de B) sont **absents de la branche courante**. Le merge-base est d2b3a76, bien avant l'intégration. Ma branche `claude/e-gdd-reef` a continué sur son propre tronc pendant que l'intégration se construisait ailleurs.
++VÉRIFIÉ  : `git rev-parse` des blobs_store.lua : 967a9c8 = 8d47db5 (avec `WaveFrontD`), ada8300 = b98d441 (avec `WaveFrontD`), **HEAD = f3e8775 (avec `WaveFrontZ`)**. Le correctif de B est donc bien perdu sur la branche courante, confirmé par le contenu du fichier disque. Écarts de contrat v2.1 constatés sur la branche courante, dans les 3 zones de B : `StealAttempt` (Store.lua:652) au lieu de `StartSteal`, `PickCreature` (Shop.lua:241) au lieu de `ChoosePick`, `Store.WaveFrontZ` (Store.lua:463) au lieu de `WaveFrontD` — le serveur ne crée aucun de ces trois noms. Rien testé en jeu.
++BESOIN   : [D] **Bloquant avant lundi** — il faut fusionner l'intégration (`ada8300`) dans la branche courante, pas l'inverse, sinon la synchro Rojo part d'un code qui perd à la fois le correctif de vague et celui de l'axe. Aucun nom de remote n'a bougé côté serveur, donc B n'est pas en cause : c'est l'ordre de fusion. Je ne fusionne pas (interdit).
++
+ ## 2026-10-10 14:28
+ FAIT     : Contrôle de Wave.lua (4955d92) : **P0 non corrigé**. Ligne 404 `base + Vector3.new(0, sink, -front)` est une translation en coordonnées MONDE ; le commentaire ligne 403 annonce une translation locale. Il faut `base * CFrame.new(0, sink, -front)`.
+ VÉRIFIÉ  : reproduit numériquement, front à 200 studs — N = −200 au lieu de +200 (vague à l'envers), E et W = 0 (vague immobile au centre de l'île), S correct par coïncidence. `SelfTest.lua:159` ne le voit pas car il ne teste que N et S. 967a9c8 de B est validé (nil−nil supprimé, REACH calculé, WaveFrontZ → WaveFrontD/WaveDistanceTo/WaveFrontPoint, `dir` exposé). Rien testé en jeu.
+ BESOIN   : [auteur P1-42] une seule ligne à changer, P0 du même niveau que la vague invisible que ce commit devait corriger — [C] `waveBoom` et `ambientBeach` n'existent dans aucun `Assets.Sounds` (dossier absent), la vague sera muette tant qu'ils manquent — [B] `Store.lua:276` `startZ` est un champ mort, écrit jamais relu, sans conséquence.
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/F.md && git commit -q -m "INBOX(F): HEAD n'est pas sur l'integration — 27 commits absents
+
+Constat : git merge-base --is-ancestor ada8300 HEAD renvoie NON. Le
+merge-base est d2b3a76, anterieur a l'integration.
+
+Consequence : la branche courante a diverge et ne contient ni le correctif
+de vague (9f10adb) ni le correctif d'axe de B (967a9c8).
+
+Preuve par les blobs de Store.lua :
+  967a9c8 -> 8d47db5  contient WaveFrontD
+  ada8300 -> b98d441  contient WaveFrontD
+  HEAD    -> f3e8775  contient WaveFrontZ  <-- correction perdue
+
+Trois ecarts de contrat v2.1 releves sur la branche courante, dans les
+zones de B (vol, boutique, vague). Aucun n'existe cote serveur :
+  - Store.StealAttempt  au lieu de StartSteal
+  - Shop lit PickCreature au lieu de ChoosePick
+  - Store.WaveFrontZ    au lieu de WaveFrontD
+
+Aucun nom de remote n'a bouge cote serveur : c'est l'ordre de fusion, pas
+une erreur de B.
+
+Documentation uniquement, aucun fichier de jeu modifie." && git push -q origin claude/e-gdd-reef && git log --oneline -1 | cat
+dc0ce2f INBOX(F): HEAD n'est pas sur l'integration — 27 commits absents
+> build · space-bunny-free
+Écrit et poussé (`dc0ce2f`). Tout est dans `docs/INBOX/F.md` pour D.
+
+```
+FAIT      : Relecture des commits de B. Constat bloquant écrit dans la boîte, commité dc0ce2f.
+VÉRIFIÉ : Écarts de contrat v2.1 confirmés par lecture de blobs et de code.
+            Rien testé en jeu.
+BESOIN   : [D] fusionner l'intégration dans la branche courante. Je ne fusionne pas (interdit).
+```
+
+## Ce que j'ai trouvé
+
+**La branche courante n'est pas l'intégration.** C'est le vrai problème, et il est plus grave que les écarts de contrat eux-mêmes.
+
+```
+git merge-base --is-ancestor ada8300 HEAD  →  NON
+```
+
+Le merge-base est `d2b3a76`, bien avant l'intégration. **Les 27 commits de l'intégration sont absents de la branche courante** — dont `9f10adb` (le correctif de vague que D vient d'intégrer) et `967a9c8` (le correctif d'axe de B).
+
+Preuve par les blobs de `Store.lua` :
+
+| Commit | Blob | Contenu |
+|---|---|---|
+| 967a9c8 | `8d47db5` | `WaveFrontD` ✓ |
+| ada8300 | `b98d441` | `WaveFrontD` ✓ |
+| **HEAD** | `f3e8775` | **`WaveFrontZ`** ✗ |
+
+Le correctif de B est bien perdu sur la branche courante — confirmé aussi dans le fichier sur disque, pas seulement dans l'historique.
+
+## Trois écarts de contrat v2.1, dans les zones de B
+
+Relevés sur la branche courante :
+
+| Client utilise | Le contrat exige | Où |
+|---|---|---|
+| `StealAttempt` | `StartSteal` | `Store.lua:652` |
+| `PickCreature` | `ChoosePick` | `Shop.lua:241` |
+| `Store.WaveFrontZ` | `WaveFrontD` | `Store.lua:463` |
+
+Aucun de ces trois noms n'existe côté serveur — `Net.lua` ne crée que `StartSteal` et `ChoosePick`.
+
+**Ce n'est pas la faute de B.** Son travail est correct et validé (967a9c8 était bon, je l'avais contrôlé). C'est l'ordre de fusion qui a picked la mauvaise version.
+
+## Une correction sur mon propre travail
+
+J'ai d'abord conclu à tort que le correctif de B avait été perdu à l'intégration, parce qu'une de mes commandes `git show ada8300:src/...` avait été corrompue par zsh (`:src` interprété comme modificateur `:s`), et un `grep -c` sur une sortie vide renvoyait `0`. J'ai refait la vérification sur des fichiers extraits : le correctif est bien dans `ada8300`, et c'est HEAD qui ne l'a pas. Le diagnostic final tient sur des blobs, pas sur la commande défectueuse.
+
+## Liste des sons manquants de C
+
+Non traitée — je n'ai pas encore vérifié `build_sounds.luau`. Je le fais au prochain tour plutôt que de rushed un point incomplet.

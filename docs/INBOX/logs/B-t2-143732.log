@@ -1,0 +1,736 @@
+[0m
+> build · space-bunny-free
+Police notée : `RobotoCondensed` native, rien à licencier. Je vérifie l'intégration et je repars de là.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git fetch origin --quiet && echo "=== ada8300 contient mes commits ? ===" && git log --oneline -1 ada8300 2>/dev/null && for c in c10b989 967a9c8; do git merge-base --is-ancestor $c ada8300 2>/dev/null && echo "$c INCLUS" || echo "$c ABSENT"; done
+=== ada8300 contient mes commits ? ===
+ada8300 Integration : dernier commit de B (demande a D)
+c10b989 INCLUS
+967a9c8 INCLUS
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git merge ada8300 --no-edit 2>&1 | tail -4 && echo "=== HEAD ===" && git log --oneline -1
+create mode 100644 testbuild/TestWaveRenderer.client.lua
+ create mode 100644 testbuild/TestWorld.lua
+ create mode 100644 testbuild/test.project.json
+ create mode 100755 tools/box
+=== HEAD ===
+ada8300 Integration : dernier commit de B (demande a D)
+> build · space-bunny-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua 
+> build · space-bunny-free
+`Theme.lua` a déjà été refait en console (plaques sombres, coins 6–10, pictogrammes dessinés, `Theme.Icon`). Le point de substitution existe déjà. Je vérifie ce qui reste vraiment à faire.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient" && echo "=== EMOJI RESTANTS ===" && grep -o '👑\|🐢\|🔒\|🌊\|✨\|🐚\|⭐\|🦀\|🛒\|🚨\|⚔\|🛡\|⬇\|🪙\|🔔\|🎁' *.lua 2>/dev/null | sort | uniq -c || echo "AUCUN EMOJI"; echo ""; echo "=== qui construit une icone hors Theme ? ==="; grep -ln "ImageLabel" *.lua; echo ""; echo "=== qui utilise Theme.Icon ==="; grep -c "Theme.Icon" *.lua | grep -v ":0"
+=== EMOJI RESTANTS ===
+
+=== qui construit une icone hors Theme ? ===
+Theme.lua
+
+=== qui utilise Theme.Icon ===
+Components.lua:4
+Hud.lua:8
+NameTags.lua:2
+Notifications.lua:1
+PoolBillboards.lua:1
+Shop.lua:1
+StealHud.lua:2
+Theme.lua:2
+> build · space-bunny-free
+Le client est déjà sans emoji, et `Theme.Icon` est le seul point d'entrée (seul `Theme.lua` fabrique une `ImageLabel`). Le point de substitution existe donc. Ce qu'il reste, c'est la police que tu viens de trancher.
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -47,15 +47,18 @@
+ 	Line = 0.86,
+ 	TextStroke = 0.55,
+ }
+ 
+--- Titres et chiffres : Oswald (condensee, nette ; la plus proche de Barlow Condensed parmi les polices integrees
+--- a Roblox, donc rien a charger). Texte courant : Builder Sans (VISION_TON §3).
+-local OSWALD = "rbxasset://fonts/families/Oswald.json"
++-- Titres et chiffres : RobotoCondensed (police native Roblox, condensee et nette : exactement le
++-- style console demande par DIRECTION_V2). Rien a charger, rien a licencer.
++-- Si Roblox expose la variante grasse de la famille, elle est preferee pour les titres.
++local CONDENSED = Enum.Font.RobotoCondensed
++local CONDENSED_BOLD = (Enum.Font :: any).RobotoCondensedBold or CONDENSED
++-- Texte courant : Builder Sans (bible §5), garde en famille pour conserver le gras et le medium.
+ local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
+ Theme.Fonts = {
+-	Title = Font.new(OSWALD, Enum.FontWeight.Bold),
+-	Number = Font.new(OSWALD, Enum.FontWeight.Bold),
++	Title = CONDENSED_BOLD,
++	Number = CONDENSED_BOLD,
+ 	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
+ 	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
+ }
+ 
+
+> build · space-bunny-free
+Maintenant le point de substitution que D demande, en module seul. Je le crée sans toucher aux 8 sites d'appel : `Theme.Icon` délègue.
+[0m← [0mWrite /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Glyph.lua
+Created file successfully: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Glyph.lua
+> build · space-bunny-free
+Je branche `Theme` dessus, sans toucher aux sites d'appel.
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+
+Arguments provided:
+{
+  "newString": "local Config = require(ReplicatedStorage:WaitForChild(\"Shared\"):WaitForChild(\"Config\"))\nlocal Glyph = require(script.Parent:WaitForChild(\"Glyph\"))",
+  "oldString": "local Config = require(ReplicatedStorage:WaitForChild(\"Shared\"):WaitForChild(\"Config\"))"
+}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -3,8 +3,11 @@
+ -- aucun emoji (icones dessinees, ou images de Assets.UI.Icons quand C les fournit), animations courtes et seches.
+ local ReplicatedStorage = game:GetService("ReplicatedStorage")
+ 
+ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
++-- Point de substitution unique des glyphes : aucune brique d'interface ne cherche une image
++-- toute seule, tout passe par Glyph (voir Glyph.lua).
++local Glyph = require(script.Parent:WaitForChild("Glyph"))
+ 
+ local Util -- injecte dans Init
+ 
+ local Theme = {}
+
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -596,19 +596,20 @@
+ 	end,
+ }
+ Theme.IconNames = DRAW
+ 
+--- Icone carree de `size` px : image de C si elle existe, sinon pictogramme dessine (un seul style, plein ou au trait)
++-- Icone carree de `size` px. La resolution passe par Glyph : image de C si elle existe,
++-- sinon le pictogramme dessine de cette cle, sinon rien du tout (aucune icone fantome).
+ function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
+ 	local c = color or Theme.Colors.Text
+ 	local key = name or "dot"
+-	local image = iconImage(key)
+-	if image then
++	local resolved = Glyph.Resolve(key)
++	if resolved.kind == "image" and resolved.image then
+ 		return create("ImageLabel", {
+ 			Name = "Icon",
+ 			BackgroundTransparency = 1,
+ 			Size = UDim2.fromOffset(size, size),
+-			Image = image,
++			Image = resolved.image,
+ 			ImageColor3 = c,
+ 			ScaleType = Enum.ScaleType.Fit,
+ 		})
+ 	end
+@@ -616,10 +617,12 @@
+ 		Name = "Icon",
+ 		BackgroundTransparency = 1,
+ 		Size = UDim2.fromOffset(size, size),
+ 	})
+-	local draw = DRAW[key] or DRAW.dot
+-	draw(holder, c, math.max(1.5, size * 0.09))
++	local draw = Glyph.Draw(key)
++	if draw then
++		draw(holder, c, math.max(1.5, size * 0.09))
++	end
+ 	return holder
+ end
+ 
+ -- Recolore une icone (image ou dessin)
+
+> build · space-bunny-free
+[0m✗ [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua</file_path><newString>	local draw = Glyph.Draw(key) or Glyph.Draw("dot")
+	if draw then
+		draw(holder, c, math.max(1.5, size * 0.09))
+	end
+	return holder
+end</newString><oldString>	local draw = Glyph.Draw(key)
+	if draw then
+		draw(holder, c, math.max(1.5, size * 0.09))
+	end
+	return holder
+end</oldString> failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{
+  "path": "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua</file_path><newString>\tlocal draw = Glyph.Draw(key) or Glyph.Draw(\"dot\")\n\tif draw then\n\t\tdraw(holder, c, math.max(1.5, size * 0.09))\n\tend\n\treturn holder\nend</newString><oldString>\tlocal draw = Glyph.Draw(key)\n\tif draw then\n\t\tdraw(holder, c, math.max(1.5, size * 0.09))\n\tend\n\treturn holder\nend</oldString>"
+}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -617,9 +617,9 @@
+ 		Name = "Icon",
+ 		BackgroundTransparency = 1,
+ 		Size = UDim2.fromOffset(size, size),
+ 	})
+-	local draw = Glyph.Draw(key)
++	local draw = Glyph.Draw(key) or Glyph.Draw("dot")
+ 	if draw then
+ 		draw(holder, c, math.max(1.5, size * 0.09))
+ 	end
+ 	return holder
+
+> build · space-bunny-free
+Je retire le résolveur devenu mort et j'enregistre les pictogrammes au démarrage.
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+
+Arguments provided:
+{
+  "newString": "---------------------------------------------------------------- Icones (aucun emoji)\n-- La resolution d'image vit dans Glyph (Assets.UI.Icons.<cle> de C). Theme ne fait plus que\n-- deposer ses pictogrammes dessinés dans Glyph, a l'init.\n\n-- Trait plein en coordonnees relatives (0..1) dans l'icone",
+  "oldString": "---------------------------------------------------------------- Icones (aucun emoji)\n-- Image de C si elle existe : Assets.UI.Icons.<name> (Decal, ImageLabel ou StringValue \"rbxassetid://...\")\nlocal function iconImage(name: string): string?\n\tlocal node = Util and Util.Find(ReplicatedStorage, \"Assets\", \"UI\", \"Icons\", name)\n\tif not node then\n\t\treturn nil\n\tend\n\tif node:IsA(\"Decal\") or node:IsA(\"Texture\") then\n\t\treturn node.Texture\n\telseif node:IsA(\"ImageLabel\") or node:IsA(\"ImageButton\") then\n\t\treturn node.Image\n\telseif node:IsA(\"StringValue\") then\n\t\treturn node.Value\n\tend\n\treturn nil\nend\n\n-- Trait plein en coordonnees relatives (0..1) dans l'icone"
+}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -440,23 +440,10 @@
+ 	end
+ end
+ 
+ ---------------------------------------------------------------- Icones (aucun emoji)
+--- Image de C si elle existe : Assets.UI.Icons.<name> (Decal, ImageLabel ou StringValue "rbxassetid://...")
+-local function iconImage(name: string): string?
+-	local node = Util and Util.Find(ReplicatedStorage, "Assets", "UI", "Icons", name)
+-	if not node then
+-		return nil
+-	end
+-	if node:IsA("Decal") or node:IsA("Texture") then
+-		return node.Texture
+-	elseif node:IsA("ImageLabel") or node:IsA("ImageButton") then
+-		return node.Image
+-	elseif node:IsA("StringValue") then
+-		return node.Value
+-	end
+-	return nil
+-end
++-- La resolution d'image vit dans Glyph (Assets.UI.Icons.<cle> de C). Theme ne fait plus que
++-- deposer ses pictogrammes dessines dans Glyph, a l'init.
+ 
+ -- Trait plein en coordonnees relatives (0..1) dans l'icone
+ local function bar(parent: Instance, cx: number, cy: number, w: number, h: number, rot: number, color: Color3, round: boolean?)
+ 	local f = create("Frame", {
+
+> build · space-bunny-free
+[0m✗ [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua</file_path><newString>Theme.IconNames = DRAW
+
+-- Les pictogrammes enters dans le point de substitution : c'est le seul endroit ou l'interface
+-- ajoute du visuel a Glyph. Quand Moaad tranche le sort des icones, Glyph suffit.
+for key, drawFn in pairs(DRAW) do
+	Glyph.RegisterDraw(key, drawFn)
+end</newString><oldString>Theme.IconNames = DRAW</oldString> failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{
+  "path": "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua</file_path><newString>Theme.IconNames = DRAW\n\n-- Les pictogrammes enters dans le point de substitution : c'est le seul endroit ou l'interface\n-- ajoute du visuel a Glyph. Quand Moaad tranche le sort des icones, Glyph suffit.\nfor key, drawFn in pairs(DRAW) do\n\tGlyph.RegisterDraw(key, drawFn)\nend</newString><oldString>Theme.IconNames = DRAW</oldString>"
+}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -583,8 +583,14 @@
+ 	end,
+ }
+ Theme.IconNames = DRAW
+ 
++-- Les pictogrammes enters dans le point de substitution : c'est le seul endroit ou l'interface
++-- ajoute du visuel a Glyph. Quand Moaad tranche le sort des icones, Glyph suffit.
++for key, drawFn in pairs(DRAW) do
++	Glyph.RegisterDraw(key, drawFn)
++end
++
+ -- Icone carree de `size` px. La resolution passe par Glyph : image de C si elle existe,
+ -- sinon le pictogramme dessine de cette cle, sinon rien du tout (aucune icone fantome).
+ function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
+ 	local c = color or Theme.Colors.Text
+
+> build · space-bunny-free
+Je relis mes modifications, je ne peux pas les exécuter.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient" && echo "=== police ===" && grep -n "CONDENSED\|OSWALD\|BUILDER\|Fonts" Theme.lua | head -12; echo ""; echo "=== resolution icone ===" && grep -n "Glyph\.\|iconImage\|function Theme.Icon" Theme.lua; echo ""; echo "=== Util.Find encore utilise ? ==="; grep -n "Util.Find" Theme.lua || echo "non (ok)"; echo ""; echo "=== end/return equilibrés ==="; grep -c "^end$" Theme.lua; tail -2 Theme.lua
+=== police ===
+57:local CONDENSED = Enum.Font.RobotoCondensed
+58:local CONDENSED_BOLD = (Enum.Font :: any).RobotoCondensedBold or CONDENSED
+60:local BUILDER = "rbxasset://fonts/families/BuilderSans.json"
+61:Theme.Fonts = {
+62:	Title = CONDENSED_BOLD,
+63:	Number = CONDENSED_BOLD,
+64:	Bold = Font.new(BUILDER, Enum.FontWeight.Bold),
+65:	Medium = Font.new(BUILDER, Enum.FontWeight.Medium),
+236:		FontFace = Theme.Fonts.Bold,
+253:	p.FontFace = props.FontFace or Theme.Fonts.Title
+407:		FontFace = props.Font or Theme.Fonts.Title,
+689:		FontFace = Theme.Fonts.Title,
+
+=== resolution icone ===
+8:-- toute seule, tout passe par Glyph (voir Glyph.lua).
+588:-- ajoute du visuel a Glyph. Quand Moaad tranche le sort des icones, Glyph suffit.
+590:	Glyph.RegisterDraw(key, drawFn)
+595:function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
+598:	local resolved = Glyph.Resolve(key)
+614:	local draw = Glyph.Draw(key) or Glyph.Draw("dot")
+
+=== Util.Find encore utilise ? ===
+non (ok)
+
+=== end/return equilibrés ===
+37
+
+return Theme
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient" && echo "=== idiomme de require dans le client ===" && grep -n "require(" init.client.lua Components.lua Hud.lua | head -12
+=== idiomme de require dans le client ===
+init.client.lua:8:local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+Components.lua:6:local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+> build · space-bunny-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua [90m[limit=45, offset=1][0m
+> build · space-bunny-free
+[0m→ [0mRead /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua [90m[limit=45, offset=60][0m
+> build · space-bunny-free
+Point important : ce bootstrap **saute un module qui échoue au chargement**. Un `require` dur de `Glyph` ferait tomber `Theme` — donc tout l'UI — en silence. Je le rends défensif.
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -5,9 +5,18 @@
+ 
+ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+ -- Point de substitution unique des glyphes : aucune brique d'interface ne cherche une image
+ -- toute seule, tout passe par Glyph (voir Glyph.lua).
+-local Glyph = require(script.Parent:WaitForChild("Glyph"))
++-- Require defensif : ce bootstrap saute en silence un module qui echoue, et Theme est une brique
++-- de fondation. Si Glyph manque, l'interface continue a tourner sur les pictogrammes dessines.
++local Glyph
++do
++	local node = script.Parent:FindFirstChild("Glyph")
++	if node then
++		local ok, mod = pcall(require, node)
++		Glyph = if ok then mod else nil
++	end
++end
+ 
+ local Util -- injecte dans Init
+ 
+ local Theme = {}
+
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -603,9 +603,9 @@
+ -- sinon le pictogramme dessine de cette cle, sinon rien du tout (aucune icone fantome).
+ function Theme.Icon(name: string?, size: number, color: Color3?): GuiObject
+ 	local c = color or Theme.Colors.Text
+ 	local key = name or "dot"
+-	local resolved = Glyph.Resolve(key)
++	local resolved = if Glyph then Glyph.Resolve(key) else { kind = "none" }
+ 	if resolved.kind == "image" and resolved.image then
+ 		return create("ImageLabel", {
+ 			Name = "Icon",
+ 			BackgroundTransparency = 1,
+@@ -619,9 +619,9 @@
+ 		Name = "Icon",
+ 		BackgroundTransparency = 1,
+ 		Size = UDim2.fromOffset(size, size),
+ 	})
+-	local draw = Glyph.Draw(key) or Glyph.Draw("dot")
++	local draw = (if Glyph then Glyph.Draw(key) else nil) or DRAW[key] or DRAW.dot
+ 	if draw then
+ 		draw(holder, c, math.max(1.5, size * 0.09))
+ 	end
+ 	return holder
+
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+@@ -595,9 +595,11 @@
+ 
+ -- Les pictogrammes enters dans le point de substitution : c'est le seul endroit ou l'interface
+ -- ajoute du visuel a Glyph. Quand Moaad tranche le sort des icones, Glyph suffit.
+ for key, drawFn in pairs(DRAW) do
+-	Glyph.RegisterDraw(key, drawFn)
++	if Glyph then
++		Glyph.RegisterDraw(key, drawFn)
++	end
+ end
+ 
+ -- Icone carree de `size` px. La resolution passe par Glyph : image de C si elle existe,
+ -- sinon le pictogramme dessine de cette cle, sinon rien du tout (aucune icone fantome).
+
+> build · space-bunny-free
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+Index: /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
++++ /Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient/init.client.lua
+@@ -7,9 +7,9 @@
+ local player = Players.LocalPlayer
+ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+ 
+ -- Ordre de chargement : les briques d'abord, les ecrans ensuite (un module absent est saute)
+-local FOUNDATION = { "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components" }
++local FOUNDATION = { "Glyph", "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components" }
+ local SCREENS = {
+ 	"Notifications",
+ 	"Hud",
+ 	"Prompts",
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && echo "=== diff ===" && git diff --stat && echo "" && echo "=== Glyph: exports ===" && grep -n "^function Glyph\|^local Glyph\|^return Glyph" src/StarterPlayer/StarterPlayerScripts/TideClient/Glyph.lua && echo "" && echo "=== Theme: plus de require dur ===" && grep -n "require" src/StarterPlayer/StarterPlayerScripts/TideClient/Theme.lua
+=== diff ===
+ .../StarterPlayerScripts/TideClient/Theme.lua      | 65 +++++++++++++---------
+ .../TideClient/init.client.lua                     |  2 +-
+ 2 files changed, 40 insertions(+), 27 deletions(-)
+
+=== Glyph: exports ===
+19:local Glyph = {}
+47:function Glyph.Image(key: string): string?
+74:function Glyph.Resolve(key: string?): { kind: string, image: string? }
+90:function Glyph.IsDeclared(key: string?): boolean
+94:function Glyph.HasImage(key: string?): boolean
+99:function Glyph.Draw(key: string?)
+110:function Glyph.RegisterDraw(key: string, drawFn: (parent: Instance, color: Color3, thickness: number) -> ())
+116:function Glyph.Declare(key: string)
+120:return Glyph
+
+=== Theme: plus de require dur ===
+6:local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+15:		local ok, mod = pcall(require, node)
+> build · space-bunny-free
+Je pousse.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git add -A src/StarterPlayer/StarterPlayerScripts/TideClient/ && git commit -q -m "B, P1-14 : RobotoCondensed + point de substitution Glyph
+
+Police : titres et chiffres passent d'Oswald a Enum.Font.RobotoCondensed
+(native, condensee, sans licence), avec repli sur la variante grasse si
+l'enum l'expose. Texte courant inchange (Builder Sans).
+
+Point de substitution : Glyph.lua est le seul module qui resout une cle vers
+une image (Assets.UI.Icons de C) ou un pictogramme dessine. Aucune brique
+d'interface ne cherche d'image toute seule ; les 8 appelants passent par
+Theme.Icon, qui delegue. Quand Moaad tranche les icones, un seul fichier change.
+
+Theme le require en pcall : ce bootstrap saute en silence un module qui echoue,
+et Theme est une fondation. Sans Glyph, l'interface tourne sur les dessins.
+
+Aucun emoji. Aucune maquette. Aucune image supposee.
+
+Co-authored-by: B (Interface & feel)" && git push origin claude/friendly-volta-qj504y 2>&1 | tail -3
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   3e5db56..3ac6e73  claude/friendly-volta-qj504y -> claude/friendly-volta-qj504y
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+Index: /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
++++ /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+@@ -1,8 +1,13 @@
+ # File de B — Interface & feel
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 14:55
++FAIT     : P1-14 poussé (`3ac6e73`). Titres et chiffres sur `Enum.Font.RobotoCondensed` (Oswald retiré). Nouveau module `Glyph.lua` = point de substitution unique : résout une clé vers l'image de C (`Assets.UI.Icons`) ou le pictogramme dessiné ; `Theme.Icon` délègue, les 8 appelants n'ont pas bougé. Plaques sombres, coins 6–10 px et hiérarchies étaient déjà en place : rien à refaire dessus.
++VÉRIFIÉ  : rien testé en jeu (ni Studio ni luau-analyze). Relu : **0 emoji** dans tout le client, et `Theme.lua` est le seul fichier fabriquant une `ImageLabel`.
++BESOIN   : [D] — un point important : **tu ne construis rien de neuf, tu repars d'une base déjà faite.** Le système console et les pictogrammes dessinés dataient d'avant ton message ; je n'ai fait que la police et l'extraction du point de substitution, comme demandé. Et j'ai durci le require de `Glyph` : ce bootstrap saute en silence un module qui échoue, un require dur aurait fait tomber toute l'interface.
++
+ ## 2026-10-10 14:35
+ FAIT     : rien de nouveau côté code, j'ai vérifié avant d'agir. **Correction d'un signalement que j'avais fait : les codes d'erreur v2.1 sont complets**, `StealHud.CODE_TEXT` couvre les 11 du vol et `MountButton.CODE_TEXT` ceux de la monture. Il n'y a pas de bug à corriger là, ne le cherche pas.
+ VÉRIFIÉ  : lectures seules (`StealHud.lua:21-32`, `MountButton.lua:8-14`, `World.lua:40-52`). Rien testé en jeu.
+ BESOIN   : [D] — trois décisions qui me bloquent, aucune ne m'appartient : **(1)** fusionner `claude/friendly-volta-qj504y`, mes 2 correctifs sont orphelins et tu m'interdis de merger ; **(2)** le jeu d'icônes pour P1-14 — les emoji sont interdits et le dépôt n'a aucun asset d'icône, donc je ne peux pas sortir l'UI console sans ta décision (Creator Store sous licence, ou atlas que je dessine) ; **(3)** la police condensée (Barlow Condensed ou équivalent, licence).
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git add docs/INBOX/B.md && git commit -q -m "B : compte-rendu P1-14 (police + Glyph)
+
+Co-authored-by: B (Interface & feel)" && git push origin claude/friendly-volta-qj504y 2>&1 | tail -2 && echo "=== mes commits ===" && git log --oneline -3
+! [remote rejected] claude/friendly-volta-qj504y -> claude/friendly-volta-qj504y (failed)
+error: failed to push some refs to 'https://github.com/moaadzne/PROJECT-RBLX.git'
+=== mes commits ===
+de7d9a7 B : compte-rendu P1-14 (police + Glyph)
+3ac6e73 B, P1-14 : RobotoCondensed + point de substitution Glyph
+ada8300 Integration : dernier commit de B (demande a D)
+> build · space-bunny-free
+Push refusé. Je regarde pourquoi avant de forcer quoi que ce soit.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git fetch origin --quiet && echo "=== ma branche distante ===" && git log --oneline -3 origin/claude/friendly-volta-qj504y && echo "" && echo "=== divergence ===" && git rev-list --left-right --count origin/claude/friendly-volta-qj504y...HEAD && echo "(gauche=distante, droite=local)" && echo "" && echo "=== branche existe encore ? ===" && git ls-remote --heads origin 2>/dev/null | grep friendly
+=== ma branche distante ===
+3ac6e73 B, P1-14 : RobotoCondensed + point de substitution Glyph
+ada8300 Integration : dernier commit de B (demande a D)
+9f10adb P1-42 : Wave.lua sur l'integration + correction P0 du repere de vague
+
+=== divergence ===
+0	1
+(gauche=distante, droite=local)
+
+=== branche existe encore ? ===
+3ac6e73396c6c38fc4e9dca6fc355369791d21ef	refs/heads/claude/friendly-volta-qj504y
+> build · space-bunny-free
+[0m✱ [0mGlob "**/DIRECTIVE_NIVEAU.md" [90m1 match[0m
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git push origin claude/friendly-volta-qj504y 2>&1 | tail -6
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   3ac6e73..de7d9a7  claude/friendly-volta-qj504y -> claude/friendly-volta-qj504y
+> build · space-bunny-free
+Push passé (rejet transitoire). Je lis la directive en entier.
+[0m→ [0mRead docs/DIRECTIVE_NIVEAU.md 
+> build · space-bunny-free
+La directive est claire, et mon blocage est exactement celui-là : je n'ai jamais pu lancer le jeu. Je vérifie ce que cette machine peut réellement faire.
+[0m$ [0mls -d /Applications/RobloxStudio.app 2>/dev/null && echo "STUDIO INSTALLE" || echo "pas de Studio dans /Applications"; echo "---"; ls ~/Applications 2>/dev/null; echo "--- StudioMCP binaire ? ---"; ls -la "/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP" 2>/dev/null || echo "absent"; echo "--- testbuild ---"; ls -la "/Users/admin/Documents/claude code/tide-rush/testbuild" 2>/dev/null
+/Applications/RobloxStudio.app
+STUDIO INSTALLE
+---
+Chrome Apps.localized
+TradingView CDP.app
+--- StudioMCP binaire ? ---
+-rwxrwxrwx  1 admin  staff  5652576 Oct  3 00:59 /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP
+--- testbuild ---
+> build · space-bunny-free
+Studio **est** installé et `StudioMCP` existe. Je vérifie s'il tourne et si je peux m'y brancher.
+[0m$ [0mpgrep -fl "Roblox" 2>/dev/null | head -5 || echo "Studio NE TOURNE PAS"; echo "--- port MCP studio (39179 par defaut) ---"; (nc -z -w 2 127.0.0.1 39179 2>/dev/null && echo "port ouvert") || echo "port 39179 ferme"; echo "--- place + testbuild ---"; ls -la "/Users/admin/Documents/claude code/tide-rush-b/testbuild" 2>/dev/null | head
+16444 /Applications/Claude.app/Contents/Helpers/disclaimer --pgroup -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP
+16445 /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP
+16479 /Applications/Claude.app/Contents/Helpers/disclaimer --pgroup -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP
+16480 /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP
+--- port MCP studio (39179 par defaut) ---
+port 39179 ferme
+--- place + testbuild ---
+total 32
+drwxr-xr-x   5 admin  staff   160 Oct 10 14:37 .
+drwxr-xr-x  12 admin  staff   384 Oct 10 14:37 ..
+-rw-r--r--   1 admin  staff  1998 Oct 10 14:37 TestWaveRenderer.client.lua
+-rw-r--r--   1 admin  staff  6843 Oct 10 14:37 TestWorld.lua
+-rw-r--r--   1 admin  staff   494 Oct 10 14:37 test.project.json
+> build · space-bunny-free
+`StudioMCP` tourne, mais lancé par **Claude.app** — c'est la session Claude Desktop qui est câblée, pas la mienne. Je vérifie le mode démo, qui est la voie la moins chère pour une capture.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient" && grep -n "demoActive = true\|function Store.StartDemo\|StartDemo\|TR_ClientDebug\|Demo" Store.lua init.client.lua | head -12; echo "--- projet test ---"; cat "/Users/admin/Documents/claude code/tide-rush-b/testbuild/test.project.json"
+Store.lua:458:local function startDemo()
+Store.lua:462:	demoActive = true
+Store.lua:469:local function stopDemo()
+Store.lua:473:function Store.IsDemo(): boolean
+Store.lua:798:--   Players.LocalPlayer.TR_ClientDebug:Fire("state", {coins = 500, intro = "intro"})   fusionne avec l'etat courant
+Store.lua:799:--   Players.LocalPlayer.TR_ClientDebug:Fire("wave", {phase = "warning", phaseStart = t, phaseEnd = t + 7, startTime = t + 7, tide = "Golden"})
+Store.lua:800:--   Players.LocalPlayer.TR_ClientDebug:Fire("notify", "capture", {species = "SandStar", mutation = "Golden", isNew = true, text = "..."})
+Store.lua:801:--   Players.LocalPlayer.TR_ClientDebug:Fire("notify", "stealStart", {role = "victim", thief = 123, thiefName = "Kai", species = "SandStar", text = "..."})
+Store.lua:802:--   Players.LocalPlayer.TR_ClientDebug:Fire("royal", {cycle = 3, endsAt = t, top = {{userId = 1, name = "Moaad", score = 1200}}})
+Store.lua:803:--   Players.LocalPlayer.TR_ClientDebug:Fire("demo", true | false)
+Store.lua:809:	ev.Name = "TR_ClientDebug"
+Store.lua:827:				startDemo()
+--- projet test ---
+{
+ "name": "RideTheTsunami_TEST",
+ "tree": {
+  "$className": "DataModel",
+  "ReplicatedStorage": {
+   "Shared": {
+    "$path": "src/ReplicatedStorage/Shared"
+   }
+  },
+  "ServerScriptService": {
+   "$path": "src/ServerScriptService"
+  },
+  "StarterPlayer": {
+   "StarterPlayerScripts": {
+    "$path": "src/StarterPlayer/StarterPlayerScripts"
+   }
+  },
+  "Workspace": {
+   "$properties": {
+    "StreamingEnabled": false
+   }
+  },
+  "ReplicatedFirst": {
+   "$path": "src/ReplicatedFirst"
+  }
+ }
+}
+> build · space-bunny-free
+Le mode démo et `TR_ClientDebug` existent déjà : une capture se compose sans serveur. Avant de rendre compte, je vérifie une chose qui casserait la capture : que toute clé d'icône demandée existe vraiment.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient" && grep -ohP 'icon = "\K[^"]+' *.lua | sort -u > /tmp/used.txt && grep -oP '^\t\K[a-z]+(?= = function)' Theme.lua | sort -u > /tmp/drawn.txt && echo "=== cles utilisees mais NON dessinees ===" && comm -23 /tmp/used.txt /tmp/drawn.txt && echo "--- fin ---" && echo "" && echo "utilisees: $(wc -l < /tmp/used.txt) | dessinees: $(wc -l < /tmp/drawn.txt)"
+grep: invalid option -- P
+usage: grep [-abcdDEFGHhIiJLlMmnOopqRSsUVvwXxZz] [-A num] [-B num] [-C[num]]
+	[-e pattern] [-f file] [--binary-files=value] [--color=when]
+	[--context[=num]] [--directories=action] [--label] [--line-buffered]
+	[--null] [pattern] [file ...]
+grep: invalid option -- P
+usage: grep [-abcdDEFGHhIiJLlMmnOopqRSsUVvwXxZz] [-A num] [-B num] [-C[num]]
+	[-e pattern] [-f file] [--binary-files=value] [--color=when]
+	[--context[=num]] [--directories=action] [--label] [--line-buffered]
+	[--null] [pattern] [file ...]
+=== cles utilisees mais NON dessinees ===
+--- fin ---
+
+utilisees:        0 | dessinees:        0
+> build · space-bunny-free
+[0m⚙ [0mexecute {"code":"const sh = tools.shell;\nconst r1 = await sh({ command: \"cd '/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient' && grep -oh 'icon = \\\"[a-zA-Z]*\\\"' *.lua | sed 's/icon = \\\"//; s/\\\"//' | sort -u > /tmp/used.txt; sed -n '/^local DRAW = {/,/^}/p' Theme.lua | grep -o '^\\\\t[a-zA-Z]* = function' | sed 's/ = function//' | tr -d '\\\\t' | sort -u > /tmp/drawn.txt; echo '=== UTILISEES ==='; cat /tmp/used.txt; echo '=== DESSINEES ==='; cat /tmp/drawn.txt\" });\nreturn r1;"} 
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b/src/StarterPlayer/StarterPlayerScripts/TideClient" && grep -oh 'icon = "[a-zA-Z]*"' *.lua | sed 's/icon = "//; s/"//' | sort -u > /tmp/used.txt; sed -n '/^local DRAW = {/,/^}/p' Theme.lua | grep -o '	[a-zA-Z]* = function' | sed 's/ = function//' | tr -d '	' | sort -u > /tmp/drawn.txt; echo "=== UTILISEES (${_:-}) ==="; cat /tmp/used.txt; echo "=== DESSINEES ==="; cat /tmp/drawn.txt; echo "=== UTILISEES MAIS NON DESSINEES ==="; comm -23 /tmp/used.txt /tmp/drawn.txt; echo "--- fin ---"
+=== UTILISEES (-u) ===
+alert
+arrow
+bolt
+clock
+close
+coin
+crown
+dot
+info
+lock
+moon
+net
+revenge
+ride
+shield
+shop
+spark
+unlock
+wave
+=== DESSINEES ===
+alert
+arrow
+bolt
+clock
+close
+coin
+crown
+dot
+down
+info
+lock
+moon
+net
+revenge
+ride
+shield
+shop
+spark
+unlock
+wave
+=== UTILISEES MAIS NON DESSINEES ===
+--- fin ---
+> build · space-bunny-free
+Toutes les 19 clés d'icône utilisées sont dessinées : aucune icône manquante, donc aucun trou dans la capture. Je rends compte à D.
+[0m✗ [0mEdit  failed
+[91m[1mError: [0mInvalid arguments for tool "edit":
+- path: Missing key
+- oldString: Missing key
+- newString: Missing key
+
+Arguments provided:
+{}
+
+Update the arguments and call the tool again.
+> build · space-bunny-free
+[0m← [0mEdit /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+Index: /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+===================================================================
+--- /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
++++ /Users/admin/Documents/claude code/tide-rush-b/docs/INBOX/B.md
+@@ -1,8 +1,13 @@
+ # File de B — Interface & feel
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 15:10
++FAIT     : **je n'ai pas pu faire la capture, et je ne veux pas pretendre le contraire.** L'interface est prete a etre photographiee : 0 emoji dans tout le client, et j'ai verifie que les 19 cles d'icone utilisees existent toutes en pictogramme dessine — aucune icone manquante, donc pas de trou dans l'image.
++VÉRIFIÉ  : rien testé en jeu, je n'ai pas pu. Studio **est** installe sur cette machine et `StudioMCP` **tourne deja**, mais lance par `Claude.app` — c'est ta session qui est cablee, pas la mienne ; le port 39179 est ferme, donc Studio lui-meme n'est pas ouvert. Je n'ai aucun serveur MCP dans ma session.
++BESOIN   : [D] — deux facons de debloquer, choisis-en une : **(a)** tu fais la capture depuis la session qui a StudioMCP (elle tourne deja, c'est le plus court) ; **(b)** tu m'autorises a cabler le StudioMCP dans ma config et a redemarrer ma session, et je la fais moi-meme. Le mode demo et `TR_ClientDebug` existent deja (`wave`, `notify`, `stealStart`, `royal`), et `testbuild/test.project.json` monte le client **sans serveur et sans monde** : la capture ne demande ni la vague ni le decor, seulement l'UI.
++
+ ## 2026-10-10 14:55
+ FAIT     : P1-14 poussé (`3ac6e73`). Titres et chiffres sur `Enum.Font.RobotoCondensed` (Oswald retiré). Nouveau module `Glyph.lua` = point de substitution unique : résout une clé vers l'image de C (`Assets.UI.Icons`) ou le pictogramme dessiné ; `Theme.Icon` délègue, les 8 appelants n'ont pas bougé. Plaques sombres, coins 6–10 px et hiérarchies étaient déjà en place : rien à refaire dessus.
+ VÉRIFIÉ  : rien testé en jeu (ni Studio ni luau-analyze). Relu : **0 emoji** dans tout le client, et `Theme.lua` est le seul fichier fabriquant une `ImageLabel`.
+ BESOIN   : [D] — un point important : **tu ne construis rien de neuf, tu repars d'une base déjà faite.** Le système console et les pictogrammes dessinés dataient d'avant ton message ; je n'ai fait que la police et l'extraction du point de substitution, comme demandé. Et j'ai durci le require de `Glyph` : ce bootstrap saute en silence un module qui échoue, un require dur aurait fait tomber toute l'interface.
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush-b" && git add docs/INBOX/B.md && git commit -q -m "B : la capture est bloquee (pas de Studio MCP dans ma session) + etat UI verifie
+
+Co-authored-by: B (Interface & feel)" && git push origin claude/friendly-volta-qj504y 2>&1 | tail -2
+To https://github.com/moaadzne/PROJECT-RBLX.git
+   de7d9a7..49c2b38  claude/friendly-volta-qj504y -> claude/friendly-volta-qj504y
+> build · space-bunny-free
+Je n'ai pas pu faire la capture, et je ne vais pas prétendre le contraire. C'est écrit à D.
+
+**Ce que j'ai vérifié avant de bloquer :** l'interface est prête à être photographiée — 0 emoji dans tout le client, et les 19 clés d'icône utilisées existent toutes en pictogramme dessiné. Aucune icône manquante, donc pas de trou dans l'image.
+
+**Pourquoi je suis bloqué :** Studio est installé et `StudioMCP` tourne déjà sur cette machine — mais il est lancé par `Claude.app`, donc c'est la session de D qui est câblée, pas la mienne. Le port 39179 est fermé : Studio n'est pas ouvert. Je n'ai aucun serveur MCP dans ma session, donc pas de `screen_capture`, pas de `start_stop_play`. Et lancer Studio en pilotant son interface à l'aveugle sur ce Mac, c'est exactement ce que la passation déconseille.
+
+**Deux façons de débloquer, une seule ligne à choisir :**
+- **(a)** D fait la capture depuis la session qui a déjà StudioMCP — le plus court.
+- **(b)** D m'autorise à câbler StudioMCP dans ma config et à redémarrer ma session — je la fais moi-même.
+
+Le point utile pour la suite : le mode démo et `TR_ClientDebug` existent déjà (`wave`, `notify`, `stealStart`, `royal`), et `testbuild/test.project.json` monte le client **sans serveur et sans monde**. La capture ne demande donc ni la vague ni le décor — seulement l'UI. C'est le chemin le moins cher, et c'est bien celui qui répond à « montre-la ».

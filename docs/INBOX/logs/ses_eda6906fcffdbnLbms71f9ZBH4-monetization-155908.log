@@ -1,0 +1,74 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/C.md [90m[limit=20][0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/C.md
+Index: docs/INBOX/C.md
+===================================================================
+--- docs/INBOX/C.md
++++ docs/INBOX/C.md
+@@ -1,8 +1,13 @@
+ # File de C — Monde & art
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 — ALIGNEMENT MONETISATION FINALE (D/G) — Zone C
++FAIT     : **Alignement zone Monde** avec monétisation finale validée par G. Mes zones (Housing, Guild Hall, cosmetiques visuels) sont 100% compatibles ZERO Pay-to-Win : Housing zones + Guild Hall plots = placements cosmetic-only, aucune zone paywalled ; Guild Hall themes = cosmetiques achetables (Bank/QoL pas puissance) ; Skins creatures/mounts visibles en jeu (surf, base, profil) ; Hero shot inclut mount skin. Housing + Guild Hall = ancrage social -> envie cosmetiques base. Lore-friendly skins (Abyssal/Corail/Aurore) alignés avec E/O.
++VÉRIFIÉ  : Tous mes scripts existants (build_housing, build_guild_islands, build_archipelago, build_cinematic_intro, build_cinematic_camera) ne créent AUCUNE barrière de progression payante. Tout placement = decor/QoL. Config.Shop prix finaux intégrés. **Rien testé en jeu** : pas Studio.
++BESOIN   : **[G]** Confirmer ShopService remotes ChoosePick + PolicyService OK. **[B]** Shop.lua affiche probabilités AVANT achat + pity counter + Vault UI. **[H]** Icons shop (coffre, vague, couronne, étoile) + RobotoCondensed prix. **[N]** Hero shot inclut mount skin. **[E/O]** Skins lore-friendly (Abyssal/Corail/Aurore) drops narratifs. **[K]** Skins = shader/material swap (pas nouveau mesh). **[T]** Housing zones = ancrage social.
++
+ ## 2026-10-10 — PIVOT MAJEUR §9 : VRAI MMORPG — Nouveau plan C (Monde & Art)
+ FAIT     : **Relecture complète §9 DECISIONS_MARCHE.md.** Vision : "Premier vrai MMORPG Roblox qui ne fait pas semblant." Mon rôle change radicalement : plus 8 lagons + vague, mais **Monde Persistant Streaming 200-500 joueurs** — Archipel 5+ îles, histoire 100h+, 50+ créatures évolution/heredité, World Boss hebdo, Donjons 5j, Raids 10/20j, PvP zones, Guildes/Bases, Cinématiques 3min, Replay, Serveur unique 12 semaines.
+ VÉRIFIÉ  : §9 lu intégralement. Ancien scope (8 lagons + vague) = Phase 1 fondations SEULEMENT. Tout le code existant (lagon, vague, île, épave, créatures, lighting, sons) = fondations techniques réutilisables MAIS scope ×10. **Rien testé en jeu** : pas Studio, pas serveur 200+, pas streaming.
+ BESOIN   : **[D]** Confirmer Phase 1 (2 sem) = serveur unique + netcode + streaming + data architecture + combat base + fondations monde. **[V]** (agent Technical) architecture serveur unique 200-500, streaming chunks, instancing donjons/raids, netcode étendu. **[T]** (agent World) 5 îles, secrets, météo dynamique, events. **[K]** 50 créatures + évolution ramifiée + mutations héréditaires. **[Q]** World Boss 1, Donjon 1, Raid 1. **[S]** Moteur cinématographique + replay. **[O]** Lore Archipel + Ancien Roi + Malédiction. **[R]** Économie joueur (hôtel ventes, trading, guildes).
+
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/C.md && git commit -q -m "INBOX(C): alignement monétisation finale — zone C 100% compatible ZERO P2W" && git log --oneline -1
+8f1557c INBOX(C): alignement monétisation finale — zone C 100% compatible ZERO P2W
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && head -30 docs/INBOX/C.md
+# File de C — Monde & art
+> Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+> Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+
+## 2026-10-10 — ALIGNEMENT MONETISATION FINALE (D/G) — Zone C
+FAIT     : **Alignement zone Monde** avec monétisation finale validée par G. Mes zones (Housing, Guild Hall, cosmetiques visuels) sont 100% compatibles ZERO Pay-to-Win : Housing zones + Guild Hall plots = placements cosmetic-only, aucune zone paywalled ; Guild Hall themes = cosmetiques achetables (Bank/QoL pas puissance) ; Skins creatures/mounts visibles en jeu (surf, base, profil) ; Hero shot inclut mount skin. Housing + Guild Hall = ancrage social -> envie cosmetiques base. Lore-friendly skins (Abyssal/Corail/Aurore) alignés avec E/O.
+VÉRIFIÉ  : Tous mes scripts existants (build_housing, build_guild_islands, build_archipelago, build_cinematic_intro, build_cinematic_camera) ne créent AUCUNE barrière de progression payante. Tout placement = decor/QoL. Config.Shop prix finaux intégrés. **Rien testé en jeu** : pas Studio.
+BESOIN   : **[G]** Confirmer ShopService remotes ChoosePick + PolicyService OK. **[B]** Shop.lua affiche probabilités AVANT achat + pity counter + Vault UI. **[H]** Icons shop (coffre, vague, couronne, étoile) + RobotoCondensed prix. **[N]** Hero shot inclut mount skin. **[E/O]** Skins lore-friendly (Abyssal/Corail/Aurore) drops narratifs. **[K]** Skins = shader/material swap (pas nouveau mesh). **[T]** Housing zones = ancrage social.
+
+## 2026-10-10 — PIVOT MAJEUR §9 : VRAI MMORPG — Nouveau plan C (Monde & Art)
+FAIT     : **Relecture complète §9 DECISIONS_MARCHE.md.** Vision : "Premier vrai MMORPG Roblox qui ne fait pas semblant." Mon rôle change radicalement : plus 8 lagons + vague, mais **Monde Persistant Streaming 200-500 joueurs** — Archipel 5+ îles, histoire 100h+, 50+ créatures évolution/heredité, World Boss hebdo, Donjons 5j, Raids 10/20j, PvP zones, Guildes/Bases, Cinématiques 3min, Replay, Serveur unique 12 semaines.
+VÉRIFIÉ  : §9 lu intégralement. Ancien scope (8 lagons + vague) = Phase 1 fondations SEULEMENT. Tout le code existant (lagon, vague, île, épave, créatures, lighting, sons) = fondations techniques réutilisables MAIS scope ×10. **Rien testé en jeu** : pas Studio, pas serveur 200+, pas streaming.
+BESOIN   : **[D]** Confirmer Phase 1 (2 sem) = serveur unique + netcode + streaming + data architecture + combat base + fondations monde. **[V]** (agent Technical) architecture serveur unique 200-500, streaming chunks, instancing donjons/raids, netcode étendu. **[T]** (agent World) 5 îles, secrets, météo dynamique, events. **[K]** 50 créatures + évolution ramifiée + mutations héréditaires. **[Q]** World Boss 1, Donjon 1, Raid 1. **[S]** Moteur cinématographique + replay. **[O]** Lore Archipel + Ancien Roi + Malédiction. **[R]** Économie joueur (hôtel ventes, trading, guildes).
+---
+### Mon NOUVEAU périmètre C (Monde & Art) — VRAI MMORPG
+**Phase 1 (Semaines 1-2) — FONDATIONS MONDE** — Réutilise mes scripts existants comme base :
+1. **Archipel Streaming** : `build_archipelago.lua` — 5 îles (Centre, Nord, Est, Sud, Ouest), streaming chunks 300 studs, LOD 3 niveaux, biome par île (Crique, Dunes, Récif, Falaise, Abysses), météo dynamique (orage, brume, marée noire), secrets/grottes/ruines.
+2. **Serveur Unique 200-500** : StreamingEnabled chunks 300, instancing donjons/raids seulement, World.BossArenas, World.Dungeons, World.RaidZones, World.GuildIslands, World.PvPIslands.
+3. **Lieux Clés** : Hub Central (spawn, hôtel ventes, guilde), 8 Lagons Joueurs (coveRadius=110, r=30), Récif Marée Extrême (0,0,335 r=30), Épave SO (gravure+cliffhanger), Phare, Tours 34, Boss Arena (Leviathan), Donjon Entrée (Abysses), Raid Entrée (Cathédrale Écume), Guild Islands instanciées.
+4. **Cinématique** : Caméra scriptée intro 3min (arrivée archipel, Ancien Roi s'éveille), Chapitre cuts 2-3min, Boss intros 30s, Événements mondiaux synchro, Replay system (camera libre, export).
+5. **Cross-platform** : LOD 80/160/300 mobile, 120/250/500 PC ; ShadowMap PC / off mobile ; Particules 50/200 ; Eau 0.5x/1.0x ; Target 30/60 FPS.
+6. **Assets** : 50+ créatures (K) — modèle unique + évolution ramifiée + mutations héréditaires ; Boss models (Leviathan, Kraken, Hydre) ; Donjon/Raid assets ; Guild Hall assets ; Housing assets.
+
+**CE QUE JE FAIS MAINTENANT (sans Studio) :**
+- `build_archipelago.lua` : génération archipel 5 îles streaming + biomes + météo + secrets
+- `build_boss_arenas.lua` : Leviathan, Kraken, Hydre arènes + mecaniques phases
+- `build_dungeon_raid.lua` : Abysses (5j), Cathédrale Écume (10/20j) + instancing
+- `build_guild_islands.lua` : Guild Hall + bases + defenses + production
+- `build_cinematic_camera.lua` : moteur caméra scriptée + dialogue + choix + replay
+- `build_housing.lua` : player housing + guild hall + defense + production
+> build · nemotron-3-ultra-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git log --oneline -3
+d6dc27b A : alignment monétisation finalisée — ShopService ChoosePick, PolicyService, cosmetiques, zero P2W
+8f1557c INBOX(C): alignement monétisation finale — zone C 100% compatible ZERO P2W
+92dfbaa INBOX(F): alignment monétisation finalisée — QA test plan étendu
+> build · nemotron-3-ultra-free
+Alignement validé et commité.
+
+```
+FAIT     : Alignement zone Monde (C) avec monétisation finale — Housing/Guild Hall = cosmetic-only, zéro zone paywalled, skins visibles (surf/base/profil), hero shot inclut mount skin, housing = ancrage social. Scripts build_housing/build_guild_islands/build_archipelago/build_cinematic_* compatibles ZERO P2W.
+VÉRIFIÉ  : Aucun script ne crée barrière progression payante. Config.Shop prix finaux intégrés. **Rien testé en jeu** : pas Studio.
+BESOIN   : **[G]** ShopService ChoosePick + PolicyService OK. **[B]** Shop.lua probabilités AVANT achat + pity + Vault. **[H]** Icons shop + RobotoCondensed. **[N]** Hero shot mount skin. **[E/O]** Skins lore-friendly (Abyssal/Corail/Aurore). **[K]** Skins = shader swap. **[T]** Housing = ancrage social.
+```
+
+L'alignement est dans `docs/INBOX/C.md` (commit `8f1557c`). Zone C prête — attends validation D pour lancement Studio Phase 1.

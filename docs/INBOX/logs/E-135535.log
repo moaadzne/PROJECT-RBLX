@@ -1,0 +1,71 @@
+[0m
+> build · space-bunny-free
+[0m→ [0mRead AGENTS.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && ls -la docs/INBOX/ 2>&1
+total 48
+drwxr-xr-x   9 admin  staff   288 Oct 10 13:55 .
+drwxr-xr-x  22 admin  staff   704 Oct 10 13:52 ..
+-rw-r--r--   1 admin  staff   210 Oct 10 13:52 A.md
+-rw-r--r--   1 admin  staff   198 Oct 10 13:52 B.md
+-rw-r--r--   1 admin  staff   193 Oct 10 13:52 C.md
+-rw-r--r--   1 admin  staff  1450 Oct 10 13:53 D.md
+-rw-r--r--   1 admin  staff   203 Oct 10 13:52 E.md
+-rw-r--r--   1 admin  staff   208 Oct 10 13:52 F.md
+drwxr-xr-x   7 admin  staff   224 Oct 10 13:55 logs
+> build · space-bunny-free
+[0m→ [0mRead docs/INBOX/E.md 
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && grep -c "\[À DÉFINIR\]" docs/GDD_REEF.md; echo "--- contexte ---"; grep -n "\[À DÉFINIR\]" docs/GDD_REEF.md
+4
+--- contexte ---
+21:> **Avertissement honnête** : tous les chiffres ci-dessous sont des **valeurs de départ proposées par E** (choix de design), jamais des mesures ni des faits. Ils se règlent au playtest. Ce qui n'est pas décidé est écrit `[À DÉFINIR]` et listé au §14.
+300:| §2.6 — condition du Léviathan | **jamais définie**, et absente du contrat | §14 nº 1 · `[À DÉFINIR]` |
+366:| 6+ | `[À DÉFINIR]` — courbe ×8 par rang | | |
+370:- **Léviathan** : débloqué à partir du **rang 3**. Une fois par serveur et par 30 minutes, pendant une marée `Normal`, une silhouette colossale remonte au large. `[À DÉFINIR]` la récompense exacte — ma recommandation : **un Deep Dive gratuit**, ce qui est cohérent avec le reste et ne casse pas l'économie.
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && date "+%Y-%m-%d %H:%M" && echo "--- HEAD de ma branche ---" && git log --oneline -2 && echo "--- lignes ---" && wc -l docs/GDD_REEF.md && echo "--- PR #1 contient GDD_REEF ? ---" && git branch -r --contains f908348 2>/dev/null | head -5
+2026-10-10 13:56
+--- HEAD de ma branche ---
+d82de60 Protocole de boite : docs/INBOX/<lettre>.md
+8964cc7 docs(E): GDD_REEF recale sur le contrat v2.1, pas sur l'archi perimee
+--- lignes ---
+     476 docs/GDD_REEF.md
+--- PR #1 contient GDD_REEF ? ---
+  origin/claude/e-gdd-reef
+> build · space-bunny-free
+[0m← [0mEdit docs/INBOX/E.md
+Index: docs/INBOX/E.md
+===================================================================
+--- docs/INBOX/E.md
++++ docs/INBOX/E.md
+@@ -1,4 +1,9 @@
+ # File de E — Concept & game design
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
++## 2026-10-10 13:56
++FAIT     : GDD_REEF **prêt à intégrer : OUI** — mais fusionner le sommet `8964cc7` (476 l.), **pas** `f908348` (418 l.) : ce dernier contient 4 erreurs corrigées depuis (sac 2→10, paliers Codex, réserve, rebirth).
++VÉRIFIÉ  : chaque chiffre Phase 1 revérifié contre `Config.lua` + `review/review_context.md` ; **0 `[À DÉFINIR]` bloquant** — les 4 restants (récompense Léviathan, courbe rangs 6+) portent sur le Tide Rank, entierement hors Phase 1. Rien testé en jeu.
++BESOIN   : **D** — fusionner `claude/e-gdd-reef` vers l'intégration **avant lundi 12/10**, sinon le sync Rojo part sans le GDD. Un seul point à échéance : §14 nº 2 (espèces Rare/Epic/Legendary hors marée extrême), à confirmer avant le test fermé ~20/10 ; le reste est Phase 2.
++
+
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/INBOX/E.md && git commit -q -m "INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi" && git log --oneline -1
+161586f INBOX(E): GDD_REEF pret a integrer, merger 8964cc7 avant lundi
+> build · space-bunny-free
+Lu `AGENTS.md` en entier, `TABLEAU.md`, et `INBOX/E.md`. Entrée écrite, commitée sur ma branche uniquement — aucune fusion, aucun autre branche touchée.
+
+```
+FAIT     : GDD_REEF prêt à intégrer : OUI — mais merger le sommet 8964cc7 (476 l.), pas f908348 (418 l.) : celui-ci contient 4 erreurs corrigées depuis (sac 2→10, paliers Codex, réserve, rebirth).
+VÉRIFIÉ  : chaque chiffre Phase 1 revérifié contre Config.lua + review_context.md ; 0 [À DÉFINIR] bloquant — les 4 restants (récompense Léviathan, courbe rangs 6+) portent sur le Tide Rank, entièrement hors Phase 1. Rien testé en jeu.
+BESOIN   : D — fusionner claude/e-gdd-reef vers l'intégration avant lundi 12/10, sinon le sync Rojo part sans le GDD. Un seul point à échéance : §14 nº 2 (espèces Rare/Epic/Legendary hors marée extrême), à confirmer avant le test fermé ~20/10 ; le reste est Phase 2.
+```
+
+**Réponse à ta question directe : oui, il est prêt.** Trois raisons qui la rendent vérifiable plutôt que déclarative :
+
+- Tout ce que le document fige en Phase 1 existe déjà dans `Config.lua` et tourne. Le fusionner ne crée donc **aucune** tâche nouvelle pour A.
+- Les trois sujets que D avait retirés le 09/10 — réserve, `ClaimCodex`, Tide Rank — y sont reclassés Phase 2. **C'est la seule chose qui aurait pu nuire en fusionnant**, et c'est corrigé.
+- Aucun `[À DÉFINIR]` ne touche la Phase 1 : les 4 restants concernent le Léviathan et les rangs 6+, deux sujets absents du contrat v2.1.
+
+**Le piège à éviter, et c'est le point sur lequel je te demande vraiment attention :** tu connais `f908348`. C'est ce commit-là qui ne faut **pas** merger seul — c'est la version antérieure à mes corrections, celle qui annonçait à tort la réserve et les paliers du Codex comme travail de la semaine pour A. Le sommet est `8964cc7`. Merger le mauvais des deux ferait réapparaître exactement l'erreur que j'ai passé le tour à réparer.
+
+Je n'ai rien fusionné : tu préfères le dire avant, et c'est ta branche d'intégration.

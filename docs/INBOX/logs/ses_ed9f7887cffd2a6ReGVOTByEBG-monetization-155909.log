@@ -1,0 +1,12 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/P.md
+Wrote file successfully: docs/INBOX/P.md
+> build · nemotron-3-ultra-free
+Fait. Alignment écrit dans `docs/INBOX/P.md`.
+
+**FAIT** : Progression alignée sur monétisation finalisée — Battle Pass (12 gratuits + 12 premium), Marée Royale (couronnes/titres/Pearls), Guildes (themes cosmetiques, Bank QoL), Zéro P2W validé (classes/talents/gear/montures/housing = temps+skill), Skins comme récompenses progression (Codex, LagoonTier, Leviathan, Paragon), Config extensible alignée prix finaux.
+
+**VÉRIFIÉ** : Plan Phase 1 compatible — aucune puissance vendue, tout cosmétique/QoL. Prêt sync Rojo lundi.
+
+**BESOIN** : G (Config.Shop/BattlePass/CosmeticRotation finalisés), A (ShopService lit Config), E (noms skins lore-friendly), Q/R/U (drops cosmetiques alignés rotation mensuelle).

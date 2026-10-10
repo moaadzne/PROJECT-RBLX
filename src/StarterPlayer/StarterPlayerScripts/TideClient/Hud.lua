@@ -739,9 +739,10 @@ function Hud.Init(ctx)
 	buildActions()
 	buildLeftColumn()
 	buildLeaderboard()
-	-- boutons d'action, crees caches (StealHud, MountButton, Shop les pilotent)
-	Hud.SetAction("mount", { icon = "ride", label = "Ride", color = Theme.Colors.Lagoon, order = 2, hotkey = "R", visible = false })
+	-- boutons d'action, crees caches (StealHud, MountButton, Shop, Codex les pilotent)
 	Hud.SetAction("lock", { icon = "lock", label = "Lock", color = Theme.Colors.Warning, order = 1, hotkey = "L", visible = false })
+	Hud.SetAction("mount", { icon = "ride", label = "Ride", color = Theme.Colors.Lagoon, order = 2, hotkey = "R", visible = false })
+	Hud.SetAction("codex", { icon = "book", label = "Codex", color = Theme.Colors.Gold, order = 3, visible = true })
 end
 
 function Hud.Start(ctx)
@@ -750,6 +751,15 @@ function Hud.Start(ctx)
 	Store.WaveChanged:Connect(onWave)
 	onWave(Store.GetWave(), nil)
 	RunService.Heartbeat:Connect(onHeartbeat)
+	
+	-- Wire Codex button
+	local codexAction = Hud.GetAction("codex")
+	if codexAction and ctx.Codex then
+		codexAction.OnActivated = function()
+			ctx.Codex.Toggle()
+		end
+	end
+	
 	local function reveal(state)
 		if state.loaded and not held and not shown then
 			Hud.SetVisible(true, true)

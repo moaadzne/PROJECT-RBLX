@@ -1,0 +1,40 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/I.md
+Index: docs/INBOX/I.md
+===================================================================
+--- docs/INBOX/I.md
++++ docs/INBOX/I.md
+@@ -16,4 +16,9 @@
+ FAIT      : Plan dual-platform Codex (mobile/PC) drafted for D review — single Codex.lua module with responsive layout switch via Util.IsMobile/IsDesktop
+ VÉRIFIÉ   : Design covers mobile carousel (swipe, 3 known + 4 mystery cards, TouchEnabled detection) and PC grid (2-col, filters All/Common/Uncommon/Rare/Epic/Legendary, keyboard search debounced 150ms), shared state.codex DataStore, identical pop animations, same detail card
+ BESOIN    : D validation before implementation — PC filter row adds 36px height, mobile swipe needs SnapToItem carousel (ScrollingFrame + UIGridLayout + CanvasGroup), keyboard search only on desktop (UserInputService.KeyboardEnabled)
+ 
++## 2026-10-10 16:15
++FAIT      : PIVOT MAJEUR — Read DECISIONS_MARCHE.md §9. Old scope (Week 1 Codex 3+4 creatures) = OBSOLETE. New vision: TRUE MMORPG ROBLOX — 50+ creatures, branched evolution, hereditary mutations, classes (1-100+), World Boss/Donjons/Raids, PvP zones, player economy, 3-min cinematics, single server 200-500 players, ZERO P2W. Launch Week 12. 21 agents total.
++VÉRIFIÉ   : Codex role transforms from simple collection UI to MASSIVE COMPENDIUM SYSTEM: creature encyclopedia (50+), evolution trees, mutation heredity tracker, breeding logs, class/spec guides, mount progression, gear/crafting wiki, achievement tracker, lore entries, cinematic replay index. Cross-platform mandatory (mobile 70% volume / PC 60% revenue).
++BESOIN    : D to assign NEW scope for I — Codex becomes "Knowledge Hub" (Compendium + Evolution Planner + Build Calculator + Lore Library + Cinematic Archive). Need specs from new agents O (Story), P (Progression), Q (Boss), S (Cinematics). STOP current Codex.lua work — awaits re-architecture for MMORPG scale.
++
+
+> build · nemotron-3-ultra-free
+**Nouveau plan écrit dans `docs/INBOX/I.md` :**
+
+```
+FAIT      : PIVOT MAJEUR — Read DECISIONS_MARCHE.md §9. Old scope (Week 1 Codex 3+4 creatures) = OBSOLETE. New vision: TRUE MMORPG ROBLOX — 50+ creatures, branched evolution, hereditary mutations, classes (1-100+), World Boss/Donjons/Raids, PvP zones, player economy, 3-min cinematics, single server 200-500 players, ZERO P2W. Launch Week 12. 21 agents total.
+VÉRIFIÉ   : Codex role transforms from simple collection UI to MASSIVE COMPENDIUM SYSTEM: creature encyclopedia (50+), evolution trees, mutation heredity tracker, breeding logs, class/spec guides, mount progression, gear/crafting wiki, achievement tracker, lore entries, cinematic replay index. Cross-platform mandatory (mobile 70% volume / PC 60% revenue).
+BESOIN    : D to assign NEW scope for I — Codex becomes "Knowledge Hub" (Compendium + Evolution Planner + Build Calculator + Lore Library + Cinematic Archive). Need specs from new agents O (Story), P (Progression), Q (Boss), S (Cinematics). STOP current Codex.lua work — awaits re-architecture for MMORPG scale.
+```
+
+**Résumé du pivot pour I (Codex → Knowledge Hub) :**
+
+| Avant (Semaine 1) | Après (MMORPG Semaine 12) |
+|---|---|
+| 3 créatures + 4 mystère | 50+ créatures, évolution ramifiée, mutations héréditaires |
+| Simple grille/collection | **Knowledge Hub** : Compendium + Planificateur d'évolution + Calculateur de build + Bibliothèque lore + Archive cinématiques |
+| Compteur X/10 | Progression 1-100+, classes, talents, gear, craft, montures, housing, guildes |
+| UI Week 1 | Système cross-platform natif (mobile 70% volume / PC 60% revenus) |
+| Lancement lundi | Lancement Semaine 12 (3 mois), 21 agents |
+
+**Action immédiate** : **ARRÊT** du travail sur `Codex.lua` actuel. Attente nouveaux specs des agents O/P/Q/S + ré-architecture complète pour échelle MMORPG.

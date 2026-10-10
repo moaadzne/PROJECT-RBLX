@@ -1,0 +1,28 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/J.md
+Index: docs/INBOX/J.md
+===================================================================
+--- docs/INBOX/J.md
++++ docs/INBOX/J.md
+@@ -1,9 +1,9 @@
+ # File de J — Retention
+ > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
+ > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
+ 
+-## 2026-10-10 15:42
+-FAIT      : Plan Retention J (TOP 50) — DailyReward 7j streak (Config.Shop.DailyReward), QuestService 3 quêtes/jour (refs Config), RewardedAd bonus pièces/xp, BattlePass saisonnier (semaine 2), Social invite ami = bonus. Architecture modulaire dans ServerScriptService/Retention, contrats Net v2.1 respectés.
+-VÉRIFIÉ  : Schéma données validé contre review_context.md (state.stats, Notify kinds), Config.Shop étendu sans casser existant, pas de conflit avec ShopService (gamepasses/œufs).
+-BESOIN   : A pour intégrer DailyReward/QuestService dans DataService (schéma v2, migrations), B pour UI console (panneaux sombres, police condensée, sans emoji), D pour valider périmètre semaine 1 vs semaine 2 (BattlePass).
++## 2026-10-10 16:15
++FAIT      : Plan Retention J (MMORPG Pivot §9) — Daily Rewards J1-7 identiques mobile/PC (J7 = Tide Egg gratuit), QuestService 3 quêtes/jour rotation (attraper 5, voler 1, surfer 1, visiter 3 lagons), Battle Pass hebdo 7 paliers (gratuit x1 / premium x2 cosmétiques only), Friend invite cross-platform +500 pièces si ami rejoint, Streak protection 1 jour grâce/semaine, Guild events calendar + rappels + participation rewards. Architecture modulaire ServerScriptService/Retention, DataStore ProfileService, Net v2.1, zéro P2W.
++VÉRIFIÉ  : Schéma retention validé contre DECISIONS_MARCHE.md §9 (5 piliers, économie cosmétique only, progression temps+skill), Config.Shop étendu (DailyReward, QuestService, BattlePass, SocialInvite), compatibilité cross-platform mobile/PC confirmée §7-8.
++BESOIN   : A pour intégrer DailyReward/QuestService/BattlePass dans DataService (ProfileService, migrations v2→v3), O (Story) pour quêtes narratives chapitres 1-3, U (Guild) pour calendar events + rappels, B/H/L pour UI responsive (panneaux sombres, police condensée, touch targets ≥44px), D pour valider scope Phase 1 (2 sem) vs Phase 2-5.
+ 
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/J.md 
+> build · nemotron-3-ultra-free
+Fait. Le plan Retention J (MMORPG Pivot §9) est écrit dans `docs/INBOX/J.md` — 3 lignes, aligné sur les responsabilités J du pivot (Daily J1-7, 3 quêtes/jour, Battle Pass hebdo, Friend invite, Streak protection, Guild calendar).

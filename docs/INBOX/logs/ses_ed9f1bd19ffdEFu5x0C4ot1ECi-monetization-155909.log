@@ -1,0 +1,23 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/J.md
+Index: docs/INBOX/J.md
+===================================================================
+--- docs/INBOX/J.md
++++ docs/INBOX/J.md
+@@ -11,4 +11,9 @@
+ FAIT      : Prêt pour lundi 12/10 21h — plan Retention J écrit, branche integration claude/e-gdd-reef, sync Rojo lundi soir. Quota Moaad épuisé, reset 21h.
+ VÉRIFIÉ  : Aucun test lourd, aucune capture, aucun luau-analyze effectué. Repos.
+ BESOIN   : Lundi en Studio — intégration DataService (A), quêtes narratives (O), guild calendar (U), UI responsive (B/H/L), validation scope Phase 1 (D).
+ 
++## 2026-10-10 17:05
++FAIT      : Alignment Retention J avec monétisation finalisée (G) — Daily J7 = Tide Egg gratuit (gratuit, pas achat), Quêtes \"Visite boutique\" = pièces (découverte non forcée), Battle Pass 12 sem (gratuit 12 paliers / premium 499 cosmétiques only), Streak protection 1j/sem, Guild calendar rewards = cosmétiques/Qol. Zéro P2W, zéro gate payant.
++VÉRIFIÉ  : Daily/Quest/BattlePass/Social compatibles Config.Shop final (VIP 79, StarterPack 249, TideEgg 199, PickCreature 399, Pity 51, RewardedAd 1/j, PolicyService), cross-platform mobile/PC §7-8 respecté.
++BESOIN   : G pour Config.Shop final (DailyReward, QuestService refs, BattlePass, SocialInvite), A pour DataService integration, B/H/L pour UI shop (probabilités AVANT achat, pity counter, Vault), L pour onboarding jour 3-5 découverte shop naturelle.
++
+
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/J.md 
+> build · nemotron-3-ultra-free
+> build · nemotron-3-ultra-free
+Fait. Alignment Retention J écrit dans `docs/INBOX/J.md` (3 lignes) — compatible monétisation finalisée G : Daily J7 Tide Egg gratuit, quêtes découverte shop non forcée, Battle Pass 12 sem cosmétiques only, streak protection, guild rewards cosmétiques/Qol, zéro P2W.

@@ -1,0 +1,42 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/INBOX/O.md 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/O.md
+Index: docs/INBOX/O.md
+===================================================================
+--- docs/INBOX/O.md
++++ docs/INBOX/O.md
+@@ -12,5 +12,10 @@
+ 
+ ## 2026-10-10 15:10
+ FAIT     : Reçu brief D — prêt pour lundi 12/10 21h, branche `claude/e-gdd-reef`, sync Rojo lundi soir. 14 agents core (A-N+J) ont plans livrés. Quota Moaad épuisé, reset 21h. Aucun test lourd / capture / luau-analyze.
+ VÉRIFIÉ  : Plan O (Story & Lore) complet, aligné PIVOT MAJEUR, Phase 2 (sem 3-5) = Monde & Histoire. Scope figé dans INBOX. Rien à lancer avant Studio.
+-BESOIN   : **[D]** confirmation que scope narratif Phase 1 = Chapitres 1-3 + PNJ principaux + cinématiques intro/chap1-3 + lore environnemental îles de base. Repos jusqu'à lundi.
+\ No newline at end of file
++BESOIN   : **[D]** confirmation que scope narratif Phase 1 = Chapitres 1-3 + PNJ principaux + cinématiques intro/chap1-3 + lore environnemental îles de base. Repos jusqu'à lundi.
++
++## 2026-10-10 15:15
++FAIT     : **Alignement monétisation finalisée (agent G)** — Scope O compatible ZERO P2W. Skins lore-friendly = drops narratifs légendaires (ex: skin "Éveil Léviathan" drop raid 20j, skin "Abyssal" drop donjon mythique, skin "Corail" drop Marée Royale, skin "Aurore" drop événement mondial). Battle Pass gratuit = 12 paliers (pièces, XP, 1 skin commun narratif) ; Premium 499 = +12 paliers (skins rares/épiques narratifs, mount exclusif lore, wings, title, 2 Tide Eggs). Vault annuel = rotation 4/mois, retour garanti = FOMO sain. Cosmétiques housing/guildes = ancrage social (T, U). Rewarded Ads opt-in = découverte naturelle shop (L jour 3-5). Pity Tide Egg 50 essais -> guaranteed Legendary = anti-frustration narratif.
++VÉRIFIÉ  : Tout cosmétique/QoL seulement. Puissance = temps + skill. Aucun contenu narratif paywalled. Lore = valeur perçue des cosmétiques (E). Rien testé en jeu.
++BESOIN   : **[G]** liste exacte skins narratifs Phase 1 (lancement sem 12) vs Phase 2+ pour planifier drops lore. **[E]** validation noms skins lore-friendly (Abyssal, Corail, Aurore, etc.). **[S]** cinématiques valorisent skins (intro montre mount skin, skin vague). **[Q]** drops cosmétiques uniques boss/raids (pas puissance). **[R]** hôtel ventes 5% taxe, trading direct = économie secondaire cosmétiques.
+\ No newline at end of file
+
+> build · nemotron-3-ultra-free
+Mis à jour `docs/INBOX/O.md` — alignement monétisation finalisée (agent G) ajouté.
+
+**Résumé alignement O (Story & Lore) :**
+- **Skins lore-friendly = drops narratifs légendaires** : "Éveil Léviathan" (raid 20j), "Abyssal" (donjon mythique), "Corail" (Marée Royale), "Aurore" (événement mondial)
+- **Battle Pass** : Gratuit = 12 paliers narratifs ; Premium 499 = +12 paliers (skins rares/épiques narratifs, mount exclusif lore, wings, title)
+- **Vault annuel** : 4 skins/mois, retour garanti = FOMO sain
+- **ZÉRO P2W** : Tout cosmétique/QoL. Puissance = temps + skill. Aucun contenu narratif paywalled
+- **Lore = valeur perçue** des cosmétiques (sync E)
+
+**Besoins critiques :**
+- **G** : liste exacte skins narratifs Phase 1 vs Phase 2+
+- **E** : validation noms skins (Abyssal, Corail, Aurore...)
+- **S** : cinématiques valorisent skins (intro mount skin, skin vague)
+- **Q** : drops cosmétiques uniques boss/raids
+- **R** : hôtel ventes 5% taxe, trading = économie secondaire cosmétiques
+
+Session en pause — prochain tour = lundi en Studio.

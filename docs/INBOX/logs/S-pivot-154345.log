@@ -1,0 +1,27 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m→ [0mRead docs/DECISIONS_MARCHE.md 
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/S.md
+Wrote file successfully: docs/INBOX/S.md
+> build · nemotron-3-ultra-free
+Plan mis à jour dans `docs/INBOX/S.md` selon le pivot MMORPG (§9).
+
+**Nouveau scope S — Cinematics & Presentation (VRAI MMORPG)** :
+
+| Composant | Échelle MMORPG |
+|---|---|
+| **Moteur cinématique** | Camera scriptée, dialogues branché, choix impactants, caméra verrouillée joueur |
+| **Intro 3 min** | Arrivée archipel, Ancien Roi (Léviathan) s'éveille — *hook visuel "wow c'est Roblox ?"* |
+| **10 chapitres** | Cuts 2-3 min entre chapitres, choix qui changent la progression/histoire |
+| **Boss intros** | 30s unique par boss majeur (Léviathan, Kraken, Hydre, Raids 10/20j) |
+| **Events mondiaux** | Cinématiques serveur-synchro : Éveil Léviathan (20j), Marée Noire (PvP), Rogue Wave |
+| **Replay system** | Auto-record, caméra libre, export vidéo — *contenu créateur viral (TikTok/Shorts)* |
+
+**Dépendances critiques nouvelles** (8 agents supplémentaires) :
+- **O (Story Lead)** : Lore, dialogues, choix, PNJ — *source narrative des cinématiques*
+- **V (Technical)** : StreamingEnabled, instancing donjons/raids, netcode 200-500 joueurs — *sync événements mondiaux*
+- **C/T (World/Art)** : 50+ créatures, modèles boss, environnements épiques
+- **B (Interface)** : HUD masquable total, caméra verrouillée, détection plateforme mobile/PC
+
+Prochaine action : coordonner avec **A** pour étendre le contrat remotes v3 (Notify `cinematic`, `cinematicChoice`, `replayData`) et avec **O** pour storyboarder l'intro 3 min.

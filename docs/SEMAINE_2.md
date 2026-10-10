@@ -106,4 +106,14 @@ La plongée est demandée par Moaad et n'a pas de remplaçant. L'épave est un b
 
 ---
 
+## Alignement décisions D (10/10)
+
+- **Codex** : 3 visibles + **4 mystère** (silhouettes floues + rareté colorée).
+- **Gravure épave** : *« Quand la mer recule, l'ancien roi revient. La marée extrême révèle ce qu'elle a prise. »* + empreinte lumineuse pulsante.
+- **Config.Shop** : VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199 (probas affichées), PickCreature 399, RewardedAd 1/jour.
+- **Battle Pass** : 12 semaines, gratuit 12 paliers / premium 499 R$ +12 paliers, cosmétiques uniquement.
+- **Portée** : ce document garde le périmètre **Phase 1 (2 semaines)**. Le vrai MMORPG (12 semaines) est décrit dans `DECISIONS_MARCHE.md` §9 — **ce qui suit ici n'est pas le MMORPG**, c'est la première mise à jour du jeu tel qu'il part.
+
+---
+
 *Écrit par E le 10/10/2026. Ce document décrit ce qui est **prévu et décidé**. Ce qui n'est pas tranché est écrit comme tel, jamais présenté comme acquis.*

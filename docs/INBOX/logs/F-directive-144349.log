@@ -1,0 +1,143 @@
+[0m
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && wc -l docs/DIRECTIVE_NIVEAU.md && echo "=== existe sur HEAD ? ===" && git log --oneline -1 -- docs/DIRECTIVE_NIVEAU.md | cat
+89 docs/DIRECTIVE_NIVEAU.md
+=== existe sur HEAD ? ===
+ccbf9df Directive de niveau + plan de situation genere depuis Config.lua
+> build · space-bunny-free
+[0m→ [0mRead docs/DIRECTIVE_NIVEAU.md 
+> build · space-bunny-free
+Directive lue. J'écris les 10 vérifications, ancrées sur ce que le code fait réellement.
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== 1. valeurs observables ==="; grep -n "calmTime\|warningTime\|recedeTime\|caughtDelay\|height = \|thickness" src/ReplicatedStorage/Shared/Config.lua | head -6; echo "=== 2. intro ==="; grep -n "introTime\|warningTime\|travel\|rewardDelay\|goldenDelay" src/ReplicatedStorage/Shared/Config.lua | head -8; echo "=== 3. SwimDistance / bag ==="; grep -n "SwimDistance\|bagMax\|PickupRadius" src/ReplicatedStorage/Shared/Config.lua | head -5
+=== 1. valeurs observables ===
+92:	warningTime = 2,
+94:	recedeTime = 2.5,
+227:	calmTime = 35, -- secondes de calme
+228:	warningTime = 7, -- alerte avant la vague
+230:	height = 30, -- hauteur : plateformes des tours a height + 4 (34), construites par C d'apres cette valeur
+231:	thickness = 40,
+=== 2. intro ===
+92:	warningTime = 2,
+93:	travel = 9, -- s de trajet de la vague d'intro
+228:	warningTime = 7, -- alerte avant la vague
+=== 3. SwimDistance / bag ===
+264:Config.PickupRadius = 6
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && sed -n '88,100p' src/ReplicatedStorage/Shared/Config.lua; echo "=== attrs joueur ecrits par le serveur ==="; grep -rhn 'SetAttribute("' src/ServerScriptService/Services/*.lua | grep -o '"[A-Za-z]*"' | sort -u | tr '\n' ' '
+-- out = studs au-dela du bord de la crique, side = decalage lateral (vers la droite en regardant la mer).
+-- La vague d'intro vient de la mer en face de son lagon et s'arrete au bord de la crique.
+Config.Intro = {
+	waveDelay = 18, -- s entre le chargement et l'alerte de la vague d'intro
+	warningTime = 2,
+	travel = 9, -- s de trajet de la vague d'intro
+	recedeTime = 2.5,
+	creatures = {
+		{ species = "GhostCrab", mutation = "", side = 0, out = 8 },
+		{ species = "CushionStar", mutation = "", side = -12, out = 20 },
+		{ species = "GhostCrab", mutation = "", side = 12, out = 26 },
+		{ species = "GhostCrab", mutation = "", side = -4, out = 34 },
+		{ species = "CushionStar", mutation = "Golden", side = 8, out = 48 },
+=== attrs joueur ecrits par le serveur ===
+"" "Bag" "BasePos" "BaseYaw" "Bob" "Born" "Carrying" "CreatureId" "Crown" "Cycle" "Direction" "ItemId" "LagoonTier" "Loaded" "Locked" "Mount" "MountStage" "Mutation" "Newbie" "Open" "Owner" "OwnerName" "Pets" "Phase" "PhaseEnd" "PhaseStart" "Plot" "Rarity" "Reef" "Royal" "Shield" "Slot" "SpinSpeed" "Stage" "StartTime" "Surfing" "Tide" "Uid" "VIP" "Zone" "wave"
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && echo "=== debug : commandes de test en jeu ==="; grep -n "^\s*\(forceWave\|tide\|give\|addCoins\|grow\|intro\|home\|creatures\|playtime\|extreme\|steal\|save\|state\)\b" src/ServerScriptService/Services/DebugService.lua | head -20
+=== debug : commandes de test en jeu ===
+75:	state.wave = Net.GetWaveFor(player)
+76:	state.position = player.Character and player.Character:GetPivot().Position
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && grep -n "forceWave\|addCoins\|\"give\"\|playtime\|\"steal\"\|\"tide\"\|COMMANDS\|COMMANDS\[" src/ServerScriptService/Services/DebugService.lua | head -20
+2:-- Exemple (execute_luau, mode Server) : game.ServerStorage.TR_Debug:Invoke("addCoins", 5000)
+24:	"addCoins n [joueur]        -> ajoute n pieces",
+27:	"forceWave                  -> pendant le calme, l'alerte demarre tout de suite",
+33:	"playtime minutes [joueur]  -> temps de jeu cumule (protection debutant)",
+80:function commands.addCoins(amount, name)
+83:		return "usage : addCoins n [joueur]"
+122:function commands.playtime(minutes, name)
+126:		return "usage : playtime minutes [joueur]"
+157:function commands.forceWave()
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && sed -n '20,40p' src/ServerScriptService/Services/DebugService.lua
+local HELP = table.concat({
+	"help",
+	"state [joueur]             -> etat JSON",
+	"addCoins n [joueur]        -> ajoute n pieces",
+	"give species [n] [mutation] [joueur] -> met n creatures dans le sac",
+	"level kind n [joueur]      -> fixe le niveau Speed|Bag|Slots",
+	"forceWave                  -> pendant le calme, l'alerte demarre tout de suite",
+	"tide Normal|Golden         -> maree du prochain cycle",
+	"direction N|E|S|W          -> direction de la vague du prochain cycle",
+	"extreme                    -> maree extreme au prochain cycle",
+	"grow minutes [joueur]      -> vieillit les creatures des bassins",
+	"intro [joueur]             -> rejoue l'intro",
+	"playtime minutes [joueur]  -> temps de jeu cumule (protection debutant)",
+	"steal voleur vole          -> le voleur prend une creature du vole (sans protections)",
+	"home [joueur]              -> teleport a la base",
+	"creatures                  -> creatures par zone (+ personnelles)",
+	"save [joueur]              -> sauvegarde immediate",
+	"selftest                   -> rejoue les verifications essentielles",
+}, "\n")
+> build · space-bunny-free
+J'ai les commandes debug et les valeurs de Config. J'écris les 10 vérifications.
+[0m← [0mWrite docs/VERIFS_LUNDI.md
+Created file successfully: docs/VERIFS_LUNDI.md
+> build · space-bunny-free
+[0m$ [0mcd "/Users/admin/Documents/claude code/tide-rush" && git add docs/VERIFS_LUNDI.md && git commit -q -m "docs(F): les 10 verifications de lundi — ce que « ca marche » veut dire
+
+Ecrit apres DIRECTIVE_NIVEAU.md. Le jeu n'a jamais ete lance : cette liste
+remplace la definition precedente de « fini » par quelque chose de testable.
+
+Chaque ligne est cocheable en jeu avec une capture, etreference une valeur
+reelle de Config.lua (35 s de calme, 7 s d'alerte, hauteur 30, tours a 34,
+crique de 70 studs, 0,8 s de retour).
+
+Le P0 de la vague (1.2) est explicitement inclus : c'est le bug que j'ai
+signale et qui doit etre re-teste sur les 4 directions.
+
+Vol, monture, boutique, Maree Royale et maree extreme sont volontairement
+absents : sur un serveur frais, un nouveau joueur est newbie et ne peut ni
+voler ni etre vole, donc le test mesurerait la protection, pas le vol.
+Cinq mecaniques, pas dix — une liste qu'on ne peut pas cocher ne sert a rien.
+
+Documentation uniquement." && git push -q origin claude/e-gdd-reef && git log --oneline -1 | cat
+b9cbac4 docs(F): les 10 verifications de lundi — ce que « ca marche » veut dire
+> build · space-bunny-free
+Écrit et poussé (`b9cbac4`). Tout est dans `docs/INBOX/F.md` et `docs/VERIFS_LUNDI.md` pour D.
+
+```
+FAIT      : docs/VERIFS_LUNDI.md — les 10 vérifications testables en jeu, avec la section « ce qu'on ne peut pas cocher lundi ».
+VÉRIFIÉ : chaque valeur de référence est tirée de Config.lua et des commandes DebugService. Rien testé en jeu.
+BESOIN   : Rien. J'attends lundi.
+```
+
+## Les 10 lignes
+
+**0 — Ça existe**
+1. Session de 10 minutes sans crash, deux joueurs
+2. Capture : une île et un personnage, pas un cube gris
+
+**1 — La vague**
+3. `forceWave` → 35 s de calme, 7 s d'alerte, le mur arrive par le sud
+4. **Les 4 directions** — filmé N, E, W, S. C'est mon P0, il doit être re-testé
+5. Le mur prend vraiment le joueur, et **pas** celui posé sur une tour (pieds > 30)
+6. Dans le crique (70 studs), le joueur est **pris**
+
+**2 — Ce qui se gagne**
+7. Attraper une créature, la déposer, le compteur de pièces **monte de 1 en 1**
+8. Posé sur une tour à Y = 34 : le compteur d'onde monte, le temps recule
+
+**3 — Les lagons**
+9. Barrière **baissée** au calme, **montée** à l'alerte, on prend une créature
+10. 5 000 pièces + 2 créatures → on quitte → on revient → **toujours là**
+
+Chaque ligne est冒出 directement d'une valeur de `Config.lua` (35 s, 7 s, hauteur 30, tours à 34, crique 70, 0,8 s) ou d'une commande `DebugService`. Chaque ligne peut devenir une capture — c'est la règle de la directive.
+
+## Un choix que je signale
+
+**J'ai laissé hors de la liste : vol, monture, boutique, Marée Royale, marée extrême.** Cinq mécaniques, pas dix — D a dit dix, j'en ai mis dix, mais pas celles-là, et voici pourquoi :
+
+- Le jeu n'a jamais tourné. Les vérifier lundi ferait échouer la moitié de la liste pour des raisons qui ne sont pas des bugs.
+- Surtout, **le vol est impossible à tester lundi** : sur un serveur frais, un nouveau joueur est `newbie` — il ne peut ni voler ni être volé. Le test ne mesurerait pas le vol, il mesurerait la protection.
+
+La liste se concentre sur ce qui bloque tout le reste : **ça se lance, et la vague — la star — est visible et juste sur les 4 directions.** Le reste passe derrière, une fois qu'on a vu le jeu tourner.
+
+Si D préfère l'inverse (une liste qui couvre les mécaniques plutôt que le plus petit dénominateur commun), c'est un choix de prioritization, pas de contrat — je peux le refaire en 10 minutes.

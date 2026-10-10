@@ -1,0 +1,39 @@
+[0m
+> build · nemotron-3-ultra-free
+[0m← [0mEdit docs/INBOX/I.md
+Index: docs/INBOX/I.md
+===================================================================
+--- docs/INBOX/I.md
++++ docs/INBOX/I.md
+@@ -11,4 +11,9 @@
+ FAIT      : Added Codex button to HUD action bar — icon "book" (drawn in Theme.DRAW), positioned right of MountButton (order 3), dark panel style with Gold accent, no hotkey (click only), opens Codex.Toggle()
+ VÉRIFIÉ   : Theme.lua book icon added, Hud.lua creates action with order=3 visible=true, wired in Hud.Start to ctx.Codex.Toggle(), compiles
+ BESOIN    : D confirmation on label "CODEX" vs "CODEX" (uppercase auto via Theme.Caps), C for potential FontAwesome6 asset override in Assets.UI.Icons.book
+ 
++## 2026-10-10 16:00
++FAIT      : Plan dual-platform Codex (mobile/PC) drafted for D review — single Codex.lua module with responsive layout switch via Util.IsMobile/IsDesktop
++VÉRIFIÉ   : Design covers mobile carousel (swipe, 3 known + 4 mystery cards, TouchEnabled detection) and PC grid (2-col, filters All/Common/Uncommon/Rare/Epic/Legendary, keyboard search debounced 150ms), shared state.codex DataStore, identical pop animations, same detail card
++BESOIN    : D validation before implementation — PC filter row adds 36px height, mobile swipe needs SnapToItem carousel (ScrollingFrame + UIGridLayout + CanvasGroup), keyboard search only on desktop (UserInputService.KeyboardEnabled)
++
+
+> build · nemotron-3-ultra-free
+**Plan dual-plateforme Codex écrit dans `docs/INBOX/I.md` :**
+
+```
+FAIT      : Plan dual-platform Codex (mobile/PC) drafted for D review — single Codex.lua module with responsive layout switch via Util.IsMobile/IsDesktop
+VÉRIFIÉ   : Design covers mobile carousel (swipe, 3 known + 4 mystery cards, TouchEnabled detection) and PC grid (2-col, filters All/Common/Uncommon/Rare/Epic/Legendary, keyboard search debounced 150ms), shared state.codex DataStore, identical pop animations, same detail card
+BESOIN    : D validation before implementation — PC filter row adds 36px height, mobile swipe needs SnapToItem carousel (ScrollingFrame + UIGridLayout + CanvasGroup), keyboard search only on desktop (UserInputService.KeyboardEnabled)
+```
+
+**Résumé du plan :**
+
+| | **Mobile** | **PC** |
+|---|---|---|
+| **Layout** | Carrousel swipe horizontal (1 carte visible, snap) | Grille 2 colonnes, scroll vertical |
+| **Filtres** | Aucun (tout visible) | Barre filtres : All / Common / Uncommon / Rare / Epic / Legendary |
+| **Recherche** | Non | Oui, clavier, debounce 150ms |
+| **Données** | `state.codex` partagé, même DataStore | Idem |
+| **Animation pop** | Scale 0→1 bounce Back easing | Identique |
+| **Fiche détail** | Même composant `Components.Card` | Idem |
+
+Détection : `UserInputService.TouchEnabled` + `KeyboardEnabled` au runtime, pas de keybind mobile. Attente validation D avant implémentation.

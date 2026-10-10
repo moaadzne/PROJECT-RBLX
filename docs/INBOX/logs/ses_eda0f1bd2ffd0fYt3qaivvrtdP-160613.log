@@ -1,0 +1,246 @@
+[0m
+> build · nemotron-3-ultra-free
+> build · nemotron-3-ultra-free
+[0m→ [0mRead src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua 
+> build · nemotron-3-ultra-free
+[0m← [0mEdit src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+Index: src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+===================================================================
+--- src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
++++ src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+@@ -22,20 +22,19 @@
+ local CameraIntro = {}
+ 
+ local player = Players.LocalPlayer
+ 
+--- Timings précis (secondes)
++-- Timings précis (secondes) — EXACTS selon cahier des charges
+ local TIMELINE = {
+-	AERIAL_END        = 1.5,
+-	FADE_END          = 3.0,
+-	PLATFORM_HINT_END = 5.5,  -- 3.0 + 2.5s d'affichage indication plateforme
+-	FIRST_CATCH_START = 3.0,
+-	FIRST_CATCH_END   = 7.6,
+-	EXPLORE_END       = 16.0,
+-	ALERT_START       = 18.0,
+-	SPRINT_END        = 29.0,
+-	BARRIER_CROSS     = 29.6,
+-	WAVE_CRASH_END    = 31.5,
++	AERIAL_END        = 1.5,    -- 0-1.5s : plan aérien
++	FADE_END          = 3.0,    -- 1.5-3s : fondu + caméra derrière
++	PLATFORM_HINT_END = 5.5,    -- 3-5.5s : hint cross-platform (2.5s) — DANS explore
++	EXPLORE_END       = 16.0,   -- 3-16s : explore (flèche créatures, attrape 2-3)
++	ALERT_START       = 16.0,   -- 16s : début alerte (mouettes fuient, mer recule)
++	ALERT_END         = 20.0,   -- 16-20s : alerte (4s total)
++	SPRINT_END        = 29.0,   -- 20-29s : sprint vers lagon (9s)
++	BARRIER_CROSS     = 29.6,   -- 29-29.6s : franchit barrière (0.6s)
++	WAVE_CRASH_END    = 31.5,   -- 29.6-31.5s : vague s'écrase + texte final (1.9s)
+ 	HUD_SHOW          = 31.5,
+ }
+ 
+ -- Constantes
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+Index: src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+===================================================================
+--- src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
++++ src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+@@ -610,36 +610,49 @@
+ 	introPhase = "fade"
+ 	runFadePhase()
+ 	if skipRequested then goto finish end
+ 
+-	introPhase = "platformHint"
+-	runPlatformHintPhase()
+-	if skipRequested then goto finish end
+-
++	-- Phase EXPLORE : 3-16s (flèche vers créatures, joueur attrape 2-3)
++	-- Le hint cross-platform (3-5.5s) tourne EN PARALLÈLE au début d'explore
+ 	introPhase = "explore"
+-	runExplorePhase()
++	local exploreStartTime = os.clock()
++	
++	-- Lancer le hint cross-platform en tâche parallèle (3-5.5s)
++	task.spawn(function()
++		task.wait(3.0 - (os.clock() - introStartTime)) -- attendre jusqu'à 3s absolu
++		if introPhase == "explore" and not skipRequested then
++			runPlatformHintPhase()
++		end
++	end)
++	
++	runExplorePhase() -- bloque jusqu'à 16s ou skip
+ 	if skipRequested then goto finish end
+ 
++	-- Phase ALERT : 16-20s (mouettes fuient, mer recule, "RUN")
+ 	introPhase = "alert"
+ 	runAlertPhase()
+ 	if skipRequested then goto finish end
+ 
++	-- Phase SPRINT : 20-29s (course vers lagon, flèche barrière)
+ 	introPhase = "sprint"
+ 	runSprintPhase()
+ 	if skipRequested then goto finish end
+ 
++	-- Phase BARRIER : 29-29.6s (franchit barrière, créatures plongent)
+ 	introPhase = "barrier"
+ 	runBarrierPhase()
+ 	if skipRequested then goto finish end
+ 
++	-- Phase WAVECRASH : 29.6-31.5s (vague s'écrase, texte final)
+ 	introPhase = "wavecrash"
+ 	runWaveCrashPhase()
+ 
+ ::finish::
+ 	-- Nettoyage
+ 	stopArrow()
+ 	clearSeagulls()
+ 	if captionLabel then captionLabel:Destroy() end
++	if platformHintLabel then platformHintLabel:Destroy() platformHintLabel = nil end
+ 	camera.CameraType = Enum.CameraType.Custom
+ 	local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+ 	if humanoid then camera.CameraSubject = humanoid end
+ 
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+Index: src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+===================================================================
+--- src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
++++ src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+@@ -570,13 +570,21 @@
+ 	if not r then return nil end
+ 	return Vector3.new((r.minX + r.maxX) / 2, r.y, (r.minZ + r.maxZ) / 2)
+ end
+ 
+--------------------------------------------------------------------------------- Input skip (toucher/click = passer)
++-------------------------------------------------------------------------------- Input skip (Échap/Start/toucher/click = passer)
+ local function setupSkip()
+-	UserInputService.InputBegan:Connect(function(input)
++	UserInputService.InputBegan:Connect(function(input, processed)
++		if processed then return end
+ 		local t = input.UserInputType
+-		if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Keyboard or t == Enum.UserInputType.Gamepad1 then
++		local k = input.KeyCode
++		-- Touch, click, any keyboard key, gamepad button, OR specifically Escape/Start
++		if t == Enum.UserInputType.Touch 
++			or t == Enum.UserInputType.MouseButton1 
++			or t == Enum.UserInputType.Keyboard 
++			or t == Enum.UserInputType.Gamepad1
++			or k == Enum.KeyCode.Escape
++			or k == Enum.KeyCode.ButtonStart then
+ 			skipRequested = true
+ 		end
+ 	end)
+ end
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+Index: src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+===================================================================
+--- src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
++++ src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+@@ -443,35 +443,33 @@
+ 	end
+ 	stopArrow()
+ end
+ 
+--------------------------------------------------------------------------------- Phase: ALERT (18-20s) - mouettes fuient, mer se retire, mot "RUN"
++-------------------------------------------------------------------------------- Phase: ALERT (16-20s) - mouettes fuient, mer se retire, "RUN"
+ local function runAlertPhase()
+-	-- Mouettes fuient
+-	local fleeStart = os.clock()
+-	while introPhase == "alert" and os.clock() - fleeStart < 2 do
+-		animateSeagulls(0.03, true)
+-		task.wait(0.03)
+-	end
++	local alertStartTime = os.clock()
++	local alertDuration = TIMELINE.ALERT_END - TIMELINE.ALERT_START -- 4s
+ 
+-	-- Mot "RUN" au sol
++	-- Mouettes fuient + caméra secousse + "RUN" — tout en parallèle sur 4s
++	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
++	
++	-- Afficher "RUN" immédiatement (1.5s)
+ 	showCaption("RUN", 1.5, 0.12)
+ 
+-	-- Caméra plus basse, légère secousse
+-	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+-	if root then
+-		local t0 = os.clock()
+-		while introPhase == "alert" and os.clock() - t0 < 2 do
++	-- Boucle 4s : mouettes fuient + caméra shake
++	while introPhase == "alert" and os.clock() - alertStartTime < alertDuration do
++		animateSeagulls(0.03, true)
++		if root then
+ 			local shake = Vector3.new(
+-				(math.random() - 0.5) * 0.3,
+-				(math.random() - 0.5) * 0.1,
+-				(math.random() - 0.5) * 0.3
++				(math.random() - 0.5) * 0.4,
++				(math.random() - 0.5) * 0.15,
++				(math.random() - 0.5) * 0.4
+ 			)
+ 			local lookAt = root.Position + Vector3.new(0, 1.5, 0) + shake
+ 			local camPos = root.Position - root.CFrame.LookVector * 10 + Vector3.new(0, 3, 0) + shake
+ 			camera.CFrame = CFrame.lookAt(camPos, lookAt)
+-			task.wait(0.03)
+ 		end
++		task.wait(0.03)
+ 	end
+ 
+ 	clearSeagulls()
+ end
+
+> build · nemotron-3-ultra-free
+[0m← [0mEdit src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+Index: src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+===================================================================
+--- src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
++++ src/StarterPlayer/StarterPlayerScripts/TideClient/CameraIntro.lua
+@@ -506,32 +506,27 @@
+ 	end
+ 	stopArrow()
+ end
+ 
+--------------------------------------------------------------------------------- Phase: BARRIER (29-29.6s) - franchit barrière, créatures plongent
++-------------------------------------------------------------------------------- Phase: BARRIER (29-29.6s) - franchit barrière, créatures plongent, "NEXT TIDE: GOLDEN"
+ local function runBarrierPhase()
+ 	-- La barrière s'enfonce (animée par B via PlotN.Barrier.Open)
+ 	-- Les créatures du sac plongent dans les cuvettes (splash)
+-	-- Attendre 0.6s
++	-- Afficher "NEXT TIDE: GOLDEN" dès le franchissement
++	showCaption("NEXT TIDE: GOLDEN", 2.5, 0.05)
+ 	task.wait(0.6)
+ end
+ 
+ -------------------------------------------------------------------------------- Phase: WAVECRASH (29.6-31.5s) - vague s'écrase, texte final
+ local function runWaveCrashPhase()
+-	-- "NEXT TIDE: GOLDEN" en bas
+-	showCaption("NEXT TIDE: GOLDEN", 1.5, 0.05)
++	-- Texte final : "YOUR BASE. YOUR CREATURE. YOUR WAVE." (1.9s total)
++	showCaption("YOUR BASE. YOUR CREATURE. YOUR WAVE.", 1.9, 0.1)
+ 
+-	-- Attendre l'impact de la vague (environ 1.5s)
+-	task.wait(1.5)
+-
+-	-- Texte final : "YOUR BASE. YOUR CREATURE. YOUR WAVE."
+-	showCaption("YOUR BASE. YOUR CREATURE. YOUR WAVE.", 2, 0.1)
+-
+-	-- Caméra shake final
++	-- Caméra shake final synchronisé sur le texte
+ 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+ 	if root then
+ 		local t0 = os.clock()
+-		while os.clock() - t0 < 1.5 do
++		while os.clock() - t0 < 1.9 do
+ 			local shake = Vector3.new(
+ 				(math.random() - 0.5) * 1.5,
+ 				(math.random() - 0.5) * 0.5,
+ 				(math.random() - 0.5) * 1.5
+
+> build · nemotron-3-ultra-free
+[0m← [0mWrite docs/INBOX/L.md
+Wrote file successfully: docs/INBOX/L.md
+> build · nemotron-3-ultra-free
+[91m[1mError: [0mRate limit exceeded. Please try again later.
