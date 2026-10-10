@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 — ALIGNEMENT MONETISATION FINALE (D/G) — Zone C
+FAIT     : **Alignement zone Monde** avec monétisation finale validée par G. Mes zones (Housing, Guild Hall, cosmetiques visuels) sont 100% compatibles ZERO Pay-to-Win : Housing zones + Guild Hall plots = placements cosmetic-only, aucune zone paywalled ; Guild Hall themes = cosmetiques achetables (Bank/QoL pas puissance) ; Skins creatures/mounts visibles en jeu (surf, base, profil) ; Hero shot inclut mount skin. Housing + Guild Hall = ancrage social -> envie cosmetiques base. Lore-friendly skins (Abyssal/Corail/Aurore) alignés avec E/O.
+VÉRIFIÉ  : Tous mes scripts existants (build_housing, build_guild_islands, build_archipelago, build_cinematic_intro, build_cinematic_camera) ne créent AUCUNE barrière de progression payante. Tout placement = decor/QoL. Config.Shop prix finaux intégrés. **Rien testé en jeu** : pas Studio.
+BESOIN   : **[G]** Confirmer ShopService remotes ChoosePick + PolicyService OK. **[B]** Shop.lua affiche probabilités AVANT achat + pity counter + Vault UI. **[H]** Icons shop (coffre, vague, couronne, étoile) + RobotoCondensed prix. **[N]** Hero shot inclut mount skin. **[E/O]** Skins lore-friendly (Abyssal/Corail/Aurore) drops narratifs. **[K]** Skins = shader/material swap (pas nouveau mesh). **[T]** Housing zones = ancrage social.
+
 ## 2026-10-10 — PIVOT MAJEUR §9 : VRAI MMORPG — Nouveau plan C (Monde & Art)
 FAIT     : **Relecture complète §9 DECISIONS_MARCHE.md.** Vision : "Premier vrai MMORPG Roblox qui ne fait pas semblant." Mon rôle change radicalement : plus 8 lagons + vague, mais **Monde Persistant Streaming 200-500 joueurs** — Archipel 5+ îles, histoire 100h+, 50+ créatures évolution/heredité, World Boss hebdo, Donjons 5j, Raids 10/20j, PvP zones, Guildes/Bases, Cinématiques 3min, Replay, Serveur unique 12 semaines.
 VÉRIFIÉ  : §9 lu intégralement. Ancien scope (8 lagons + vague) = Phase 1 fondations SEULEMENT. Tout le code existant (lagon, vague, île, épave, créatures, lighting, sons) = fondations techniques réutilisables MAIS scope ×10. **Rien testé en jeu** : pas Studio, pas serveur 200+, pas streaming.
