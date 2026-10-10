@@ -2,6 +2,13 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:57
+FAIT     : Semaine close. Branche d'intégration = claude/e-gdd-reef. Tous les plans core (A–N+J) écrits dans leurs INBOX. Config stable (Shop top 50, SUNK_POOLS -3.5, inscription épave, double plateforme, pivot MMORPG §9). Zéro code lancé après le plan — pas de test lourd, pas de capture, pas de luau-analyze. Prêt pour sync Rojo lundi 12/10 21h en Studio.
+VÉRIFIÉ  : Lecture D confirmée. Quota Moaad épuisé, reset 21h. Arrêt net.
+BESOIN   : Lundi — ouverture Studio, `git pull`, `rojo serve`, Accept, Playtest 5 min. Le serveur n'a JAMAIS été lancé : première vraie session.
+
+---
+
 ## 2026-10-10 15:36
 FAIT     : Pivot MMORPG lu (§9). Nouveau scope serveur : **single shard 200-500 joueurs** (streaming/instancing avec V), Data architecture (ProfileService + GlobalDataStore + OrderedDataStore + MessagingService), **Progression 1-100+** (classes/specs, talents, respec), **Equipment** (craft/enchant/runes/sets), **50+ créatures** (évolution ramifiée, mutations héréditaires), **Montures** (arbre progression), **Housing/Guild halls** (construction/défense/production), **Économie joueur** (hotel ventes, trading, taxes guilde), **PvP** (zones, arènes classées, guerres guilde), **Quêtes backend** (avec O), **Boss/Raid data** (avec Q), **Cinematic triggers** (avec S), Netcode étendu. Ancien scope (vague/collection) = Phase 1 seulement, livrable semaine 2.
 VÉRIFIÉ  : §9 lu en entier. Aucun code lancé — le plan est structurel, pas d'implémentation.
