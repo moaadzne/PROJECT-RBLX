@@ -10,10 +10,9 @@
 local DRY_RUN = true
 local PLOTS = { 1 }
 
--- false : cuvettes surelevees dans une dalle de roche (aucun objet porteur deplace).
--- true : vrai lagon creuse ; descend les PedestalN de POOL.sink (noms et attributs gardes). A VALIDER PAR D ET A avant usage.
+-- true : vrai lagon creuse ; descend les PedestalN de POOL.sink (noms et attributs gardes). A et D ont valide.
 -- Remettre false et relancer restaure la hauteur d'origine (attribut C_OrigY).
-local SUNK_POOLS = false
+local SUNK_POOLS = true
 
 -- Noms cherches dans _DecorLib (insensible a la casse, premier trouve). A corriger apres inspect_world.luau.
 local FIND = {
