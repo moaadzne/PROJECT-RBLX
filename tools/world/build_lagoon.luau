@@ -229,6 +229,11 @@ local function buildBarrier(plot, index, minX, maxX, minZ, maxZ, groundY)
 	barrier.Name = "Barrier"
 	barrier:SetAttribute("Open", false)
 	barrier:SetAttribute("RetractDepth", BARRIER.retractDepth)
+	-- B 10/10 : le modele entier doit streamer d'un bloc (ModelStreamingMode = Atomic), sinon
+	-- le client voit un demi-recif et l'animation d'enfoncement est coupee au milieu.
+	barrier.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+	-- Position construite = position fermee. B anime la descente quand Open passe a true ;
+	-- on ne laisse donc aucun etat "ouvert" dans le place, meme apres une construction.
 	local coralFolder = Instance.new("Folder")
 	coralFolder.Name = "Coral"
 	coralFolder.Parent = barrier

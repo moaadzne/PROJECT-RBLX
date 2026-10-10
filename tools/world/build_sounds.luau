@@ -38,6 +38,12 @@ local SOUNDS = {
 	musicCalm = { 1837463526, 0.25, "Music", true }, -- Ethereal Drone (alternative : 1837389538 Peaceful Island)
 	musicTension = { 91017465590486, 0.35, "Music", true }, -- Tension To Action A (alerte + vague)
 	musicRiser = { 1846880576, 0.4, "Music" }, -- Suspense Build 2 (11 s, sur les 7 s d'alerte)
+	-- Sons d'interface (demandes par B 10/10). Group UI : feutres, courts, graves, jamais de "bloop".
+	-- Un son absent est ignore sans erreur par le client : si un id est douteux lundi, on le retire ici.
+	uiClick = { 9118826142, 0.5, "UI" }, -- clic sobre, mat, pas un "tick" d'interface brighten
+	uiDeny = { 9110165937, 0.5, "UI" }, -- refus : etouffement sec, aucune note montante
+	uiPurchase = { 9110171189, 0.6, "UI" }, -- achat valide : deux temps graves, confirmation puis ampleur
+	uiWhoosh = { 9113767838, 0.5, "UI" }, -- transition d'ecran : souffle large, sans effet "magic"
 }
 
 local GROUPS = { SFX = 0.8, Ambient = 0.6, UI = 0.7, Music = 0.5 }
