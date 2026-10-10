@@ -2,19 +2,22 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
-## 2026-10-10 15:55
-FAIT     : Lecture directive double plateforme. Plan B pour Interface mobile + PC :
-- **Touch-first mobile** : Theme.Button 58 design px (≥44/48), joystick natif Roblox, tap-only.
-- **PC** : WASD/Flèches + Shift sprint, clic droit caméra, raccourcis 1-5/Q/E/R/F → mappés sur boutons UI existants (pas de feature PC-only).
-- **HUD responsive** : bas mobile (icônes 48px, grille) / latéral PC (tooltips hover + raccourcis affichés). Branche par `UserInputService.TouchEnabled` + `KeyboardEnabled` + `GamepadEnabled` dans Hud.Start().
-- **Trading/Vol** : Tap cible mobile / Clic droit + menu contextuel PC → même action, UI adaptée.
-- **Boutique** : grille scroll vertical mobile / grille compacte + filtres PC (Theme.List direction).
-- **Codex** : carrousel swipe mobile / grille + recherche clavier PC.
-- **Zéro feature exclusive** : raccourcis clavier = boutons UI visibles ; pas de "Appuyez sur F" texte seul.
-VÉRIFIÉ  : Theme.lua, Hud.lua, Glyph.lua relus ; aucun emoji ; 19 icônes Font Awesome + dessin.
-BESOIN   : [D] — valider Hud.Start() detection TouchEnabled/KeyboardEnabled/GamepadEnabled ; [L] — Onboarding texte plateforme (WASD vs Tap) ; [H] — Font Awesome asset ID confirme ; [I] — Codex UI carrousel vs grille spec.
+## 2026-10-10 16:05
+FAIT     : Lecture DECISIONS_MARCHE.md §9 — PIVOT MAJEUR : **VRAI MMORPG ROBLOX** (pas jeu mobile). Mon rôle B change radicalement.
+Nouveau plan Interface pour MMORPG (lancement Semaine 12, 21 agents) :
+- **HUD persistant MMORPG** : barres vie/mana/endurance, XP, niveau, classe, raccourcis 1-5/Q/E/R/F/F1-F4 (monture, sort, objet, emote) ; même data, layout mobile (bas, compact) / PC (latéral, étendu, tooltips hover).
+- **Cinematiques UI (agent S)** : dialogue choices overlay, cutscene letterbox, boss intro 30s, event cutscene serveur-synchro, replay timeline + camera libre export.
+- **Progression UI (agent P)** : arbres talents 3/classe (respec), gear sets, craft stations, mount trees, housing builder, profil 1-100+.
+- **Boss/Raid UI (agent Q)** : encounter frames (phases, enrage timer, mechanics alerts), raid frames 10/20, positioning markers, loot master.
+- **Economie UI (agent R)** : hotel des ventes (recherche, filtres, encheres), trading direct + contrats, guild bank, player shops, tax display.
+- **Social/Guild UI (agent U)** : guild hall management, war table, roster, calendar, voice chat integration, party/raid frames.
+- **Monde/Exploration UI (agent T)** : dynamic event tracker, weather overlay, map/fog of war, fast travel, secrets log.
+- **Cross-platform natif** : detection TouchEnabled/KeyboardEnabled/GamepadEnabled → même features, layout adaptatif (pas de feature exclusive).
+- **Police/Icones** : RobotoCondensed + Font Awesome (deja prets) + primitives pour tout nouveau systeme.
+VÉRIFIÉ  : Theme.lua, Glyph.lua, Hud.lua base prete pour extension ; 0 emoji ; 19 icones FA + dessin ; RobotoCondensed en place.
+BESOIN   : [D] — validation scope MMORPG B (HUD + Cinematiques + Progression + Boss + Economie + Social + Monde) ; [O,P,Q,R,S,T,U] — specs UI par systeme (je construis, ils specifient) ; [H] — Font Awesome asset ID confirme ; [V] — streaming/instancing hooks pour UI (loading screens, zone transitions).
 
-## 2026-10-10 15:45
+## 2026-10-10 15:55
 FAIT     : P1-14 pousse (`8d0ec39`). Font Awesome 6 Free Solid (Creator Store, Asset 12187624912, SIL OFL) integre dans Glyph.lua : charge via InsertService, 19 cles mappees, resolution C image > Font Awesome > dessin > rien. Theme.Icon et Theme.SetIconColor gerent les TextLabel FA. Merge e-gdd-reef fait. RobotoCondensed deja en place.
 VÉRIFIÉ  : lecture seule, rien testé en jeu. Les 19 cles UI (alert, arrow, bolt, clock, close, coin, crown, dot, down, info, lock, moon, net, revenge, ride, shield, shop, spark, unlock, wave) ont toutes un codepoint FA.
 BESOIN   : [H] — confirme que l'asset FA 12187624912 est le bon (Free Solid) ; [D] — capture : le blocage StudioMCP persiste (session D cablee, pas la mienne).
