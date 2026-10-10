@@ -84,6 +84,9 @@ Config.Offline = { incomeRate = 0.5, maxHours = 8, minSeconds = 60 }
 -- Palier visuel du lagon (attribut LagoonTier 1..5) : revenu/s minimal de chaque palier (E, GDD v3)
 Config.LagoonTiers = { 0, 30, 200, 5000, 100000 }
 
+-- Epave : inscription gravee cote serveur (ref pour le client / C)
+Config.WreckInscription = "Quand la mer recule, l'ancien roi revient. La maree extreme reveille ce qu'elle a pris."
+
 -- Intro d'un nouveau joueur (GDD 1 ter). Positions sur la plage devant SON lagon :
 -- out = studs au-dela du bord de la crique, side = decalage lateral (vers la droite en regardant la mer).
 -- La vague d'intro vient de la mer en face de son lagon et s'arrete au bord de la crique.
@@ -138,16 +141,20 @@ Config.Royal = {
 }
 
 -- Boutique (GDD 9). id = 0 : produit pas encore cree sur Roblox, desactive.
+-- Prix finaux alignes sur l'etude top 50 (docs/DECISIONS_MARCHE.md).
 Config.Shop = {
 	Passes = {
-		FastGrowth = { id = 0, price = 299, growth = 2 },
-		BigNet = { id = 0, price = 149, pickupMult = 1.5 },
-		VIPRider = { id = 0, price = 399, coinBonus = 0.10, mountSpeedBonus = 0.10 },
+		VIPRider      = { id = 0, price = 79,   name = "VIP Rider",      coinBonus = 0.10, mountSpeedBonus = 0.10, priorityQueue = true, exclusiveEmote = true },
+		SpeedBoost    = { id = 0, price = 149,  name = "Speed Boost",    waveSpeedBonus = 0.15, homeCooldownMult = 0.70 },
+		BagExpand     = { id = 0, price = 99,   name = "Bag Expansion",  extraSlots = 10 },
+		StarterPack   = { id = 0, price = 249,  name = "Starter Pack",   includes = { "VIPRider", "SpeedBoost", "BagExpand" } },
 	},
-	-- aleatoire, probabilites affichees ; cache si ArePaidRandomItemsRestricted
-	TideEgg = { id = 0, price = 79, odds = { { "GhostCrab", 50 }, { "CushionStar", 35 }, { "HawksbillTurtle", 15 } }, goldenChance = 10 },
+	-- aleatoire, probabilites affichees AVANT achat ; cache si ArePaidRandomItemsRestricted
+	TideEgg = { id = 0, price = 199, chances = { Common = 60, Uncommon = 25, Rare = 10, Epic = 4, Legendary = 1 } },
 	-- choix direct, montre a la place du Tide Egg si l'aleatoire est restreint
-	PickCreature = { id = 0, price = 149, species = { "GhostCrab", "CushionStar", "HawksbillTurtle" } },
+	PickCreature = { id = 0, price = 399 },
+	-- Rewarded Video Ads (2025) : 1 TideEgg gratuit/jour, cooldown 24h
+	RewardedAd = { enabled = true, reward = "TideEgg", cooldownHours = 24 },
 }
 
 -- Verification serveur de la vitesse reelle (anti speed hack) : distance horizontale sur `window` s

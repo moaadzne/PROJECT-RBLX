@@ -17,7 +17,7 @@ Aucun prix n'est donné : je n'ai pas de source vérifiée.
 ## 2. Règles de modélisation
 - **Réaliste stylisé** : anatomie et couleurs vraies, détails simplifiés, matière PBR crédible (carapace, peau, chitine). Les yeux sont à leur taille réelle.
 - **≤ 1 500 triangles**. Au-delà, le modèle est marqué « prototype ». Texture ≤ 512 px (1 024 pour une espèce montable).
-- **Dimensionné à la taille Adult = 1,0** (arbitrage de D). Le client applique `Config.Stages` : Baby 0,6, Juvenile 0,8, Adult 1, Giant 1,5. Avec `Model:ScaleTo`, les Attachments suivent.
+- **Dimensionné à la taille Elder = 1,0** (Config.Stages fait foi). Stades : **Juvenile 0,6 · Adult 0,8 · Elder 1,0 · Titan 1,5**. Avec `Model:ScaleTo`, les Attachments suivent. ⚠ Ne plus utiliser Baby/Giant : le serveur (Config.Stages) ne connaît que Juvenile/Adult/Elder/Titan.
 - Pivot au centre, **face vers -Z**. Si possible, pièces séparées `Body` + `Fin/Tail/Claw` pour l'animation.
 - Rangement : `ReplicatedStorage.Assets.Creatures.<Id>`, PrimaryPart `Root` invisible, attributs `CreatureId` et `Rarity`, tout Anchored, 0 script.
 - **Mutations et SurfaceAppearance** : `World.lua` change `Color` et `Material`. Une SurfaceAppearance masque ces changements. Pour une créature qui a une SurfaceAppearance, il faut donc soit teinter `SurfaceAppearance.Color` (à tester lundi), soit retirer la SurfaceAppearance pendant la mutation.
@@ -37,7 +37,7 @@ La couleur de rareté (gris, vert, bleu, violet, or) vit dans l'interface : bill
 | Id proposé | Animal | Silhouette lisible de loin | Adult (L × H) | Couleurs réelles | Mouvement |
 |---|---|---|---|---|---|
 | **GhostCrab** | crabe fantôme (*Ocypode*) | carapace carrée, **longs pédoncules oculaires dressés**, une pince plus grosse, pattes fines | 2,5 × 1,2 | sable pâle, beige et gris, pointes plus claires | course de côté très rapide, arrêts nets, s'enterre à moitié au repos |
-| **SeaStar** | étoile de mer (étoile à boutons *Protoreaster*, à confirmer) | 5 bras épais, **boutons sombres** sur le dessus | 2,5 × 0,6 | orange-brun, boutons brun foncé | quasi immobile, bras qui ondulent lentement |
+| **CushionStar** | étoile coussin (*Culcita novaeguineae*, **pas** l'étoile à boutons) | 5 bras épais et mous, très dissymétrique, **bord granuleux** | 2,5 × 0,6 | brun-roux, crème sur la face supérieure, sans bouton central | quasi immobile, bras qui ondulent lentement |
 | **HawksbillTurtle** (montable) | tortue imbriquée | carapace aux **écailles imbriquées**, **bec crochu**, grandes nageoires avant | 7,5 × 2,8, dos à 2,6 | écaille ambre, brun et or ; peau grise et beige | nage ample et lente, nageoires avant qui battent en « vol » |
 
 ### Phase 2+ (exemples de DIRECTION_V2, E décide)

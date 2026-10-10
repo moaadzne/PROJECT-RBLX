@@ -1,6 +1,7 @@
 # Tableau des tâches — Tide Rush : Reef Keepers (tenu par D)
 
-Mis à jour le 2026-10-09. Branche d'intégration : `claude/epic-pasteur-q323d7` (D y fusionne les branches de l'équipe).
+Mis à jour le 2026-10-10 14:45 (intégration au sommet `43b7ce2`). Branche d'intégration : `claude/epic-pasteur-q323d7` (D y fusionne les branches de l'équipe).
+État vérifié de l'intégration dans `docs/ETAT_INTEGRATION.md` ; liste Rojo du lundi dans `docs/IMPORT_LUNDI.md` (revérifiée le 10/10).
 
 ## Sessions (cloud, sans Studio jusqu'au lundi 12/10 21 h)
 | Lettre | Session | Branche |
@@ -79,7 +80,7 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 | P1-32 | B | Renommer TideClient.client.lua en init.client.lua (sinon aucun module client ne se charge avec Rojo) | fait (53a9f71) |
 | P1-33 | A | Remotes v2 créées par code ou en *.model.json (Net.lua:43 attend sans fin une remote absente) | fait (c9b95d2, créées au démarrage) |
 | P1-41 | E | Appliquer DIRECTION_V2 au GDD : roster de vraies espèces, noms, ton des textes, onboarding, miniatures cinématiques | fait (GDD v3, LagoonTiers) |
-| **P1-42** | **B** | **P0 lundi — vague visible.** B a déjà un rendu provisoire dans `testbuild/TestWaveRenderer.client.lua` (144e50e) : ne pas repartir de zéro, ne pas le paralléliser. Reste à faire : (1) le sortir de `testbuild/` vers le module client normal, (2) le passer sur les 4 directions N/E/S/O du serveur (1ba0aa3) au lieu de l'ancien axe Z, (3) houle + ombre + sons. Tant que ce n'est pas fait, le serveur attrape des joueurs avec une vague invisible. **Zone B exclusivement — aucune autre session n'y touche.** | **en cours (B)** |
+| **P1-42** | **B** | **P0 lundi — vague visible.** | **livré (`9f10adb`, dans l'intégration).** `src/StarterPlayer/StarterPlayerScripts/TideClient/Wave.lua` (493 l.), appelé par `init.client.lua` ligne 18, sur les 4 directions N/E/S/O du serveur (1ba0aa3), houle + ombre + sons. **Le P0 trouvé par F est corrigé** : ligne 404 `base * CFrame.new(0, sink, -front)` au lieu de `base + Vector3.new(...)` — le `+` donnait une position monde, donc N à l'envers et E/W immobiles. ⚠️ **Ne pas merger `claude/wave-client-p42`** : ce commit n'est pas un ancêtre de l'intégration, il ne diffère que par cette ligne et la ramènerait au bug. `testbuild/TestWaveRenderer.client.lua` est un doublon périmé, non mappé par Rojo ; personne ne l'édite. Reste : contrôle qualité ligne à ligne (non fait) et test en jeu lundi. |
 | P1-23 | C | Appliquer DIRECTION_V2 : DA du monde, fiches et prompts des créatures réalistes, vague à grande échelle, sons | fait (1a0bd8f) |
 | P1-16 | B | **CRITIQUE** : rendu client de la vague sur son axe N/E/S/W (Config.WaveFrontD, wave.dir), houle d'alerte, ombre et sons de C. Aucun module ne l'affiche ; la version de test utilise un rendu provisoire (testbuild/TestWaveRenderer.client.lua) | à faire à la reprise |
 | P1-15 | B | fait (a6f2ddc) : : aligner le client sur le contrat v2.1 de A (StartSteal + Notify, Mount(nil), ChoosePick, shop.randomAllowed, newbie/shield, stades Juvenile…Titan, ids v3 dans la démo) ; sinon le vol, la monture et la boutique ne marchent pas | à faire |
@@ -108,7 +109,10 @@ Priorité : intro de 30 s → vol pendant la vague → monture → œufs Robux +
 2. **Vague personnelle : incohérence latente.** `GoHome` utilise `GetWaveFor(player)`, mais `LagoonService` et `StealService` utilisent `Net.GetWave()` (vague globale), sur 8 appels. Sans effet aujourd'hui : les seuls joueurs à vague personnelle sont des nouveaux joueurs, que la protection débutant bloque avant. Cassera si les règles d'intro changent.
 3. **`review/Config.lua` est un Config v1 périmé** resté dans le dépôt : il contient encore `Zones`, `Beach` et `BaseLineZ` (supprimés par le contrat) et `GameName = "Tide Rush"`. Rien ne l'importe. Je ne l'ai pas supprimé (règle : ne pas supprimer ce qu'on n'a pas créé) — à supprimer ou à déplacer par son auteur.
 4. `docs/GDD_REEF.md` vs contrat v2.1 : pas tranché. Le GDD REEF contient « TIDE RANK (rebirth) » et « LES 5 ZONES », que la Phase 1 ignore (île ouverte, anneaux). Confirmer s'il remplace `docs/GDD.md` v2 pour le design, ou s'il reste un document de travail pour plus tard.
+   → **Fait le 10/10 : le document est intégré**, sommet `8964cc7` et **pas** `f908348` (qui contient 4 erreurs corrigées depuis). Il part avec le sync de lundi ; seule la question de design reste ouverte.
 
 ## Questions pour Moaad
 1. Créer les gamepasses et produits développeur dans Creator Hub (après la publication privée), puis donner leurs ids à A. En attendant, les ids sont à 0 et la boutique est désactivée.
 2. Prix des gamepasses : les valeurs de départ du GDD §9 restent jusqu'aux premiers tests.
+3. **Règles de monétisation Roblox, semaine 1** (demandé par E le 10/10) : tirages payants déclarés ou non dans le questionnaire d'expérience Creator Hub ? Tant que c'est flou, on garde le Tide Egg + Pick a Creature déjà codés par A, et le Deep Dive attend la semaine 2.
+4. **`docs/GDD_REEF.md` remplace-t-il `docs/GDD.md` v2 pour le design ?** Le document est intégré depuis `8964cc7` ; c'est la priorité de design qui manque, pas le fichier.

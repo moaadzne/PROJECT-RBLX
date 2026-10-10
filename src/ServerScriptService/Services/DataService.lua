@@ -390,12 +390,15 @@ local function save(profile, release)
 		return "skipped"
 	end
 	profile.saving = true
-	profile.data.lastSeen = os.time()
-	local snapshot = deepCopy(profile.data)
-	snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
-	snapshot._passBonus = nil
 	local lockLost = false
+	-- tout ce qui peut lever est DANS le pcall, et `saving` est repositionne apres : si
+	-- deepCopy levait, le drapeau resterait a true et ce joueur tournerait ensuite en
+	-- boucle dans "while profile.saving", donc plus jamais sauvegarde, sans erreur visible
 	local ok, err = pcall(function()
+		profile.data.lastSeen = os.time()
+		local snapshot = deepCopy(profile.data)
+		snapshot._growth = nil -- champs passagers (gamepass), recalcules a chaque connexion
+		snapshot._passBonus = nil
 		store:UpdateAsync(profile.key, function(record)
 			if type(record) ~= "table" or not ownsLock(record.lock, profile) then
 				lockLost = true
@@ -653,7 +656,12 @@ local function onLoaded(profile, record, err)
 		payOffline(profile)
 	end
 	for _, hook in ipairs(loadedHooks) do
-		task.spawn(hook, player, profile)
+		task.spawn(function()
+			local ok, err = pcall(hook, player, profile)
+			if not ok then
+				warn("[TideRush] crochet de chargement : " .. tostring(err))
+			end
+		end)
 	end
 	if not profile.saveEnabled then
 		Net.Notify(player, "saveOff", { text = "Your progress can't be saved right now. Rejoin later to keep it." })
@@ -824,8 +832,22 @@ function DataService.Start()
 	end, function(player)
 		return nil, Net.GetWaveFor(player)
 	end)
-	task.spawn(flushLoop)
-	task.spawn(autosaveLoop)
+	-- Protection identique aux autres boucles longues du serveur : si l'une des deux meurt,
+	-- la sauvegarde automatique disparait pour toute la vie du serveur, en silence total.
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(flushLoop)
+			warn("[TideRush] envoi d'etat : " .. tostring(ok and "fin" or err))
+			task.wait(1)
+		end
+	end)
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(autosaveLoop)
+			warn("[TideRush] sauvegarde automatique : " .. tostring(ok and "fin" or err))
+			task.wait(1)
+		end
+	end)
 	game:BindToClose(onClose)
 end
 

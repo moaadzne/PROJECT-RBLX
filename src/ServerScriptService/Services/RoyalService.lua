@@ -104,7 +104,9 @@ local function finishRound()
 			local profile = DataService.Get(entry.player)
 			local coins = 0
 			if profile and profile.loaded then
-				coins = math.floor(Stats.Income(profile.data, now) * 60 * Config.Royal.rewardMinutes[rank])
+				-- le score est en revenu/s du contrat (sans gamepass) ; la prime monetaire, elle,
+				-- suit VIPRider comme tout autre gain de pieces
+				coins = math.floor(Stats.Income(profile.data, now) * Stats.CoinBonus(profile.data) * 60 * Config.Royal.rewardMinutes[rank])
 				if coins > 0 then
 					DataService.AddCoins(entry.player, coins)
 				end

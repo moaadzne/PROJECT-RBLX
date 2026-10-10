@@ -235,6 +235,11 @@ Le Codex est la **seule collection durable** du jeu : il n'est **jamais** remis 
 
 **Ce qu'A code en Phase 1, et qui est déjà écrit** (`review_context.md`) : à chaque nouvelle case, le joueur reçoit automatiquement **le revenu de base × 50 pièces** (`Config.Codex.newEntryIncomeMult`), et une **ligne d'espèce complète donne +5 % de revenu permanent**. `codexCount` / `codexTotal` sont déjà dans le snapshot. **B n'a donc rien à demander à A pour afficher le Codex : il lit `state.codex`, `codexCount`, `codexTotal` et le Notify `codex`.**
 
+**Semaine 1 — affichage validé par étude de marché (`DECISIONS_MARCHE.md` §2) :**
+- **3 visibles** : Ghost Crab (Common, 1/s), Cushion Star (Common, 2/s), Hawksbill Turtle (Uncommon, montable Elder+, 10/s)
+- **4 mystère** : slots "? ? ? ?" avec silhouettes floues + rareté colorée (Rare/Epic/Legendary)
+- Barre de progression "X/10 découvertes", animation d'apparition scale 0→1 bounce + son "pop", clic sur mystère → tooltip "Découvre-le en jouant !" + particule
+
 Le tableau ci-dessous est ma **proposition Phase 2**, à réarbitrer par D le moment où le rebirth rouvre (§10). Je le garde ici pour que la décision soit déjà réfléchie — pas pour que quelqu'un le code maintenant.
 
 | Palier | Nom | Condition (lignes de Codex) | Récompense | Effet |
@@ -433,6 +438,19 @@ Config.Ranks = {
 	{ rank = 5, marks = 200000000, income = 1000000, bonus = 0.50 },
 }
 -- donnees : coinsEarnedSinceRank
+
+-- Monétisation top 10 validée (DECISIONS_MARCHE.md §5) — IDs 0 = en attente Moaad
+Config.Shop = {
+	Passes = {
+		VIPRider    = { id = 0, price = 79,   name = "VIP Rider" },
+		SpeedBoost  = { id = 0, price = 149,  name = "Speed Boost" },
+		BagExpand   = { id = 0, price = 99,   name = "Bag Expansion" },
+		StarterPack = { id = 0, price = 249,  name = "Starter Pack", includes = { "VIPRider", "SpeedBoost", "BagExpand" } },
+	},
+	TideEgg      = { id = 0, price = 199, chances = { Common = 60, Uncommon = 25, Rare = 10, Epic = 4, Legendary = 1 } },
+	PickCreature = { id = 0, price = 399 },
+	RewardedAd   = { enabled = true, reward = "TideEgg", cooldownHours = 24 },
+}
 ```
 
 **Rappel de cohérence** : `Stats.LagoonTier` doit être appelé avec le **revenu total** du joueur (`Stats.Income`, bonus compris), pas avec le revenu brut des bassins. Sinon le palier 5 devient inatteignable.
@@ -444,7 +462,7 @@ Config.Ranks = {
 | # | Sujet | Qui tranche | Quand |
 |---|---|---|---|
 | 1 | Récompense exacte du **Léviathan** (rang 3+) | D + Moaad | Phase 2 |
-| 2 | Les 6 espèces **Rare / Epic / Legendary** : absentes de la nature en Phase 1 (choix par défaut), ou ajoutées à `Config.ExtremeTide.creatures` | D | **avant le test fermé** |
+| 2 | ~~Les 6 espèces **Rare / Epic / Legendary** : absentes ou ajoutées au récif ?~~ | **TRANCHÉ par E le 10/10** — voir ci-dessous | clos |
 | 3 | Contenu du Deep Dive (`GDD.md` §9 bis) au-delà de ce que A a déjà écrit dans `Config.Shop` | D | Phase 2 |
 | 4 | Rangs 6+ : courbe | D | Phase 2 |
 | 5 | Prix Robux finaux | Moaad | Lancement |
@@ -464,7 +482,42 @@ Elles sont **réelles** et doivent être tranchées avant que ça coûte du temp
 4. **`SeaStar` vs `CushionStar` — l'id de l'étoile de mer.**
    `Config.Creatures` s'appelle **`CushionStar`**, et c'est déjà l'id **validé par D le 09/10** (`TABLEAU.md`). Mais `CREATURES_ART.md` §3 et `SOURCING_C.md` §1 proposent encore **`SeaStar`** (y compris l'asset candidat `5088223335`). → **`CushionStar` gagne.** C range ses modèles dans `Assets.Creatures.CushionStar` et corrige ses deux documents ; s'il garde `SeaStar` en nom de fichier local, il lui faut un alias, sinon `Assets.Creatures` ne résoudra pas à l'exécution.
 
+### §14 nº 2 — TRANCHÉ : les 6 espèces rares restent hors de la Phase 1, et le récif gagne une garantie
+
+**Décision E, 10/10.** Les 6 espèces `BlueRingedOctopus`, `LeopardRay`, `GiantPacificOctopus`, `LionsManeJelly`, `MantaRay`, `WhaleShark` **n'apparaissent pas dans la nature en Phase 1**. Elles reviennent en Phase 2, dans cet ordre.
+
+**Pourquoi, en trois arguments — le premier est arithmétique, pas goût :**
+
+1. **Un Whali Shark en semaine 1 casse l'économie.** Il vaut 1 500 /s juvénile. Le seuil du palier 5 de lagon est **100 000 /s** et le palier 4 est **5 000 /s** (`Config.LagoonTiers`). Un seul Whali Shark Titan dans un bassin — 12 000 /s — **saute le palier 4**. Le joueur gagne les deux tiers de sa courbe de richesse en une capture, et `Config.LagoonTiers` cesse de mesurer quoi que ce soit. La rareté ne se régle pas en Phase 1 : **la Phase 1 est le lieu où l'économie se cale.**
+2. **C n'a pas les modèles, et ce n'est pas le moment.** P1-20 fait 3 créatures. P1-42 (la vague rendue côté client) est P0 pour lundi. Six modèles de plus avant lundi coûtent exactement ce qui bloque le jeu.
+3. **Un Rare doit arriver préparé.** Quand une Manta Ray apparaît en Phase 2, le joueur doit déjà connaître le cycle des stades et avoir vu le récif. Sinon c'est un objet rare dans un jeu où la rareté ne veut rien dire encore.
+
+**En revanche, le récif ne doit pas sembler vide.** C'est le vrai sujet derrière la question, et il a une réponse qui ne coûte **aucun modèle** :
+
+> ⚠️ **Écart trouvé en vérifiant le code.** La décision de D du 09/10 dit « des créatures **rares** pendant un temps limité ». Or `Config.ExtremeTide.creatures = { HawksbillTurtle 70, Lionfish 30 }` : **les deux sont `Uncommon`.** Le secret du jeu, une fois par heure, ne donne donc rien de plus rare que l'anneau extérieur. Et `mutationTide = "Golden"` necorrige pas le tir : avec 6 créatures à 30 %, la probabilité qu'**aucune** ne soit mutée est de 0,7⁶ ≈ **12 %**. Douze pour cent d'heures déçues, une fois par heure.
+>
+> **A : la correction est la même que celle que tu as déjà écrite pour la marée Golden personnelle.** `IntroService` (lignes 156-164) force « au moins une créature mutée » quand le tirage n'en donne aucune. **Reprends cette garantie telle quelle pour le récif.** Une seule règle, pas de nouvelle entrée de Config, aucun modèle pour C. Le récif devient alors un rendez-vous qui paie vraiment : une **Golden** y est garantie, une fois par heure, pendant 25 s.
+
+**Ordre de retour en Phase 2** (pour ne pas rouvrir la question à chaque session) :
+
+| Vague | Espèces | Pourquoi dans cet ordre |
+|---|---|---|
+| 1re mise à jour | `BlueRingedOctopus`, `LionsManeJelly` | Ce sont les **créatures de nuit** de `GDD.md` §6 bis : elles se voient de loin par leur lueur, donc la décision « je vais là-bas » est visuelle, sans texte. Un seul preset (`Night`) à faire pour les deux. |
+| 2e | `LeopardRay`, `GiantPacificOctopus` | Le **secret complet de l'épave** (`TABLEAU.md`, semaine 2). Le contenu de l'épave est donc à écrire avec elles, pas avant. |
+
+> **Gravure sur la quille (décision finale, `DECISIONS_MARCHE.md` §3) :**
+>
+> > **"Quand la mer recule, l'ancien roi revient.**
+> > **La marée extrême révèle ce qu'elle a prise."**
+>
+> Lisible en 3 s, compréhensible 10-30 ans. 10 ans = marée basse + gros monstre ; 20 ans = lien mécanique horaire ; 30 ans = lore Léviathan/Whale Shark. **Empreinte lumineuse** au sol pulsant au rythme des marées → partage organique TikTok/Shorts = acquisition gratuite. Pas de spoil : ne dit pas "Whale Shark" ni "Deep Dive".
+
+| 3e | `MantaRay`, `WhaleShark` | Les Légendaires montables. Elles supposent que le joueur ait déjà vu les 8 autres, et une économie qui tienne. **C'est aussi la promesse du Deep Dive** (`GDD.md` §9 bis) : elles doivent arriver *avec*, pas avant. |
+
+**Conséquence à acter dans l'interface (B), semaine 1** : le Codex affiche 10 espèces, **3 accessibles + 4 mystère** ("? ? ? ?" silhouettes floues + rareté colorée). C'est le crochet de rétention validé par étude de marché (pattern Adopt Me / Blox Fruits). Barre "X/10 découvertes", animation bounce, tooltip "Découvre-le en jouant !" sur les mystères. Si D préfère ne rien annoncer, le Codex n'affiche que les 3 connues — c'est un choix de 10 lignes côté B, à confirmer, pas un blocage.
+
 ### Deux valeurs manquantes, signalées plutôt que comblées
+
 
 | Manque | Où | Pourquoi ce n'est pas tranché ici |
 |---|---|---|

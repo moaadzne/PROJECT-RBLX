@@ -109,7 +109,21 @@ cd "$HOME/Documents/claude code/project-rblx"
 1. Onglet **Plugins** → bouton **Rojo**. Un panneau s'ouvre.
 2. Adresse `localhost`, port `34872` (valeurs par défaut) → **Connect**.
 3. Rojo affiche la liste des changements. Vérifie qu'elle ne parle **que** de ReplicatedStorage.Shared, ServerScriptService, StarterPlayerScripts (et Remotes, StarterGui, ReplicatedFirst s'ils existent dans le repo). S'il y a **Workspace, Lighting ou Assets** dans la liste → **Abort** et on prévient D.
-4. Sinon → **Accept**.
+   **Changements attendus** — liste **revérifiée le 10/10 à 14:40 contre l'intégration**
+   (`origin/claude/epic-pasteur-q323d7`), pas contre le .rbxl. La session locale compare quand même avec `rojo sourcemap default.project.json` du jour, qui fait foi.
+   - `ServerScriptService.Services` : **ajouts** CreatureFactory, CreatureService, IntroService, LagoonService, StealService, MountService, RoyalService, ShopService ; **suppressions** TreasureService et ItemFactory. Elles sont normales : dans ce dossier, le repo fait foi. Les 9 autres services (DataService, DebugService, Net, PetService, PlotService, SelfTest, Stats, UpgradeService, WaveService) sont mis à jour.
+   - `ServerScriptService.Main` et `ReplicatedStorage.Shared.Config` : mis à jour.
+   - `ReplicatedFirst` : ajout de `LoadingScreen`.
+   - `StarterPlayerScripts.TideClient` — **c'est ici qu'il y a le plus de changements**, 14 modules ajoutés, 5 réécrits :
+     - **ajoutés** : `Wave` (le rendu de la vague, P1-42), `Hud`, `Onboarding`, `StealHud`, `RoyalHud`, `Shop`, `Prompts`, `Feel`, `Ambience`, `ChatStyle`, `NameTags`, `World`, `PoolBillboards`, `MountButton` ;
+     - **réécrits** : `Store`, `Theme`, `Components`, `Fx`, `Notifications` ;
+     - **renommé** : `TideClient.client.lua` → `init.client.lua`. **C'est la seule suppression hors de `Services`**, et elle est voulue. Si elle n'apparaît pas, le LocalScript n'est pas rechargé et le client ne démarre pas.
+   - **Ne doivent surtout pas apparaître** : `Workspace`, `Terrain`, `Lighting`, `ReplicatedStorage.Assets`, `MaterialService`, `SoundService`, `ServerStorage`. Ces nœuds ne sont pas mappés ; s'ils apparaissent, c'est que la place a changé → **Abort**.
+
+   **Deux choses que Rojo ne touche pas, mais qui restent visibles en jeu :**
+   - **`StarterGui` n'existe pas dans le repo.** Rojo n'y touche donc rien, et **l'ancienne interface construite dans Studio reste**. Le nouveau HUD est créé dans `PlayerGui` avec `DisplayOrder` 5 et 20, donc l'ancienne UI passe *derrière* et reste visible là où le nouveau HUD est transparent. Elle utilisait des emojis comme glyphes (DIRECTION_V2 les interdit, §8 bis). **À vérifier à l'étape 7 et à masquer avant toute capture** — sinon on rejoue le rejet du 09/10.
+   - **`ReplicatedStorage.Remotes` : absent du repo** (`Net.lua` crée les remotes au démarrage). Si la liste Rojo parle de `Remotes`, c'est anormal.
+4. Si la liste correspond → **Accept**.
 5. **Cmd + S**.
 
 ### Étape 7 : vérifier la synchronisation (session locale, juste après l'étape 6, AVANT de toucher au monde)

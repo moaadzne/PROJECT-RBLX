@@ -268,7 +268,12 @@ local function succeed(thief, profile)
 	DataService.MarkDirty(thief)
 	local value = Stats.CreatureIncome(mine, now, speed)
 	for _, hook in ipairs(stolenHooks) do
-		task.spawn(hook, thief, mine, value)
+		task.spawn(function()
+			local ok, err = pcall(hook, thief, mine, value)
+			if not ok then
+				warn("[TideRush] crochet de vol : " .. tostring(err))
+			end
+		end)
 	end
 end
 

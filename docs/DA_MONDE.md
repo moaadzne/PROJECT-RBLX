@@ -7,9 +7,9 @@
 ## 0. Contraintes héritées (ne pas casser)
 Le serveur dépend de ces noms et attributs (review/review_context.md) :
 - `Map.Plots.PlotN` (1..8) : `Index`, `MinX`, `MaxX`, `MinZ`=4, `MaxZ`=67, `SpawnPos` (Y=1), `Owner`, `OwnerName`, `LagoonTier`. Enfants : `Pedestals/PedestalN` (`Slot`, `LockGui`), `Display`, `SignAnchor.OwnerGui.Title`, `Barrier` (`Open`).
-- `Map.Towers.TowerN` : `Center`, plateforme à Y=26.
-- Vague de gameplay : hauteur 22 et épaisseur 40 (Config.Wave). Un joueur est pris si Y < 22.
-- Base : centre X = -112 + (i-1)×32, soit 32 × 63 studs.
+- `Map.Towers.TowerN` : `Center`, plateforme au-dessus de Y 34.
+- Vague de gameplay : hauteur 30 et épaisseur 40 (Config.Wave). Un joueur est pris si ses pieds sont sous Config.Wave.height.
+- Base : **`Center` + `Radius`** (contrat ile ouverte, A 10/10). `Center` = centre du lagon au sol, `Radius` = rayon horizontal, deck compris. « Dans le lagon » = distance horizontale à `Center` ≤ `Radius`. Les anciens `MinX/MaxX/MinZ/MaxZ` restent un repli côté serveur. Sortie du lagon : `Center + o·(Radius + 5)`, `o` = direction horizontale de la crique vers `Center`, donc **côté extérieur, face à la plage**.
 
 Règle C : je remplace le visuel et je garde les objets porteurs. Tout déplacement d'un objet porteur passe par D, puis A.
 
@@ -77,13 +77,13 @@ Chaque palier ajoute un élément haut et un détail bas. Les achats de déco se
 Règle : 80 % de tons naturels. Le turquoise et l'or sont des accents qu'on remarque. Aucune couleur saturée sur une grande surface.
 
 ## 4. La vague, star du jeu
-On doit avoir peur la première fois. La hauteur de gameplay ne change pas (corps de 22, tours à 26). **Le spectacle vient de la houle au large, de la crête, des embruns, de l'ombre et du son.** Modèle : `tools/world/build_wave.luau`.
+On doit avoir peur la première fois. Décision D 09/10 : la vague **monte** à **30**, les plateformes de tours à **34** (A fixe les valeurs finales ; `Config.Wave.height` fait foi). ⚠ La crête et les embruns ne doivent jamais dépasser une plateforme où l'on est à l'abri. La vague arrive désormais **des 4 directions (N/E/S/O)**, jamais deux fois de suite la même. Modèle : `tools/world/build_wave.luau`.
 
 | Phase (WaveState) | Ce qu'on voit | Ce qu'on entend |
 |---|---|---|
-| **Alerte** (7 s) | À l'horizon (Z ≈ -1 000), une **houle** monte de 0 à **55 studs**, plus haute que les tours, sur toute la largeur. La mer se retire et découvre le sable mouillé. Le ciel fonce (ColorCorrection -0,1). | grondement grave qui monte (`rumble`), corne (`horn`), musique tendue (`musicTension`) |
-| **Départ** (Z -800) | La houle **déferle** en 1,5 s : la crête s'enroule vers l'avant et s'effondre. Le corps redescend à 22, les embruns jaillissent jusqu'à 40. | `waveBoom` (impact lourd) |
-| **Course** | Corps de 22 × 300 × 40, turquoise profond en bas, plus clair en haut. Crête d'écume en rouleau. Embruns jusqu'à environ 32 : ils balaient les plateformes des tours sans danger, et les joueurs dessus sont éclaboussés à l'écran. **Ombre** : une bande sombre glisse sur le sable 20 studs devant le front. | rugissement continu, `waveImpact` au contact du rivage |
+| **Alerte** (7 s) | À l'horizon, **du côté d'où elle vient** (N = -Z, E = +X, S et W inversés ; A 10/10), une **houle** monte de 0 à **55 studs**, plus haute que les tours, sur toute la largeur. Elle traverse de -330 à +330 sur son axe. La mer se retire et découvre le sable mouillé. Le ciel fonce (ColorCorrection -0,1). | grondement grave qui monte (`rumble`), corne (`horn`), musique tendue (`musicTension`) |
+| **Départ** | La houle **déferle** en 1,5 s : la crête s'enroule vers l'avant et s'effondre. Les embruns jaillissent, **sans dépasser Y 29** (sous les plateformes des tours, Y 34). | `waveBoom` (impact lourd) |
+| **Course** | Corps de 30 × 300 × 40, turquoise profond en bas, plus clair en haut. Crête d'écume en rouleau. Embruns **jusqu'à environ 29** : ils balaient les plateformes des tours (Y 34) sans danger, et les joueurs dessus sont éclaboussés à l'écran. **Ombre** : une bande sombre glisse sur le sable 20 studs devant le front. | rugissement continu, `waveImpact` au contact du rivage |
 | **Reflux** | L'eau se retire en laissant du sable mouillé brillant, qui sèche en 3 s. | ressac |
 
 Notes pour B : la houle d'alerte est `Assets.WaveSwell`, rendue côté client. Si Moaad veut une vague plus haute **pendant la course**, il faut monter les tours et `Config.Wave.height`, ce qui est une décision de D et de A.

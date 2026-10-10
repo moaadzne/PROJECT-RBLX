@@ -9,6 +9,10 @@
 -- Contrat pour B (World.lua applique deja les 4 premiers points) :
 --  Mutation : Color (Color3), Material (string, nom d'Enum.Material), Reflectance (number),
 --             ApplyTo ("*" = toutes les parties sauf Root), enfants ParticleEmitter a cloner dans Root.
+--             ⚠ Material = "Keep" = ne PAS toucher au materiau de la creature, seule la couleur
+--             change. Le consomteur doit tester Material ~= "Keep" avant un Enum.Material[...].
+--             Sans ce test, Enum.Material["Keep"] vaut nil et casse l'affectation.
+--             (Night l'utilise : F 10/10, le SmoothPlastic d'origine donnait un rendu jouet.)
 --             En plus (Phase 2) : enfant PointLight "Glow" a cloner dans Root, avec l'attribut Pulse (s) pour la faire respirer ;
 --             enfant Beam "Arc" : arcs electriques, deux Attachments au hasard sur la creature, deplaces toutes les ArcInterval s ;
 --             attribut HueCycle (s) : irisation, la teinte tourne lentement (saturation basse, IridescentSaturation).
@@ -30,7 +34,11 @@ local MUTATIONS = {
 		},
 	},
 	Night = {
-		attrs = { Color = Color3.fromHex("14222E"), Material = "SmoothPlastic", Reflectance = 0.05, ApplyTo = "*" },
+		-- F 10/10 : SmoothPlastic ici donnait exactement le rendu "jouet en plastique" que
+		-- DIRECTION_V2 interdit, alors que Night doit etre de la bioluminescence.
+		-- Material = "Keep" : on garde le materiau d'origine de la creature, seule la couleur
+		-- change. Une carapace qui garde sa matiere et perd sa lumiere, c'est credible.
+		attrs = { Color = Color3.fromHex("14222E"), Material = "Keep", Reflectance = 0.05, ApplyTo = "*" },
 		emitters = {
 			-- plancton bioluminescent qui derive autour de la creature
 			Plankton = { Color = ColorSequence.new(Color3.fromHex("3DF5FF")), Rate = 6, Lifetime = NumberRange.new(2, 3), Size = seq(0.1, 0.05), Speed = NumberRange.new(0.1, 0.3), LightEmission = 1, LightInfluence = 0 },

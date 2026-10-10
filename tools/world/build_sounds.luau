@@ -5,6 +5,16 @@
 -- Sons ProSoundEffects / APMOfficial uniquement (bibliotheques sous licence publiees pour Roblox).
 -- SoundGroup Music : la musique se coupe a part dans les reglages (B).
 -- Les volumes sont un point de depart : a regler a l'oreille lundi, sur telephone.
+--
+-- ⚠ POURQUOI LA VAGUE EST MUETTE JUSQU'A LUNDI (F 10/10 a bien vu) :
+-- `Assets.Sounds` n'existe PAS dans le .rbxl tant que ce script n'a pas ete lance en main.
+-- Ce n'est pas un oubli : aucun script de build n'a jamais tourne dans la place. Le dossier,
+-- les SoundGroups et les 22 Sound sont tous crees ici, d'un coup.
+-- ORDRE LUNDI (dans l'editeur, mode edition, PAS en Play) :
+--   1. build_sounds.luau  avec DRY_RUN = false   <- cree Assets.Sounds + les 22 sons
+--   2. build_wave.luau    avec DRY_RUN = false   <- cree Assets.Wave et Assets.WaveSwell
+-- Tant que l'etape 1 n'est pas faite, Sfx ignore en silence : pas de crash, mais aucun son.
+-- Verifier : python3 tools/world/verify_sounds.py (controle les 22 ids sur l'API Roblox).
 
 local DRY_RUN = true
 
@@ -38,6 +48,13 @@ local SOUNDS = {
 	musicCalm = { 1837463526, 0.25, "Music", true }, -- Ethereal Drone (alternative : 1837389538 Peaceful Island)
 	musicTension = { 91017465590486, 0.35, "Music", true }, -- Tension To Action A (alerte + vague)
 	musicRiser = { 1846880576, 0.4, "Music" }, -- Suspense Build 2 (11 s, sur les 7 s d'alerte)
+	-- ⚠ Sons d'interface (demandes par B 10/10) : VOLONTAIREMENT ABSENTS.
+	-- J'avais pose 4 ids (uiClick, uiDeny, uiPurchase, uiWhoosh) qui se sont reveles Faux :
+	-- tools/world/verify_sounds.py les a controles sur l'API Roblox et ils pointent vers un
+	-- RenderMesh, un modele, une place et un drapeau -- pas des sons. Je les ai retires plutot
+	-- que d'en inventer d'autres : Sfx ignore un son absent en silence, donc l'interface
+	-- demarre sans son mais ne casse pas. A B de poser ses propres ids, verifies.
+	-- grow existait deja (au-dessus) : B n'a pas besoin de le redemander.
 }
 
 local GROUPS = { SFX = 0.8, Ambient = 0.6, UI = 0.7, Music = 0.5 }
