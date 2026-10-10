@@ -66,6 +66,23 @@ Pas encore décidée, mais déjà pensée :
 
 ---
 
+## Double plateforme — Mobile + PC (stratégie unique, pas deux jeux)
+
+**Même progression, même économie, mêmes drops.** Un seul compte Roblox = tout suit instantanément (cross-save natif).
+
+| | Mobile | PC |
+|---|---|---|
+| **Rôle** | Volume, acquisition, rétention J1–J7 | Whales, traders, investis, sessions 20–40 min, ARPPU 3–5× |
+| **Contrôles** | Joystick + boutons gros, caméra auto | WASD + souris, caméra libre, raccourcis clavier |
+| **HUD** | Compact, essentiel, pouce-friendly | Étendu, infos complètes, tooltips au survol |
+| **Trading** | Même marché, même interface | Même marché, même interface |
+| **Battle Pass / Daily Rewards** | Identiques | Identiques |
+| **Social** | Invite amis, chat rapide | Invite amis, chat complet, groupes |
+
+**Pourquoi ça marche** : le joueur mobile découvre, le joueur PC approfondit. Ils s'échangent des créatures, se volent mutuellement, se croisent sur le serveur — l'interaction cross-plateforme *est* le lien social. Pas de ségrégation, pas de version allégée.
+
+---
+
 ## Les deux questions ouvertes
 
 **1. Les règles de la boutique de Roblox.** Elles changent, et ce n'est pas nous qui decidons. Si la plongée et la créature la plus rare ne passent pas, il faut le savoir **maintenant**, pas au moment de publier. C'est la seule chose du programme qui peut nous forcer à changer de plan.

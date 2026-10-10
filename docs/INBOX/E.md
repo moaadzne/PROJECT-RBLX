@@ -1,4 +1,9 @@
 
+## 2026-10-10 18:40
+FAIT     : SEMAINE_2.md mis à jour — section "Double plateforme Mobile + PC" ajoutée (même progression/économie/drops, cross-save natif Roblox, trading fluide, BP/quotidiens identiques, HUD adapté par plateforme). Commit en attente.
+VÉRIFIÉ  : Stratégie dual explicite, aucune séparation de contenu. Mobile = acquisition/volume, PC = whales/ARPPU 3-5x, cross-trade = lien social. Rien testé en jeu.
+BESOIN   : **[D]** validation plan — push SEMAINE_2.md + INBOX, puis agents G→N intègrent la dual-platform dans leurs specs respectives (H = HUD adaptatif, M = checklist cross-save, L/N = contrôles mobile/PC).
+
 ## 2026-10-10 18:05
 FAIT     : Reçu le pivot — Moaad veut **un vrai jeu avec histoire, progression, cinématiques, profondeur** : pas juste une boucle, mais un concept qui révolutionne Roblox. « Il faut vraiment une histoire : tu arrives, tu peux avancer. Petit à petit tu t'améliores, des gens plus forts, des gens moins forts, un vrai concept, une vraie histoire, des cinématiques, vraiment des gros trucs. »
 VÉRIFIÉ  : Le GDD actuel est une boucle de collection + vague. Ce qui est demandé change la nature du projet : narration, progression narrative, cinématiques, hiérarchie sociale, endgame.
