@@ -1,5 +1,10 @@
 # File de S — Cinematics & Presentation
 
+## 2026-10-10 16:35
+FAIT     : Cycles infinis D recus (1 moteur / 2 sequences / 3 presentation / 4 tech). Aucune tache active en attente : Phase 1 = rien a livrer, Studio lundi 12/10 21h. Les cycles demarrent au kickoff Semaine 1-2.
+VÉRIFIÉ  : Rien teste en jeu (pas de Studio)
+BESOIN   : lundi : feu vert sequence pour moteur cinematique (C1.1) + O pour scripts intro 3 min (C1.2)
+
 ## 2026-10-10 16:20
 FAIT     : Phase 1 = RIEN à livrer (CameraIntro.lua 30s déjà faite par L, appelée par init.client.lua). Confirmé avec D.
 VÉRIFIÉ  : Rien testé en jeu (pas de Studio avant lundi 12/10 21h)
