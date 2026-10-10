@@ -47,7 +47,7 @@ Ce n'est pas le code. C'est **la règle de Roblox**, et elle n'est pas de notre 
 | 2 | **Codex : montrer les 7 espèces verrouillées en « ? », ou ne montrer que les 3 connues ?** | D | avant le test public ~26/10 (c'est du contenu d'écran, ça se voit sur les captures) |
 | 3 | **Contenu exact du secret de l'épave** | E le propose, D tranche | avant que C ne modélise, donc semaine 2 |
 
-Le point 3 est le seul que je peux préparer sans arbitrage. **Ce n'est pas fait ici** : la commande reçue était de trancher le §14 nº 2 et de préparer la semaine 2, pas d'écrire le contenu de l'épave. Je le fais à la demande, ou après le retour de D sur les points 1 et 2.
+Le point 3 est écrit : **`docs/SECRET_EPAVE.md`**. En résumé — l'épave déjà dessinée en Phase 1 comme repère devient le secret de la semaine 2, accessible pendant la fenêtre de la marée extrême, avec `LeopardRay` + `GiantPacificOctopus` (les deux espèces que le design leur assignait déjà) et **une gravure sans texte** : la silhouette d'une chose immense sous l'île. **[A]** 2 lignes de Config, **[B]** rien du tout, **[C]** le seul vrai travail. Si la semaine 2 est trop chargée, **l'épave part en premier** : le Deep Dive est demandé par Moaad et n'a pas de remplaçant.
 
 ---
 
