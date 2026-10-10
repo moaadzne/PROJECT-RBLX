@@ -1,5 +1,7 @@
 # Équipe Tide Rush : qui fait quoi (mis à jour par D le 2026-10-09)
 
+> **Depuis le 09/10 ~15 h** : l'équipe travaille dans des sessions cloud sur le repo GitHub `moaadzne/PROJECT-RBLX`, sans accès à Studio. Les sessions, les branches et les décisions sont dans `docs/TABLEAU.md`. Les comptes-rendus vont à D par send_message. Lundi 12/10 au soir, une session locale réimportera dans Studio les fichiers modifiés. Les règles ci-dessous sur Studio s'appliquent de nouveau à ce moment-là.
+
 Toutes les conversations pilotent **le même Roblox Studio** (même place, même serveur MCP).
 Le tableau commun est `ServerStorage.DevNotes` (tableau des tâches, contrat des remotes, demandes, journal).
 Les identifiants de session changent à chaque redémarrage : se repérer au **nom** de session.
@@ -33,3 +35,5 @@ Les identifiants de session changent à chaque redémarrage : se repérer au **n
 - 2026-10-09 : le décor actuel est « vraiment nul » ; il faut le refaire entièrement.
 - 2026-10-09 : style choisi : **stylisé console** (façon Fortnite / Sea of Thieves).
 - 2026-10-09 : il veut « un vrai concept », fun, avec un vrai but, et que les joueurs aient envie d'acheter : c'est la mission de la conversation E.
+- 2026-10-09 : concept choisi : **Reef Keepers** (docs/GDD.md).
+- 2026-10-09 : test du jour rejeté (« rien ne va, tout est à revoir ») : tout ce qui se voit est refait à partir de zéro, on ne garde que la plomberie invisible.

@@ -8,15 +8,36 @@ local player = Players.LocalPlayer
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 
 -- Ordre de chargement : les briques d'abord, les ecrans ensuite (un module absent est saute)
-local FOUNDATION = { "Util", "Theme", "Settings", "Store", "Sfx", "Fx", "Components" }
-local SCREENS = { "Notifications" }
+local FOUNDATION = { "Util", "Theme", "Glyph", "IconResolver", "Settings", "Store", "Sfx", "Fx", "Components" }
+local SCREENS = {
+	"Notifications",
+	"Hud",
+	"Prompts",
+	"PoolBillboards",
+	"NameTags",
+	"Wave", -- la vague : le serveur ne dessine rien, tout le rendu est ici
+	"World",
+	"Ambience",
+	"Feel",
+	"ChatStyle",
+	"StealHud",
+	"RoyalHud",
+	"MountButton",
+	"Shop",
+	"Onboarding", -- apres Hud (Hud.Hold)
+}
 
 -- Echelle de l'interface : 1 = ecran de design 900 x 480 (telephone paysage 844 x 390 -> 0,85)
 local DESIGN_SIZE = Vector2.new(900, 480)
 local SCALE_MIN, SCALE_MAX = 0.85, 1.3
 
--- Elements Roblox par defaut inutiles ici (pas d'outils, pas de vie, classement maison)
-local HIDDEN_CORE_GUI = { Enum.CoreGuiType.PlayerList, Enum.CoreGuiType.Backpack, Enum.CoreGuiType.Health }
+-- Elements Roblox par defaut remplaces par les notres (VISION_TON §6.1) : classement, sac, vie, roue d'emotes
+local HIDDEN_CORE_GUI = {
+	Enum.CoreGuiType.PlayerList,
+	Enum.CoreGuiType.Backpack,
+	Enum.CoreGuiType.Health,
+	Enum.CoreGuiType.EmotesMenu,
+}
 
 local playerGui = player:WaitForChild("PlayerGui")
 
