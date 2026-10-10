@@ -104,7 +104,9 @@ créatures + mutations shader + LOD, specs lumière/eau/palettes, plans O/P/Q/R/
 procédure Rojo vérifiée et corrigée.
 
 **Attend une décision de D** : périmètre Phase 1 = 3 créatures (K), emplacement bouton Codex
-(I), scope BattlePass 499 (G), `SUNK_POOLS` validé, `coveRadius` = 110.
+(I), scope BattlePass 499 (G), `SUNK_POOLS` validé et appliqué (`Config.SunkPoolOffset = -3.5`).
+
+⚠️ **`Config.Island.coveRadius` est décidé à 110 mais toujours à 70 dans `Config.lua`** au moment où j'écris. C a vérifié géométriquement que 8 lagons de rayon 30 ne tiennent pas dans une crique de 70. **C'est le seul vrai bloquant technique**, et le changement est de la zone de A (Config). Si lundi la valeur est encore 70, `build_lagoon` ne sert à rien : le dire à A avant de lancer quoi que ce soit.
 
 **Attend Moaad** : 6 ids Creator Hub pour activer la boutique, ids RobotoCondensed réels,
 `Lighting.Technology = Future` (manuel, pas par script), device mobile + PC pour le test
