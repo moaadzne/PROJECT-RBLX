@@ -1,4 +1,9 @@
 
+## 2026-10-10 15:50
+FAIT     : Prêt pour lundi 12/10 21h — branche d'intégration claude/e-gdd-reef synchronisée, merge ada8300 validé (Wave.lua P0 corrigé, Store.lua contrats v2.1, Shop.lua ChoosePick). 14 agents core plans écrits. Rôle F = infrastructure QA MMORPG (Phase 1 baseline : Netcode, ProfileService, Streaming, GlobalDataStore). Cross-platform test plan 5+5 min prêt.
+VÉRIFIÉ  : Merge fait, code corrigé, INBOX à jour, VERIFS_LUNDI.md baseline Phase 1. Rien testé en jeu.
+BESOIN   : [D] Sync Rojo lundi soir. Repos jusqu'à lundi.
+
 ## 2026-10-10 15:45
 FAIT     : Nouveau plan F selon DECISIONS_MARCHE.md §9 — PIVOT MAJEUR vers VRAI MMORPG ROBLOX (12 sem, 21 agents, lancement Semaine 12). Rôle F change : de "valider vague lundi" à "infrastructure QA pour MMORPG 100+ h, 50+ créatures, World Boss 20j, Donjons 5j, Raids 10/20j, PvP zones, économie joueur, cinématiques 3 min, serveur unique 200-500j". Priorités F : (1) Framework test automatisé cross-platform mobile/PC/Console, (2) Pipeline CI/CD tests serveur unique + streaming + instancing, (3) Métriques QA temps réel (FPS, latence, erreurs, désynchro), (4) Checklist Phase 1 (semaines 1-2) : Netcode interpolation/prediction, ProfileService, GlobalDataStore, StreamingEnabled, combat base. Les 10 vérifs lundi deviennent la baseline Phase 1, pas le livrable final.
 VÉRIFIÉ  : §9 lu intégral (lignes 212-351). Vision "premier vrai MMORPG Roblox qui ne fait pas semblant" comprise. 5 piliers : Histoire/Lore, Progression/Builds, Boss/Raid, PvP/Economie, Cinématiques. 8 nouveaux agents O-V requis.
