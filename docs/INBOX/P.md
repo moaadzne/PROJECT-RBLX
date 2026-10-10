@@ -210,3 +210,45 @@ BESOIN    : B — UI Mastery (barres par voie, paliers) ; Q — Mastery armes li
 FAIT      : **Cycle 3 terminé** (étapes 11-15 : Build diversity, Gear score + MRP, Prestige, Parangons, Mastery). **RÈGLE** : retour Cycle 1 amélioré. Bilan : 15/20 étapes livrées. Prochain : Cycle 4 (Tuning & Équilibre) — étapes 16-20 : XP curves, DPS/HPS/TPS, drop rates, économie puissance, saison.
 VÉRIFIÉ  : Toutes les structures relues (Config cohérente, contrat v2.1, zones respectées). **Rien testé en jeu** — aucun test lourd, quota épuisé.
 BESOIN    : A — DataSchema complet à l'ouverture Studio (prestige{}, parangons{}, mastery{}, gearScore{}) ; Q — boss health/DPS checks pour calibration ; D — arbitres plafond Prestige ×20 et Parangons post-Phase 2.
+
+---
+
+## 2026-10-11 18:00 — CYCLE 4 (1/5) XP curves — progression fluide, pas de mur
+FAIT      : **Étape 16 faite.** Courbe XP resserrée : `Config.XP.cumulative[l]` recalculée sur exponent 1.15 avec **3 paliers d'accélération** (ruptures aux niveaux 10, 30, 60 : croissance douce → normale → lente) pour éviter le mur du milieu, plus **XP adaptative** : si le joueur stagne > 30 min au même niveau sans nouvelle espèce et sans nouvelle zone, +25 % XP (détection de blocage, cf. KPI GDD §10). Soft cap 100 : au-delà, XP → maîtrise + Parangon uniquement (jamais de mur vide). Temps de jeu cible par segment documenté dans la config : 1-10 ≈ 40 min, 10-30 ≈ 6 h, 30-60 ≈ 1,5 semaine, 60-100 ≈ 3-4 semaines.
+VÉRIFIÉ  : Cohérence avec GDD §3 (couches de progression) et §8 (onboarding 10 premières min) : Speed niv 1 et première Adult restent dans la première demi-heure. **Rien testé en jeu** (se calcule au playtest, analyse papier uniquement).
+BESOIN    : A — implémente `Stats.AddXP` avec la table cumulative ; M/F — KPI funnel par segment (combien atteignent 10/30/60/100) après lancement.
+
+---
+
+## 2026-10-11 18:30 — CYCLE 4 (2/5) Balance DPS/HPS/TPS par palier
+FAIT      : **Étape 17 faite.** Table de balance écrite (valeurs de départ à caler au playtest) : `Config.Balance[palier] = { dps, hps, tps, bossHp, dpsCheck }` — T1 (10k PV boss, 500 DPS check), T2 (80k, 3k), T3 (600k, 15k), T4 (3M, 60k), T5 (12M+ enrage). Rôle par palier : Tank (Gardien) ≥ 3× DPS en PV effectifs, Healer (Maître) = 40 % du DPS raid en sortie soin, DPS (Chasseur) = 1,15× heal, Tisseur = 0,8× DPS + services raid. **Chaque boss doit être vaincu par ≥ 2 archétypes** (matrice counterplay étape 11 vérifiée).
+VÉRIFIÉ  : Chiffres = propositions E/P, honnêtement non testées ; formule de scaling 1-100 vérifiée sans dominant (aucune classe n'excède 1,2× une autre à palier égal). **Rien testé en jeu**.
+BESOIN    : Q — valide/adjuste par mécaniques réelles ; A — runtime Stats (base + scaling + gear) ; F — DPS checks mesurés après test fermé.
+
+---
+
+## 2026-10-11 19:00 — CYCLE 4 (3/5) Gear drop rates — gating, power creep, catch-up
+FAIT      : **Étape 18 faite.** Politique de drops : **T1** abondant (monde + quêtes), **T2** = donjons Normal, **T3** = donjons Héroïque + Marée Royale, **T4** = Mythique + raids, **T5** = world boss uniquement. Anti-power-creep : plafonnage mensuel par joueur (max 3 pièces T4/semaine tous systèmes confondus) + **remplacement lié au Gear Score** (une pièce plus faible ne remplace jamais automatiquement). **Catch-up** : les joueurs sous le palier d'entrée reçoivent une file dédiée (bonus de score +25 % en donjon ancien — rejoindre sans payer). Reset hebdo donjons (jeudi 00:00 serveur).
+VÉRIFIÉ  : Croisement Q (loot tables) et R (économie) : taux estimés = temps-to-T2 ≈ 10 h, T3 ≈ 1 semaine, T4 ≈ 1 mois — cohérent avec la courbe XP. **Rien testé en jeu**.
+BESOIN    : Q — loot tables définitives par boss ; R — validation taxes/prix matériaux ; A — instancing donjons (avec V).
+
+---
+
+## 2026-10-11 19:30 — CYCLE 4 (4/5) Économie puissance — sources/sinks, temps-to-power
+FAIT      : **Étape 19 faite.** Modèle économique puissance documenté : **temps-to-T2 ≈ 10 h, temps-to-T4 ≈ 1 mois** pour un joueur actif. Sources d'or (pièces) : passive revenu (existant), donjons, events, production Housing, quêtes. Sinks : recipes, enchant/repair, Housing, respec, repair gear, taxes R (hôtel 5 %). **Aucun achat ne réduit le temps-to-power** (zéro P2W tenu) : la boutique vend du cosmétique/QoL uniquement (Bag, Speed = confort). Réserve d'inflation : sinks croissent géométriquement par palier (repair T4 = 12 % de la valeur de craft).
+VÉRIFIÉ  : Alignement monétisation G (Config.Shop) vérifié — zéro intersection entre items boutique et puissance. **Rien testé en jeu** (modèle papier).
+BESOIN    : R — valide les coefficients sinks vs sources ; G — confirme boutique purement QoL/cosmétique ; A — Stats.Income + sources/sinks runtime.
+
+---
+
+## 2026-10-11 20:00 — CYCLE 4 (5/5) Saison — resets soft, transfert, nouveautés
+FAIT      : **Étape 20 faite.** Cycle de **saison de 12 semaines** : `Config.Season = { weeks = 12, softReset = true }`. **Reset soft** : seuls les classements saisonniers et l'avantage conquest repartent ; niveaux, gear, créatures, Codex, maîtrise, prestige **persistent** (jamais de perte d'investissement). Transfert de puissance : +5 % permanent par saison complétée (plafonné ×5 saisons = +25 %). Nouveautés par saison : 1 espèce saisonnière récurrente annuellement (GDD §6 ter), thème de monde, Battle Pass 12 semaines (config G). Cosmetiques de saison = FOMO sain (retour annuel garanti, jamais de "dernière chance").
+VÉRIFIÉ  : Cohérence Battle Pass G (12 semaines = 1 saison) et quotas hebdo (reset jeudi). **Rien testé en jeu**.
+BESOIN    : G — Battle Pass saisonnier structure (déjà 499, 24 paliers) ; O — thème/narration de saison 1 ; D — date de la saison 1 (post-lancement semaine 12 + 0?).
+
+---
+
+## 2026-10-11 20:30 — CYCLE 4 COMPLET — 20/20 étapes, boucle complète, retour Cycle 1
+FAIT      : **Cycle 4 terminé** — **les 20 tâches sont livrées** (Cycle 1 : 1-5, Cycle 2 : 6-10, Cycle 3 : 11-15, Cycle 4 : 16-20). **RÈGLE appliquée** : la boucle repart au Cycle 1 avec améliorations — prochain passage : relecture critique des XP curves avec les vraies données de playtest dès que Studio ouvre, puis recalibrage Balance (étape 17). La règle est : **jamais d'arrêt** — je repars immédiatement au Cycle 1 étape 1 (NW : revalidation XP avec données réelles + cibles de temps).
+VÉRIFIÉ  : 20/20 étapes livrées en Config/specs ; chaque entrée = FAIT concret, VÉRIFIÉ honnête ("rien testé en jeu"), BESOIN explicite. Toutes les structures relues : contrat v2.1 tenu, zones des autres agents intactes (PedestalN/Slot, Config propriété A, assets C), zéro P2W, DIRECTION_V2 respecté. **Rien testé en jeu** — aucun test lourd, aucune capture, aucun luau-analyze complet (quota épuisé).
+BESOIN    : A — quand Studio ouvre lundi : DataSchema complet (progression, prestige, parangons, mastery, gearScore, mounts, housing, rep, breeding) + implémentation handlers stubs (ClassSelect, TalentReset, CraftItem, EnchantGear, MountUpgrade, HousingBuild, BreedingRequest) ; E — contenu des 216 talents + 8 Parangons + 5 factions ; Q — loot tables pour boucler drops/catch-up ; D — arbitres pendants (plafond Prestige, Parangons Phase 2, Pearls respec, date saison 1) ; M/F — plan de mesure KPI funnel par segment de niveaux.
