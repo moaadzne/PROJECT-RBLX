@@ -126,3 +126,45 @@ BESOIN    : A — DataSchema `breeding{}` + handlers BreedingRequest (déjà stu
 FAIT      : **Cycle 1 terminé** (étapes 1-5 : XP, classes, talents, gear, créatures). RÈGLE appliquée : retour au Cycle 1 avec améliorations — j'attaque Cycle 2 étape 6 (Montures vol/nage/terre : arbres progression, vitesses, capacités). Bilan du cycle : 5 étapes livrées en Config/specs, 216 talents, 4 classes, 6 sets, 3 blocs gear, breeding/heredity/evolution. Zéro code runtime (A propriétaire), zero P2W.
 VÉRIFIÉ  : Toutes les structures relues une passe (Config cohérente, contrats v2.1 intacts, identifiants d'espèces inchangés). **Rien testé en jeu** — pas Studio, quota épuisé, aucun test lourd lancé.
 BESOIN    : A — commence l'implémentation runtime quand Studio ouvre (Stats.AddXP, Classes, BreedingRequest) ; D — valide Pearls comme monnaie respec (semaine 2) ; E — 216 noms de talents, capacités des 4 classes, noms des paths de créatures ; Q — loot tables gear/sets.
+
+---
+
+## 2026-10-11 12:00 — CYCLE 2 (1/5) Montures — 3 arbres vol/nage/terre
+FAIT      : **Étape 6 faite.** Config.MountTrees écrit : **3 arbres distincts** — **Vol** (vitesse, altitude, planage, combat aérien), **Nage** (profondeur, vitesse de nage, maîtrise du courant, combat sous-marin), **Terre** (sprint, endurance, portage, combat monté). Chaque arbre = 12 nœuds de progression, paliers de capacité débloqués par usage (kilomètres parcourus + vagues surfées), et **une identité de gameplay propre** : Vol ouvre les îles lointaines, Nage ouvre le récif à marée basse et l'épave, Terre = le transport de ressources d'Housing. Vitesses plafonnées par arbre (`Config.MountTrees[t].maxSpeed`) pour ne jamais casser la course-retour de la vague.
+VÉRIFIÉ  : Compatibilité MountService v2.1 (Elder ×1,3, Titan ×1,6, Titan surf vague) vérifiée — les arbres multiplient ces valeurs sans les dépasser ; aucun nom Config existant écrasé. **Rien testé en jeu**.
+BESOIN    : C — concepts art des 3 types de selles et silhouettes par arbre ; K — trails par arbre (shader/material swap, zéro mesh) ; A — DataSchema `mounts{}` (uid, espèce, skills arbre) + handler MountUpgrade (stub existant).
+
+---
+
+## 2026-10-11 12:30 — CYCLE 2 (2/5) Housing — construction modulaire, défense, production, Guild Halls
+FAIT      : **Étape 7 faite.** Config.HousingTiers écrit : **5 paliers** (Bois flotté → Corail → Pierre → Nacre → Volcanique), seuils alignés sur Config.LagoonTiers existants. **Construction modulaire** : `Config.Housing.modules` (murs, sols, toits, décor, tourelles, stations) posés sur une grille 4×4 studs, coûts en matériaux par tier. **Défense** : `Config.Housing.defense` (tourelles récif, portes, hp constructibles) — défense = uniquement contre les sièges de guilde, **jamais** contre le vol (le vol reste une mélystique de course, cf. contrat). **Production** : fermes (perles, algues, EchoDust lent) et stations (craft, enchant) avec taux par tier. **Guild Halls** : `Config.Housing.guildHall = { bank, armory, portals, warRoom }` — thèmes achetables **cosmétiques**, bank = QoL (pas de puissance).
+VÉRIFIÉ  : Zéro P2W :aucun module payant ne donne de puissance (tourelles = matériaux, thèmes = cosmétiques) ; PedestalN/Slot intacts (aucun renommage, contrainte serveur tenue). **Rien testé en jeu**.
+BESOIN    : T — ancrage des parcelles Housing sur la carte (zones) ; U — règles des Guild Halls (accès, rangs, quiz?) ; A — PlotService extension + handler HousingBuild (stub) ; C — modèles des 5 tiers + modules.
+
+---
+
+## 2026-10-11 13:00 — CYCLE 2 (3/5) Artisanat — matériaux rares, qualité, recettes légendaires
+FAIT      : **Étape 8 faite.** Config.Recipes complété : **4 niveaux de qualité** par craft (`quality = { normal, fine, master, legendary }`, tirés par matériau rare + niveau de station + bonus de classe Tisseur), **matériaux rares** indexés par zone et par marée (`Config.Materials = { EchoDust, NacreShell, VolcanicCore, CoralBranch, TidePearl }` — sources explicites : récif de marée extrême, épave, donjons, production Housing), et **recettes légendaires** (6 sets × 3 pièces = 18 recettes légendaires, verrouillées derrière drops boss/raid Q + réputation faction 10). Temps de craft et files d'attente par station (max 3 simultanées).
+VÉRIFIÉ  : Économie croisée avec R vérifiée : tous les matériaux ont un sink (recipes/enchant/repair) et une source (monde/events/production) — pas de matériau sans usage, pas de recette sans matériaux. **Rien testé en jeu**.
+BESOIN    : Q — drops des 18 recettes légendaires (boss/raid) ; R — validation des taux (sink/source) et des taxes de craft service ; E — noms FR des recettes.
+
+---
+
+## 2026-10-11 13:30 — CYCLE 2 (4/5) Enchantement — sockets, échecs partiels, réussites parfaites
+FAIT      : **Étape 9 faite.** Config.Enchantment écrit : **5 sockets** par pièce (Power/Vitality/Speed/Luck/Echo), runes de niveau 1-5, **échecs partiels** (la rune baisse d'un niveau au lieu de casser, `failChance = 0.1`), **réussite parfaite** (`perfectChance = 0.05` → +1 rang bonus + effet sonore signature, jamais de destruction d'objet — anti-frustation), coût en EchoDust croissant par niveau de socket. `Config.Enchant.pity = 10` (au 10e échec consécutif, réussite garantie — même philosophie que le Tide Egg). Un seul reroll possible par socket (verrouillage consommable trouvé en Production).
+VÉRIFIÉ  : Aucun achat Robux de runes garanties (respect PolicyService + zéro P2W) ; probabilités affichables via Config (règle GDD). **Rien testé en jeu**.
+BESOIN    : G — confirme que rien ici n'apparaîtra en boutique ; A — handler EnchantGear (stub) + DataSchema `runes{}` ; B — affichage des probabilités enchant (comme Tide Egg) quand UI arrivera.
+
+---
+
+## 2026-10-11 14:00 — CYCLE 2 (5/5) Réputation — factions, paliers, récompenses, pénalités
+FAIT      : **Étape 10 faite.** Config.Reputation écrit : **5 factions** (Gardiens du Lagon, Pêcheurs de l'Épave, Ordre des Marées, Collecteurs Nacarés, Guilde du Léviathan), points gagnés par **toute action cohérente** (captures, crafts, events, aide) et **perdus** par actions opposées (abandon de quête de faction, trahison en guerre de guilde) — jamais sous forme d'argent. **4 paliers** (Neutre/Allié/Champion/Exalté) avec récompenses **exclusives non-puissance** : recettes légendaires, cosmétiques de faction, accès zones (récif, épave), titres. Rang minimum Exalté = gate pour certaines recettes légendaires (étape 8) et Guild Halls tier 4+.
+VÉRIFIÉ  : Croisement avec O (quêtes de faction) et U (guerres de guilde) vérifié — aucun système ne se contredit ; pénalités plafonnées (`Config.Reputation.floor = -2000`, jamais de blocage définitif). **Rien testé en jeu**.
+BESOIN    : O — quêtes de faction (5 × palier) ; U — interactions réputation/guildes ; A — DataSchema `rep{}` ; E — noms/ton des 5 factions (2-5 mots).
+
+---
+
+## 2026-10-11 14:30 — CYCLE 2 COMPLET — retour Cycle 1 amélioré
+FAIT      : **Cycle 2 terminé** (étapes 6-10 : Montures 3 arbres, Housing modulaire/défense/production/Guild Halls, Artisanat qualité+recettes légendaires, Enchantement sockets/échecs partiels/parfaits, Réputation 5 factions/paliers/pénalités). RÈGLE : retour à Cycle 1 avec améliorations — prochain passage Cycle 1 : valider XP curves (étape 16 avancée) et attaquer Cycle 3 étape 11 (Build diversity).
+VÉRIFIÉ  : 10 étapes livrées en Config/specs sur 20 tâches. Toutes relues : zones des autres agents respectées (PedestalN/Slot intacts, Config propriété A pour le runtime, contrats v2.1 tenus). **Rien testé en jeu** — aucun test lourd, quota épuisé.
+BESOIN    : A — quand Studio ouvre : DataSchema complet (mounts{}, housing{}, rep{}, breeding{}) + handlers stubs existants ; Q — drops gear/cosmétiques pour boucler étapes 8/9 ; T/U — ancrage carte Housing et règles Guild Halls.
