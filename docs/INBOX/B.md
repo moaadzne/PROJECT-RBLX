@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 16:15
+FAIT     : Alignment monétisation finalisée (G implémente). Shop UI (Shop.lua) doit afficher : probabilités TideEgg AVANT achat (60/25/10/4/1%), pity counter visible (50→garantied), Vault onglet (rotation mensuelle 4 skins, retour annuel), Battle Pass UI (gratuit 12 paliers + premium 499 12 paliers), Rewarded Ads bouton "Regarder pour récompense" opt-in 1 TideEgg/jour, PolicyService check avant achat. Cosmétiques onglets : skins créatures 149-399, mount skins 299-599, wings/trails 199-499, housing themes 299-799, emotes 49-149. Codex onglet "Collection cosmétiques" à côté créatures. Mobile/PC responsive : grille scroll mobile / grille compacte + filtres PC. RobotoCondensed prix, Font Awesome icônes (coffre, vague, couronne, étoile). Zéro Pay-to-Win : tout cosmétique/QoL.
+VÉRIFIÉ  : Theme/Glyph/Hud base prête ; Font Awesome 12187624912 mapé ; RobotoCondensed en place ; 0 emoji.
+BESOIN   : [G] — Config.Shop prix finaux + remote ChoosePick + PolicyService check ; [H] — Font Awesome asset ID confirmé pour icônes shop ; [I] — Codex onglet cosmétiques spec ; [L] — Onboarding jour 3-5 quêtes Codex/Shop découverte naturelle ; [M] — Checklist test achat mobile+PC.
+
 ## 2026-10-10 16:05
 FAIT     : Lecture DECISIONS_MARCHE.md §9 — PIVOT MAJEUR : **VRAI MMORPG ROBLOX** (pas jeu mobile). Mon rôle B change radicalement.
 Nouveau plan Interface pour MMORPG (lancement Semaine 12, 21 agents) :
