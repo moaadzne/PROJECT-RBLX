@@ -1,54 +1,92 @@
-# Semaine 2 — première mise à jour (E, 10/10)
+# La semaine 2 — ce que le joueur verra
 
-**Ce n'est pas une spec d'implémentation.** `GDD.md` §9 bis décrit déjà le Deep Dive en détail : ne pas le réécrire. Ce document tranche ce qui **manque encore** pour que A, B et C puissent commencer lundi, et dit ce qui sort et ce qui glisse.
-
-> **État au 10/10.** Phase 1 = test fermé ~20-23/10, premier test public ~26/10, une mise à jour par semaine. La semaine 2 tombe donc **juste après le premier test public**. Tout ce qui est écrit ici doit pouvoir être construit pendant que les données de la semaine 1 arrivent. C'est la seule contrainte de planification qui compte.
-
-## 1. Ce qui sort, et ce qui glisse
-
-| Contenu prévu (`TABLEAU.md`) | Statut | Décision E |
-|---|---|---|
-| **Deep Dive** — `DiveService` + Pearls | ✅ **semaine 2** | C'est le moteur de collection rare demandé par Moaad. Ne glisse pas. |
-| **Secret complet de l'épave** | ✅ **semaine 2** | Va de pair avec le Deep Dive : c'est ce qui rend le tirage « lecture d'une histoire » et pas « roulette ». Mais attention au coût (voir §2). |
-| **Échanges entre joueurs** | ⏸️ **glisse** | C'est le seul gros morceau qui n'a **aucune** base technique : pas de marché, pas d'inventaire partagé, pas de validation anti-triche, et un vrai risque d'arnaque à l'argent réel. Ça fait une mise à jour à part, pas une troisième brique. |
-| Créatures Légendaires dans la nature | ⏸️ **semaine 3** | Ordre de retour fixé dans `GDD_REEF.md` §14 nº 2. Ne pas les avancer : elles sont la promesse du Deep Dive, elles arrivent **avec** lui. |
-
-## 2. Le vrai risque de la semaine 2 : ce qui peut l'arrêter
-
-Ce n'est pas le code. C'est **la règle de Roblox**, et elle n'est pas de notre ressort.
-
-- **Vérifier les règles de monétisation Roblox avant d'ouvrir la boutique.** Elles ont bougé pendant l'année. Un tirage payant avec Pearls + une variante « Mythic » exclusive peut être accepté ou non selon le texte en vigueur. **À faire lire par D et Moaad en semaine 1, pas en semaine 2** — au pire, on découvre le problème au moment de publier.
-- **`ArePaidRandomItemsRestricted`** : dans les pays restreints, le Deep Dive **disparaît** et est remplacé par la Pearl Shop (achat direct, prix fixe). C'est déjà écrit dans `GDD.md` §9 bis et A a déjà le toggle pour la boutique (`Config.Shop` / `shop.randomAllowed`). **Il faut que ce remplacement soit implémenté le jour 1 du Deep Dive**, pas « plus tard » : un pays restreint sans repli voit un bouton mort.
-- **Aucun faux badge payant.** Les récompenses du Deep Dive sont en jeu ou en Pearls gagnées en jouant. Jamais de badge en Robux, jamais.
-
-## 3. Ce que chaque lettre doit savoir
-
-**[A] — DiveService**
-- Le Deep Dive **remplace le `Tide Egg`** en semaine 2 (`GDD.md` §9 bis, dernier point). `Pick a Creature` devient une ligne de la Pearl Shop. Ne garde pas les deux en vie : deux systèmes de tirage qui se marchent dessus, c'est le joueur qui ne sait pas lequel jouer.
-- Les creatures tirées naissent **directement au stade `Adult`** pour les Legendary (Deep Dive fait gagner du temps, pas de l'espèce rare). C'est la règle qui justifie le prix face au gratuit.
-- **Créatures liées** : ni volables ni échangeables. Vérifie que `StealService` et les protections du §4.7 les ignorent, sinon un joueur paie et se fait voler son Abyssal — c'est le bug qui fait fermer une boutique.
-- Le **pity partagé** entre Shallow Dive et Deep Dive (50 %) est une obligation d'équité : c'est lui qui autorise psychologiquement le Tirage gratuit quotidien.
-
-**[B] — écran Dive**
-- **Probabilités sur l'écran principal, pas dans un menu caché.** C'est une obligation Roblox, pas un choix de design. Le ×10 doit montrer la grille qui se retourne ; le pity et le solde de Pearls sont visibles en permanence, pas seulement à l'achat.
-- **Bouton `DIVE` dans le HUD**, jamais de pop-up automatique : une fenêtre qui s'ouvre toute seule pendant une vague est une fenêtre qui fait perdre la partie.
-- Si le joueur est en **pays restreint**, le bouton affiche `Pearl Shop` et l'achat direct — jamais un tirage.
-
-**[C] — FX et variante Abyssal**
-- La **variante Abyssal** est un preset de mutation comme les autres, **pas un nouveau modèle** : peau noire, bioluminescence rouge. Elle se range à côté de `Assets.FX.Mutations`, pas dans `Assets.Creatures`. (Cohérent avec `GDD_REEF.md` §8 : une mutation ne demande jamais un modèle.)
-- **Animation de plongée de 3 s**, passable après la première. Si on la rejoue à chaque fois, le joueur finit par l'écran noir de la semaine 2.
-- **L'épave qui émerge** (secret de la semaine 2) doit être **repérable avant qu'elle émerge** : c'est la règle des secrets de `GDD.md` §6 bis — on voit le secret avant de le lire. Un signe visuel, aucun texte.
-
-## 4. Les 3 décisions qui bloquent, et à qui elles revient
-
-| # | Décision | Qui | Quand |
-|---|---|---|---|
-| 1 | **Règles de monétisation Roblox en vigueur** : le Deep Dive + la variante Abyssal passent-ils ? | D + Moaad | **semaine 1** — c'est le seul vrai risque de calendrier |
-| 2 | **Codex : montrer les 7 espèces verrouillées en « ? », ou ne montrer que les 3 connues ?** | D | avant le test public ~26/10 (c'est du contenu d'écran, ça se voit sur les captures) |
-| 3 | **Contenu exact du secret de l'épave** | E le propose, D tranche | avant que C ne modélise, donc semaine 2 |
-
-Le point 3 est écrit : **`docs/SECRET_EPAVE.md`**. En résumé — l'épave déjà dessinée en Phase 1 comme repère devient le secret de la semaine 2, accessible pendant la fenêtre de la marée extrême, avec `LeopardRay` + `GiantPacificOctopus` (les deux espèces que le design leur assignait déjà) et **une gravure sans texte** : la silhouette d'une chose immense sous l'île. **[A]** 2 lignes de Config, **[B]** rien du tout, **[C]** le seul vrai travail. Si la semaine 2 est trop chargée, **l'épave part en premier** : le Deep Dive est demandé par Moaad et n'a pas de remplaçant.
+**Document pour Moaad.** Aucune ligne technique ici. Le détail pour l'équipe est dans `docs/SECRET_EPAVE.md`.
 
 ---
 
-*Écrit par E le 2026-10-10. Ce qui diverge de `Config.lua` ou de `review/review_context.md` : **le code gagne**.*
+## Où on en est
+
+Le jeu est jouable : on court, on attrape des animaux marins, on les pose dans son lagon, ils grandissent et ils rapportent. Une vague traverse l'île environ une fois par minute, et il faut courir se mettre à l'abri.
+
+La première version part **à la fin du mois**. La semaine 2, c'est la **première mise à jour** du jeu, juste après les premiers vrais joueurs.
+
+---
+
+## Semaine 1 — le lancement
+
+Le joueur découvre le jeu. Les trente premières secondes lui montrent un crabe qui court sur le sable, puis la mer qui se retire et une vague plus haute que tout ce qu'il voit. Il ne comprend pas tout : il veut juste y retourner.
+
+Il attrape **trois espèces** : le crabe fantôme, l'étoile de mer et la tortue imbriquée — celle sur laquelle on peut s'asseoir.
+
+**Une fois par heure**, la mer recule plus loin que d'habitude et découvre un récif pendant vingt-cinq secondes. Il y a des animaux à y attraper. C'est le premier secret du jeu, et il n'est écrit nulle part : on le voit, ou on le rate.
+
+---
+
+## Semaine 2 — ce qui change pour le joueur
+
+### 1. Il peut « plonger »
+
+C'est le gros ajout. Le joueur ouvre un écran et plonge. Une animation de trois secondes, et une créature remonte des profondeurs. Il peut le faire une fois par jour, gratuitement. Il peut en faire dix d'un coup s'il a Diamonds — la monnaie qu'on achète.
+
+Le but est simple : **c'est là qu'on trouve ce qu'on ne trouve jamais sur la plage.** Les plus rares du jeu n'existent que là.
+
+Trois règles que le joueur sent immédiatement :
+
+- **Les probabilités sont écrites sur l'écran, en permanence.** Pas cachées dans un menu. C'est obligatoire de la plateforme, et ici c'est aussi une question d'honnêteté.
+- **Il ne peut pas être malchanceux.** Après un certain nombre de plongées, la meilleure est garantie. Le compteur est visible. C'est ce qui autorise le joueur gratuit à essayer quand même.
+- **Ce qu'il achète ne peut pas lui être volé.** Un joueur qui paie ne se fait pas prendre ce qu'il a payé.
+
+Ce qui disparaît : la boutique tirée au sort existante est remplacée par la plongée. **Pas les deux** — deux systèmes de tirage, le joueur ne sait pas lequel jouer.
+
+### 2. L'épave s'ouvre
+
+Sur la plage ouest, il y a une épave. Elle est là depuis le lancement, mais c'est un décor : on passe devant.
+
+**Semaine 2, elle ne l'est plus.** Quand la mer recule pour la grande marée, l'épave bascule et sa cale s'ouvre. Le joueur a vingt-cinq secondes pour courir y entrer, regarder, et repartir avant que l'eau revienne.
+
+Il y trouve **deux espèces qu'il ne verra jamais sur la plage** : une raie léopard et un poulpe géant. Elles repartent avec la mer. Personne ne peut camper l'épave.
+
+Et au fond de la cale, sur la quille, **une gravure**. Pas une inscription — une image : quelque chose d'immense, arrondi, sous l'île.
+
+C'est tout. Il ne gagne rien avec. Certains joueurs ne la verront jamais. C'est le plus long secret du jeu, et il ne coûte rien et ne s'achète pas.
+
+### 3. Ce qui ne change pas
+
+Rien n'est retiré. Son lagon, ses créatures, sa collection, ses badges : tout reste. La semaine 2 **ajoute**, elle ne remplace pas — sauf la boutique, remplacée par la plongée.
+
+---
+
+## Semaine 3 — la direction
+
+Pas encore décidée, mais déjà pensée :
+
+- **Des créatures de nuit.** Après la tombée du jour, certaines n'apparaissent que dans le noir. Elles se voient de loin grâce à leur lueur : le joueur décide d'y aller tout seul, sans avoir à lire quoi que ce soit.
+- **Les grandes.** Les deux espèces les plus rares du jeu. Elles arrivent **avec** la plongée, pas avant.
+- **Les échanges entre joueurs.** On y travaille, mais c'est la seule chose qui demande de la vigilance sur l'argent réel. On ne la met pas dans la même mise à jour que la plongée.
+
+---
+
+## Les deux questions ouvertes
+
+**1. Les règles de la boutique de Roblox.** Elles changent, et ce n'est pas nous qui decidons. Si la plongée et la créature la plus rare ne passent pas, il faut le savoir **maintenant**, pas au moment de publier. C'est la seule chose du programme qui peut nous forcer à changer de plan.
+
+**2. La collection : montrer les espèces introuvables, ou pas ?**
+
+La collection affiche dix espèces. En semaine 1, le joueur n'en trouve que trois. Deux façons de faire :
+
+- **Tout montrer, avec des points d'interrogation sur les sept autres.** Le joueur voit ce qui lui manque. C'est ce qui donne envie de revenir.
+- **N'afficher que les trois connues.** Plus propre, mais on ne lui montre rien à l'extérieur.
+
+C'est dix lignes d'écran. Mais ça se voit sur les captures, et les captures font la différence.
+
+---
+
+## Si la semaine 2 déborde
+
+On coupe **l'épave**, et on garde la plongée.
+
+La plongée est demandée par Moaad et n'a pas de remplaçant. L'épave est un bonus : belle, mais on peut la repousser d'une semaine sans que le jeu soit moins bon. L'ordre de coupe est décidé, ce n'est pas à improviser dans l'urgence.
+
+---
+
+*Écrit par E le 10/10/2026. Ce document décrit ce qui est **prévu et décidé**. Ce qui n'est pas tranché est écrit comme tel, jamais présenté comme acquis.*

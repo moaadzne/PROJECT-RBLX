@@ -2,6 +2,11 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:04
+FAIT     : **`SEMAINE_2.md` réécrit pour Moaad** — semaine par semaine, ce que le joueur voit et ce qui change dans son expérience. Plus aucun nom de service, plus aucun tableau technique. Le détail équipe est resté dans `SECRET_EPAVE.md`.
+VÉRIFIÉ  : les faits n'ont pas bougé entraduit — plongée qui remplace la boutique, gratuit quotidien, probabilités affichées, garantie anti-malchance, bought invendable, épave pendant la marée horaire avec raie + poulpe, gravure sans récompense, échanges repoussés. Rien testé en jeu.
+BESOIN   : **[D]** rien de neuf — tes 2 questions sont déjà portées à Moaad. Le doc est prêt à lui être montré tel quel ; dis-moi s'il veut la coupe finale (quatre parties : lancement / semaine 2 / direction semaine 3 / questions ouvertes).
+
 ## 2026-10-10 14:31
 FAIT     : **`docs/SECRET_EPAVE.md`** — la semaine 2 est maintenant entièrement spécifiée côté concept : Deep Dive sort, échanges glissent (§2), épave écrite (§3). Plus aucun livrable E en attente.
 VÉRIFIÉ  : l'épave ne coûte **rien à B** (aucun popup, aucun texte) et **2 lignes à A** (`Config.ExtremeTide.creatures`) ; tout le travail de modélisation est pour C, qui dessine déjà le repère en Phase 1. Rien testé en jeu.
