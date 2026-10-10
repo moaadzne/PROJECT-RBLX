@@ -2,6 +2,13 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
+## 2026-10-10 15:36
+FAIT     : Pivot MMORPG lu (§9). Nouveau scope serveur : **single shard 200-500 joueurs** (streaming/instancing avec V), Data architecture (ProfileService + GlobalDataStore + OrderedDataStore + MessagingService), **Progression 1-100+** (classes/specs, talents, respec), **Equipment** (craft/enchant/runes/sets), **50+ créatures** (évolution ramifiée, mutations héréditaires), **Montures** (arbre progression), **Housing/Guild halls** (construction/défense/production), **Économie joueur** (hotel ventes, trading, taxes guilde), **PvP** (zones, arènes classées, guerres guilde), **Quêtes backend** (avec O), **Boss/Raid data** (avec Q), **Cinematic triggers** (avec S), Netcode étendu. Ancien scope (vague/collection) = Phase 1 seulement, livrable semaine 2.
+VÉRIFIÉ  : §9 lu en entier. Aucun code lancé — le plan est structurel, pas d'implémentation.
+BESOIN   : D valide que A reprend TOUTE la progression/systèmes (P est renfort, pas propriétaire) ; V aligne architecture single-shard/streaming sur Net.lua ; O/Q/S/R livrent leurs contrats d'interface (quests, boss, cinématiques, économie) pour que A les câble côté serveur ; G confirme modèle revenus 0 P2W (cosmétiques/QoL only).
+
+---
+
 ## 2026-10-10 15:30
 FAIT     : Plan double plateforme mobile/PC — serveur inchangé (même DataStore, même économie, mêmes Remotes v2.1). Aucune modification de Config, Net, DataService, ShopService, StealService, RoyalService, MountService, PlotService, WaveService, CreatureService, LagoonService, UpgradeService, PetService, IntroService, DebugService. Détection plateforme côté client uniquement (B/L). Anti-cheat serveur déjà commun (SpeedGuard + position). Vol mobile↔PC : même logique, même protections, bouclier revanche 24h déjà codé. Marée Royale : classement global unique, score = revenu/s contrat sans gamepass. Daily Rewards : synchro instantanée cross-device via DataStore existant. Plan = zéro code serveur, validation que l'existant couvre déjà tout.
 VÉRIFIÉ  : lecture de Net.lua (client attend remotes identiques), DataService (DataStore unique), ShopService (PolicyService déjà appelé), StealService (aucune ref plateforme), RoyalService (score global). **Rien testé en jeu**.
