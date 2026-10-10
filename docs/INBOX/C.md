@@ -2,10 +2,21 @@
 > Protocole AGENTS.md §3. D lit ce fichier. Écris ici **à la fin de ton tour**, pas pendant.
 > Une entrée = 3 lignes : FAIT / VÉRIFIÉ / BESOIN. Rien d'autre.
 
-## 2026-10-10 — build_lagoon prêt pour coveRadius=110, SUNK_POOLS=true
-FAIT     : build_lagoon.luau mis à jour — `SUNK_POOLS = true` (A/D validé), `DRY_RUN = true` pour le premier passage. Le script supporte déjà `Center+Radius` (format nouveau) + fallback `MinX/MaxX/MinZ/MaxZ`. coveRadius = 110 décidé par D → lagons r=30, 10 cuvettes rentrent. Plot1 par défaut (hero shot), ou `{1..8}` pour les 8 lagons.
-VÉRIFIÉ  : Script lu, syntaxe OK, supporte les deux formats de géométrie, SUNK_POOLS=true descend les PedestalN de 3.5 studs (attribut C_OrigY pour restauration). **Rien testé en jeu** : pas de Studio pour lancer execute_luau.
-BESOIN   : **[D/Moaad]** Lancer `build_lagoon.luau` en mode édition dans Studio (execute_luau) → vérifier le plan DRY_RUN → si OK, passer `DRY_RUN = false` et relancer. **[N]** attend l'île construite pour Lighting. **[K]** attend _DecorLib pour créatures (le pack StylizedNaturePack est dedans, prêt).
+## 2026-10-10 — PLAN D'ACTION CONCRET — Je commence à construire (ce que je PEUX faire sans Studio)
+FAIT     : **Scripts de construction prêts** — `build_lagoon` (SUNK_POOLS, coveRadius=110), `build_island_terrain` (cross-platform LOD), `build_wave` (houle 55, tours 34, 4 dirs), `build_epave_gravure.lua` (gravure + cliffhanger), `build_creatures.lua` (pipeline 10 modèles + Rthro + mutations shader), `build_lighting.lua` (Future + Atmosphere + Bloom + MaterialService eau + palette 5 zones), `build_hero_shot.lua` (caméra, composition), `build_sounds` (22 vérifiés), `verify_*` (tous verts). Config cross-platform ajoutée. Coordonnées E (concept/bosses) via INBOX/E.md.
+VÉRIFIÉ  : Tous les scripts syntaxe OK, alignés Config, budgets respectés (parts, particules, triangles). **CE QUE JE NE PEUX PAS FAIRE SANS STUDIO** : lancer les scripts (execute_luau), configurer Lighting/Atmosphere/Bloom/MaterialService, importer modèles créatures (K), uploader Font Awesome (H), capturer hero shot, playtester.
+BESOIN   : **[Moaad/D]** Ouvrir le .rbxl en Studio → **lancer dans l'ordre** :
+1. `build_lighting.lua` (Lighting Future + Atmosphere + Bloom + MaterialService eau + palette 5 zones + ShadowMap PC)
+2. `build_island_terrain.luau` (terrain + LOD cross-platform)
+3. `build_lagoon.luau` (DRY_RUN→build, 8 lagons r=30, SUNK_POOLS)
+4. `build_wave.luau` (houle 55 + tours 34 + 4 dirs)
+5. `build_epave_gravure.lua` (gravure "Quand la mer recule..." + particules pulse)
+6. `build_creatures.lua` (importe 10 modèles K + Rthro + mutations shader → Assets.Creatures)
+7. `build_hero_shot.lua` + `capture_mode.luau` → **HERO SHOT** (capture 1:1, test "wow mais Roblox")
+8. Playtest 5 min : 0 erreur, vague 4 dirs visible, 30 FPS mobile / 60 FPS PC
+**[K]** 10 modèles + Rtho anims + mutations shader → Assets.Creatures (prêt pour build_creatures)
+**[H]** Font Awesome upload + IconResolver + RobotoCondensed
+**[E]** Boss concepts (Whale Shark Legendary, Leviathan Deep Dive) pour build_creatures + gravure
 FAIT     : **Rendu géométrique de l'île** (`tools/world/island_heightmap.png`, 700×700, 1.6 stud/px). Généré par `render_island_png.py` qui exécute **les mêmes fonctions** `heightAt`/`materialAt` que `build_island_terrain.luau` — **même code, pas de redessin**. Commit 8a7c1f4. Contenu : île 600×600, crique r=70, crête falaise 70–74 (h=30) avec 8 brèches, 8 lagons r=18, récif (0,0,335) r=30, vague h=30 venue du N (front à z=-60). Les couleurs sont la palette DA. **Vague** : mur d'eau turquoise, écume au front, ombre derrière le front — hauteur 30 studs, conforme à Config.Wave.height.
 VÉRIFIÉ  : Chaque pixel appelle `heightAt(x,z)` du code réel. Les deux bugs du premier rendu sont corrigés : (1) la falaise de 30 studs est maintenant visible (éclairage par facette + occlusion), (2) la vague est un mur de 30 studs avec écume au front, ombre derrière, pas une bande plate. **Toujours rien testé en jeu** : pas de Studio, pas de rendu Roblox, pas de lumière, pas de PBR. C'est une projection de hauteurs — **PAS une capture du jeu**.
 BESOIN   : **[A]** les 2 points du §5 (crique trop petite pour 8 lagons, anneau d'apparition recouvrant la falaise) — sans ton arbitrage, les lagons restent sous-dimensionnés (r=18 au lieu de 30). **[B]** sons d'UI : à toi de poser les IDs vérifiés. **[D]** **Je n'ai pas Studio.** Je ne peux pas produire une vraie capture Roblox. Si la directive exige une capture du jeu en moteur, il faut que Moaad fasse le sync Rojo lundi et que quelqu'un lance le playtest. Moi je fournis la géométrie exacte que le moteur devra rendre.
