@@ -15,8 +15,10 @@ local GETSTATE_ATTEMPTS = 5
 local ATTRIBUTE_SETTLE = 0.15 -- delai avant de relire les attributs de vague
 local PHASES = { calm = true, warning = true, wave = true, recede = true }
 local INTRO_STEPS = { intro = true, golden = true, done = true }
-local STAGE_IDS = { "Baby", "Juvenile", "Adult", "Giant" }
--- Croissance du GDD §4.3 (minutes cumulees vers Juvenile, Adult, Giant), tant que Config.GrowthMinutes manque
+-- Stades du contrat v2.1 : Juvenile / Adult / Elder / Titan, indices 1..4.
+-- Source de verite = Config.Stages ; cette liste n'est que le repli.
+local STAGE_IDS = { "Juvenile", "Adult", "Elder", "Titan" }
+-- Repli si Config.GrowthMinutes manque : minutes cumulees vers Adult, Elder, Titan.
 local GROWTH_FALLBACK = {
 	Common = { 3, 15, 60 },
 	Uncommon = { 5, 30, 120 },
@@ -24,8 +26,8 @@ local GROWTH_FALLBACK = {
 	Epic = { 20, 120, 480 },
 	Legendary = { 30, 240, 1200 },
 }
--- Remotes reserves (vol, Maree Royale) : branches des que le serveur les cree
-local OPTIONAL_EVENTS = { "StealResult", "RoyalBoard" }
+-- RemoteEvents en plus des trois de base (contrat v2.1)
+local OPTIONAL_EVENTS = { "RoyalBoard" }
 
 local Util
 local remotes: Instance? = nil
@@ -82,6 +84,9 @@ local function creatureEntry(raw: any): any
 		stage = if stage then math.clamp(math.floor(stage), 1, #STAGE_IDS) else nil,
 		nextStageAt = optNumber(raw.nextStageAt),
 		income = num(raw.income, 0),
+		royal = raw.royal == true,
+		mounted = raw.mounted == true, -- monture active : le bassin s'affiche vide
+		carried = raw.carried == true, -- portee par un voleur : le bassin s'affiche vide
 	}
 end
 
@@ -136,35 +141,21 @@ local function defaultState()
 		pets = {},
 		equipped = {},
 		stats = {},
-		policy = {},
-		mounts = {},
+		newbie = false,
+		playTime = 0,
 		mount = nil,
-		protection = { active = false, endsAt = nil },
+		carrying = false,
+		lockActive = false,
+		lockReadyAt = 0,
+		shield = "",
+		protectedUntil = 0,
+		revenge = false,
+		crown = 0,
+		passes = {},
+		shop = { randomAllowed = false },
 	}
 end
 
--- HYPOTHESES (vol, monture, bouclier : forme provisoire en attendant le detail de A) :
---   state.mounts = {uid...} (creatures montables), state.mount = uid de la monture active ou nil,
---   state.protection = {active, endsAt} (bouclier debutant). Remotes : StealAttempt, LockLagoon, Mount, Dismount.
-local function normalizeMounts(raw: any): { string }
-	local out = {}
-	if type(raw) == "table" then
-		for _, m in ipairs(raw) do
-			local uid = if type(m) == "table" then m.uid else m
-			if uid ~= nil then
-				table.insert(out, tostring(uid))
-			end
-		end
-	end
-	return out
-end
-
-local function normalizeProtection(raw: any)
-	if type(raw) ~= "table" then
-		return { active = false, endsAt = nil }
-	end
-	return { active = raw.active == true, endsAt = optNumber(raw.endsAt) }
-end
 
 local function normalizePets(rawPets: any, rawEquipped: any)
 	local pets, equipped = {}, {}
@@ -183,7 +174,28 @@ local function normalizePets(rawPets: any, rawEquipped: any)
 	return pets, equipped
 end
 
--- Snapshot brut du serveur -> nouvelle table propre (types garantis)
+-- carrying : false, ou {species, mutation, victim (UserId), victimName}
+local function normalizeCarrying(v: any): any
+	if type(v) ~= "table" or not optString(v.species) then
+		return false
+	end
+	return {
+		species = v.species,
+		mutation = optString(v.mutation),
+		victim = optNumber(v.victim),
+		victimName = if type(v.victimName) == "string" then v.victimName else "",
+	}
+end
+
+-- revenge : false, ou {userId, name}
+local function normalizeRevenge(v: any): any
+	if type(v) ~= "table" or optNumber(v.userId) == nil then
+		return false
+	end
+	return { userId = optNumber(v.userId), name = if type(v.name) == "string" then v.name else "" }
+end
+
+-- Snapshot brut du serveur -> nouvelle table propre (types garantis ; re-normaliser un etat propre ne change rien)
 local function normalizeState(raw: any)
 	if type(raw) ~= "table" then
 		return nil
@@ -222,14 +234,20 @@ local function normalizeState(raw: any)
 		equipped = equipped,
 		stats = type(raw.stats) == "table" and table.clone(raw.stats) or {},
 		-- PolicyService expose par A (bascule Tide Egg -> Pick a Creature) ; absent = prudence (restreint)
-		mounts = normalizeMounts(raw.mounts),
+		-- v2.1 : vol, monture, Maree Royale, boutique
+		newbie = raw.newbie == true,
+		playTime = num(raw.playTime, 0),
 		mount = if raw.mount ~= nil and raw.mount ~= "" and raw.mount ~= false then tostring(raw.mount) else nil,
-		protection = normalizeProtection(raw.protection),
-		policy = {
-			paidRandomRestricted = if type(raw.policy) == "table" and type(raw.policy.paidRandomItemsRestricted) == "boolean"
-				then raw.policy.paidRandomItemsRestricted
-				else true,
-		},
+		carrying = normalizeCarrying(raw.carrying),
+		lockActive = raw.lockActive == true,
+		lockReadyAt = num(raw.lockReadyAt, 0),
+		shield = if type(raw.shield) == "string" then raw.shield else "",
+		protectedUntil = num(raw.protectedUntil, 0),
+		revenge = normalizeRevenge(raw.revenge),
+		crown = math.clamp(math.floor(num(raw.crown, 0)), 0, 3),
+		passes = type(raw.passes) == "table" and table.clone(raw.passes) or {},
+		-- absent = prudence : pas d'achat aleatoire (Pick a Creature)
+		shop = { randomAllowed = type(raw.shop) == "table" and raw.shop.randomAllowed == true },
 	}
 end
 
@@ -248,7 +266,7 @@ local function normalizeWave(raw: any)
 	if type(raw.royal) == "table" then
 		royal = { active = raw.royal.active == true, endsAt = num(raw.royal.endsAt, 0) }
 	end
-	return {
+	local nextWave = {
 		phase = raw.phase,
 		phaseStart = num(raw.phaseStart, 0),
 		phaseEnd = num(raw.phaseEnd, 0),
@@ -259,8 +277,25 @@ local function normalizeWave(raw: any)
 		intro = raw.intro == true,
 		startZ = optNumber(raw.startZ), -- vague d'intro seulement
 		speed = optNumber(raw.speed),
+		-- Ile ouverte (GDD 3 bis) : la vague traverse l'ile sur un axe, pas sur Z.
+		-- `dir` est le sens de marche de CE cycle ; `direction` son nom (N/E/S/O).
+		-- Repli sur le nom si le Vector3 n'est pas arrive. nil = on ne sait pas (vague non rendue).
+		direction = optString(raw.direction),
+		dir = nil, -- remplit juste apres
+		startD = optNumber(raw.startD),
+		endD = optNumber(raw.endD),
 		royal = royal,
 	}
+	-- `Config.WaveTravel` est la source unique du sens de marche (Config.lua).
+	local travel = nextWave.direction and Config.WaveTravel[nextWave.direction] or nil
+	if typeof(raw.dir) == "Vector3" then
+		local d = Vector3.new(raw.dir.X, 0, raw.dir.Z)
+		if d.Magnitude > 0.001 then
+			travel = d.Unit
+		end
+	end
+	nextWave.dir = travel
+	return nextWave
 end
 
 ---------------------------------------------------------------- Mise a jour
@@ -290,6 +325,7 @@ local function setWave(raw: any)
 		and prev.startTime == nextWave.startTime
 		and prev.tide == nextWave.tide
 		and prev.intro == nextWave.intro
+		and prev.direction == nextWave.direction
 	then
 		return
 	end
@@ -350,15 +386,19 @@ local function demoState()
 		walkSpeed = 18,
 		intro = "done",
 		stats = { pickups = 3 },
-		mounts = { "3" },
-		protection = { active = true, endsAt = Store.Now() + 200 },
-		policy = { paidRandomItemsRestricted = false },
+		newbie = true,
+		playTime = 12 * 60,
+		mount = "",
+		shop = { randomAllowed = true },
 	}
 end
 
 local function demoWaveLoop()
 	local cfg = Config.Wave
-	local travel = (cfg.endZ - cfg.startZ) / cfg.speed
+	-- La vague traverse l'ile sur un axe (GDD 3 bis) : la duree de trajet se calcule
+	-- sur REACH, plus sur des startZ/endZ qui n'existent plus en Config.
+	local reach = Config.Island.size / 2 + Config.Island.seaMargin
+	local travel = (reach * 2) / cfg.speed
 	local cycle = 0
 	while demoActive do
 		cycle += 1
@@ -375,6 +415,10 @@ local function demoWaveLoop()
 		-- une marée doree (avec Maree Royale) tous les 3 cycles, annoncee a l'avance
 		local golden = cycle % 3 == 0
 		local nextGolden = cycle + (3 - cycle % 3)
+		-- une direction par cycle (N/E/S/O), jamais deux fois la meme (Config.Island)
+		local dirs = Config.Island.waveDirections
+		local dirName = dirs[((cycle - 1) % #dirs) + 1]
+		local dirVec = Config.WaveTravel[dirName]
 		for _, step in steps do
 			if not demoActive then
 				return
@@ -388,6 +432,10 @@ local function demoWaveLoop()
 				tide = if golden then "Golden" else "Normal",
 				nextSpecial = { tide = "Golden", cycle = if golden then cycle + 3 else nextGolden },
 				royal = if golden then { active = true, endsAt = waveEnd + cfg.recedeTime } else nil,
+				direction = dirName,
+				dir = dirVec,
+				startD = -reach,
+				endD = reach,
 			})
 			task.wait(math.max(0, step[3] - Store.Now()))
 		end
@@ -403,7 +451,6 @@ local function demoIncomeLoop()
 		local nextState = table.clone(state)
 		nextState.coins = state.coins + state.income
 		nextState.serverNow = Store.Now()
-		nextState.policy = { paidRandomItemsRestricted = state.policy.paidRandomRestricted }
 		setState(nextState)
 	end
 end
@@ -459,16 +506,36 @@ function Store.WaveProgress(): number
 	return math.clamp((Store.Now() - wave.phaseStart) / span, 0, 1)
 end
 
--- Z du front de vague, formule du contrat (nil quand la vague ne roule pas)
-function Store.WaveFrontZ(now: number?): number?
+-- Position du front de vague SUR SON AXE (Config.WaveFrontD : d = startD + speed * (t - startTime)).
+-- nil quand la vague ne roule pas, ou quand le serveur n'a pas donne de direction.
+function Store.WaveFrontD(now: number?): number?
 	if wave.phase ~= "wave" and wave.phase ~= "recede" then
 		return nil
 	end
-	local cfg = Config.Wave
-	local t = now or Store.Now()
-	local startZ = wave.startZ or cfg.startZ
-	local speed = wave.speed or cfg.speed
-	return math.min(cfg.endZ, startZ + speed * math.max(0, t - wave.startTime))
+	if not wave.dir then
+		return nil
+	end
+	return Config.WaveFrontD(wave, now or Store.Now())
+end
+
+-- Distance du joueur au front, en studs, sur l'axe de la vague (pas sur Z).
+-- C'est la seule mesure de distance a utiliser pour la vague : elle vaut pour N, E, S et O.
+function Store.WaveDistanceTo(position: Vector3, now: number?): number?
+	local front = Store.WaveFrontD(now)
+	if front == nil then
+		return nil
+	end
+	return math.abs(Config.WaveAxis(wave, position) - front)
+end
+
+-- Point monde du front, a une hauteur donnee (pour poser un son ou un effet).
+function Store.WaveFrontPoint(height: number, now: number?): Vector3?
+	local front = Store.WaveFrontD(now)
+	if front == nil then
+		return nil
+	end
+	local d = wave.dir or Vector3.new(0, 0, 1)
+	return Config.Island.center + d * front + Vector3.new(0, height, 0)
 end
 
 -- Fiche d'une espece : Config.Creatures (v2) puis Config.Items (v1). nil si inconnue.
@@ -516,7 +583,7 @@ local function growthMarks(species: string): { number }
 	local info = Store.CreatureInfo(species)
 	local growthTable = (Config :: any).GrowthMinutes or GROWTH_FALLBACK
 	local growth = growthTable[info and info.rarity or "Common"] or growthTable.Common or GROWTH_FALLBACK.Common
-	-- seuils en secondes : Baby 0, Juvenile, Adult, Giant
+	-- seuils en secondes : Juvenile 0, puis Adult, Elder, Titan
 	return { 0, growth[1] * 60, growth[2] * 60, growth[3] * 60 }
 end
 
@@ -649,44 +716,61 @@ function Store.GoHome(): (boolean, any)
 end
 
 -- Reserves (GDD v2, forme provisoire du contrat) : renvoient (false, "NoRemote") tant que A ne les cree pas
-function Store.StealAttempt(plot: number, slot: number): (boolean, any)
-	return call("StealAttempt", plot, slot)
+-- Contrat v2.1 : StartSteal -> (true, holdEndsAt) ; le serveur prend la creature a holdEndsAt si on n'a pas bouge
+function Store.StartSteal(plot: number, slot: number): (boolean, any)
+	return call("StartSteal", plot, slot)
 end
 
 -- Mode demo : la monture et le verrou sont simules localement
 local function demoPatch(patch: { [string]: any })
 	local nextState = table.clone(state)
-	nextState.policy = { paidRandomItemsRestricted = state.policy.paidRandomRestricted }
 	for k, v in patch do
 		nextState[k] = v
 	end
 	setState(nextState)
 end
 
-function Store.Mount(mountId: string): (boolean, any)
+-- Mount(uid) monte ; Mount(nil) descend (contrat v2.1)
+function Store.Mount(uid: string?): (boolean, any)
 	if demoActive then
-		demoPatch({ mount = mountId })
+		demoPatch({ mount = uid or "" })
 		return true, nil
 	end
-	return call("Mount", mountId)
+	return call("Mount", uid)
 end
 
-function Store.Dismount(): (boolean, any)
-	if demoActive then
-		demoPatch({ mount = false })
-		return true, nil
+function Store.ChoosePick(species: string): (boolean, any)
+	return call("ChoosePick", species)
+end
+
+-- Creatures montables de mes bassins (Config.Mount : especes, stade minimum), la plus grande d'abord
+function Store.Mountables(): { any }
+	local mountCfg = (Config :: any).Mount
+	if type(mountCfg) ~= "table" then
+		return {}
 	end
-	return call("Dismount")
+	local minStage = table.find(STAGE_IDS, mountCfg.minStage or "Adult") or 3
+	local out = {}
+	for _, entry in state.pools do
+		if entry and entry.uid and not entry.carried and mountCfg.species[entry.species] and (entry.stage or 1) >= minStage then
+			table.insert(out, entry)
+		end
+	end
+	table.sort(out, function(a, b)
+		if (a.stage or 0) ~= (b.stage or 0) then
+			return (a.stage or 0) > (b.stage or 0)
+		end
+		return a.income > b.income
+	end)
+	return out
 end
 
+-- LockLagoon -> (true, readyAt)
 function Store.LockLagoon(): (boolean, any)
 	if demoActive then
-		local plot = Util.Find(workspace, "Map", "Plots", "Plot" .. state.plot)
-		if plot then
-			plot:SetAttribute("LockedUntil", Store.Now() + 60)
-			plot:SetAttribute("LockReadyAt", Store.Now() + 300)
-		end
-		return true, nil
+		local readyAt = Store.Now() + 240
+		demoPatch({ lockActive = true, lockReadyAt = readyAt, shield = "lock" })
+		return true, readyAt
 	end
 	return call("LockLagoon")
 end
@@ -705,8 +789,7 @@ function Store.Init(ctx)
 	Store.Changed = Util.Signal.new() -- (state, prevState)
 	Store.WaveChanged = Util.Signal.new() -- (wave, prevWave)
 	Store.Notified = Util.Signal.new() -- (kind, data)
-	Store.StealResult = Util.Signal.new() -- (result) {stealId, thief, victim, species, mutation, success}
-	Store.RoyalBoard = Util.Signal.new() -- (board) {{userId, name, score}}
+	Store.RoyalBoard = Util.Signal.new() -- (board) {cycle, endsAt, top = {{userId, name, score}}}
 	state = defaultState()
 	wave = { phase = "calm", phaseStart = 0, phaseEnd = 0, startTime = 0, cycle = 0, tide = "Normal", intro = false }
 end
@@ -715,8 +798,8 @@ end
 --   Players.LocalPlayer.TR_ClientDebug:Fire("state", {coins = 500, intro = "intro"})   fusionne avec l'etat courant
 --   Players.LocalPlayer.TR_ClientDebug:Fire("wave", {phase = "warning", phaseStart = t, phaseEnd = t + 7, startTime = t + 7, tide = "Golden"})
 --   Players.LocalPlayer.TR_ClientDebug:Fire("notify", "capture", {species = "SandStar", mutation = "Golden", isNew = true, text = "..."})
---   Players.LocalPlayer.TR_ClientDebug:Fire("steal", {thief = 123, victim = Players.LocalPlayer.UserId, species = "SandStar", success = false})
---   Players.LocalPlayer.TR_ClientDebug:Fire("royal", {{userId = 1, name = "Moaad", score = 1200}})
+--   Players.LocalPlayer.TR_ClientDebug:Fire("notify", "stealStart", {role = "victim", thief = 123, thiefName = "Kai", species = "SandStar", text = "..."})
+--   Players.LocalPlayer.TR_ClientDebug:Fire("royal", {cycle = 3, endsAt = t, top = {{userId = 1, name = "Moaad", score = 1200}}})
 --   Players.LocalPlayer.TR_ClientDebug:Fire("demo", true | false)
 local function setupDebug()
 	if not RunService:IsStudio() then
@@ -727,7 +810,6 @@ local function setupDebug()
 	ev.Event:Connect(function(kind, payload, extra)
 		if kind == "state" and type(payload) == "table" then
 			local merged = table.clone(state)
-			merged.policy = { paidRandomItemsRestricted = state.policy.paidRandomRestricted }
 			for k, v in payload do
 				merged[k] = v
 			end
@@ -738,8 +820,6 @@ local function setupDebug()
 			setWave(payload)
 		elseif kind == "notify" and type(payload) == "string" then
 			Store.Notified:Fire(payload, type(extra) == "table" and extra or {})
-		elseif kind == "steal" and type(payload) == "table" then
-			Store.StealResult:Fire(payload)
 		elseif kind == "royal" and type(payload) == "table" then
 			Store.RoyalBoard:Fire(payload)
 		elseif kind == "demo" then
@@ -783,9 +863,7 @@ local function connectOptional(ev: Instance)
 		if type(payload) ~= "table" then
 			return
 		end
-		if ev.Name == "StealResult" then
-			Store.StealResult:Fire(payload)
-		elseif ev.Name == "RoyalBoard" then
+		if ev.Name == "RoyalBoard" then
 			Store.RoyalBoard:Fire(payload)
 		end
 	end)

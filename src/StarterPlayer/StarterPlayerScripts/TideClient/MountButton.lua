@@ -1,42 +1,29 @@
--- MountButton : bouton Monter / Descendre (GDD v2 §4.6). Forme du contrat PROVISOIRE (noms reserves par A) :
---   RF Mount(mountId) / Dismount() ; state.mounts = {uid...} (creatures montables, Adult et plus) ; state.mount = uid ou nil.
+-- MountButton : bouton RIDE / GET OFF (GDD v2 §4.6, contrat v2.1).
+--   RF Mount(uid) monte, Mount(nil) descend ; state.mount = uid de la monture ou nil ; state.carrying bloque.
+--   Montures possibles : Store.Mountables() (Config.Mount : especes, stade minimum), la plus grande d'abord.
 -- Visible seulement si le serveur propose Mount et qu'une monture est disponible (ou active).
 local MountButton = {}
 
-local ERROR_TEXT = {
-	WaveActive = "Can't do that during the wave!",
-	NotReady = "This creature is too young to ride.",
-	Cooldown = "Not now!",
+-- 6 mots au plus (VISION_TON §5)
+local CODE_TEXT = {
+	NotMountable = "Can't ride this one",
+	TooYoung = "Too young to ride",
+	Carrying = "Drop the creature first",
+	WaveActive = "Not during the wave",
+	Busy = "Busy",
 }
 
 local Theme, Store, Hud, Notifications, Sfx
 local pending = false
 
--- Monture proposee : la plus grande parmi state.mounts (stade le plus haut dans les bassins)
-local function bestMount(state): string?
-	local best, bestStage = nil, -1
-	for _, uid in state.mounts do
-		local stage = 0
-		for _, entry in state.pools do
-			if entry and entry.uid == uid then
-				stage = entry.stage or 0
-			end
-		end
-		if stage > bestStage then
-			best, bestStage = uid, stage
-		end
-	end
-	return best
-end
-
 local function refresh(state)
 	local riding = state.mount ~= nil
-	local available = state.loaded and Store.HasRemote("Mount") and (riding or #state.mounts > 0)
+	local available = state.loaded and Store.HasRemote("Mount") and (riding or #Store.Mountables() > 0)
 	Hud.SetAction("mount", {
 		visible = available,
-		icon = if riding then "⬇️" else "🐢",
+		icon = if riding then "down" else "ride",
 		label = if riding then "Get off" else "Ride",
-		enabled = not pending,
+		enabled = not pending and not state.carrying,
 	})
 end
 
@@ -49,22 +36,22 @@ local function onPressed()
 	refresh(state)
 	local ok, code
 	if state.mount then
-		ok, code = Store.Dismount()
+		ok, code = Store.Mount(nil)
 	else
-		local uid = bestMount(state)
-		if uid then
-			ok, code = Store.Mount(uid)
+		local best = Store.Mountables()[1]
+		if best then
+			ok, code = Store.Mount(best.uid)
 		else
-			ok, code = false, "NotReady"
+			ok, code = false, "TooYoung"
 		end
 	end
 	pending = false
 	refresh(Store.Get())
 	if ok then
 		Sfx.Play("whoosh")
-	else
+	elseif code ~= "NoRemote" then
 		Sfx.Play("deny")
-		Notifications.Push({ text = ERROR_TEXT[code] or "Can't ride right now.", color = Theme.Colors.Danger, icon = "✖️", key = "mount-err" })
+		Notifications.Push({ text = string.upper(CODE_TEXT[code] or "Can't ride now"), color = Theme.Colors.Danger, icon = "close", key = "mount-err" })
 	end
 end
 

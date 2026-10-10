@@ -11,6 +11,8 @@ local MAX_DISTANCE = 80
 local BOARD_SIZE = UDim2.fromOffset(176, 80)
 local BOARD_OFFSET = Vector3.new(0, 3.4, 0) -- au-dessus du bassin (a ajuster sur le visuel de C)
 local MAX_STAGE = 4 -- Giant
+-- Noms affiches des stades : montee en puissance, rien de « bebe » (VISION_TON §3) ; ids de Config inchanges
+local STAGE_LABEL = { "YOUNG", "JUVENILE", "ADULT", "GIANT" }
 local TEXT = 16 -- px reels : les billboards ne passent pas par l'UIScale du HUD
 
 local Util, Theme, Components, Store, Sfx
@@ -71,7 +73,7 @@ local function buildBoard(slot: number, entry)
 		Name = "Name",
 		Position = UDim2.fromOffset(32, 8),
 		Size = UDim2.new(1, -38, 0, 24),
-		Text = Store.CreatureName(entry.species),
+		Text = string.upper(Store.CreatureName(entry.species)),
 		TextSize = TEXT + 2,
 		FontFace = Theme.Fonts.Title,
 		TextColor3 = rarityColor,
@@ -86,6 +88,7 @@ local function buildBoard(slot: number, entry)
 		Size = UDim2.new(0.55, -8, 0, 18),
 		Text = "",
 		TextSize = TEXT,
+		FontFace = Theme.Fonts.Title,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 3,
 		Parent = card,
@@ -105,7 +108,7 @@ local function buildBoard(slot: number, entry)
 	local bar = Components.ProgressBar({
 		Name = "Growth",
 		Position = UDim2.fromOffset(8, 52),
-		Size = UDim2.new(1, -16, 0, 10),
+		Size = UDim2.new(1, -16, 0, 5),
 		Color = rarityColor,
 		ZIndex = 3,
 		Parent = card,
@@ -114,20 +117,26 @@ local function buildBoard(slot: number, entry)
 	-- mutation : pastille couleur + icone + nom, a cheval sur le haut de la carte
 	local mutation = entry.mutation and Theme.Mutations[entry.mutation]
 	if entry.mutation then
-		local style = mutation or { label = entry.mutation, icon = "✦", color = Theme.Colors.White }
+		local style = mutation or { label = entry.mutation, icon = "dot", color = Theme.Colors.Text }
 		local chip = Theme.Plate({
 			Name = "Mutation",
 			AnchorPoint = Vector2.new(1, 0),
 			Position = UDim2.new(1, -8, 0, 0),
 			Size = UDim2.fromOffset(96, 22),
-			Radius = 8,
+			Strong = true,
 			ZIndex = 5,
 			Parent = gui,
 		})
+		local icon = Theme.Icon(style.icon, 14, style.color)
+		icon.AnchorPoint = Vector2.new(0, 0.5)
+		icon.Position = UDim2.new(0, 6, 0.5, 0)
+		icon.ZIndex = 6
+		icon.Parent = chip
 		Theme.Text({
 			Name = "Text",
-			Size = UDim2.fromScale(1, 1),
-			Text = style.icon .. " " .. style.label,
+			Position = UDim2.fromOffset(18, 0),
+			Size = UDim2.new(1, -20, 1, 0),
+			Text = string.upper(style.label),
 			TextSize = TEXT - 1,
 			FontFace = Theme.Fonts.Title,
 			TextColor3 = style.color,
@@ -178,12 +187,24 @@ local function refreshBoard(slot: number, board, now: number)
 	if stage ~= board.stage then
 		local grew = board.stage > 0 and stage > board.stage
 		board.stage = stage
-		board.stageLabel.Text = Store.StageId(stage)
+		board.stageLabel.Text = STAGE_LABEL[stage] or string.upper(Store.StageId(stage))
 		if grew then
-			Theme.Pop(board.card, 0.25)
+			-- un Giant est un vrai moment : celebration ; les autres stades, un retour sec
+			if stage >= MAX_STAGE then
+				Theme.Celebrate(board.card, 0.2)
+			else
+				Theme.Pop(board.card, 0.08)
+			end
 			Sfx.Play("grow")
 		end
 	end
+	-- monture active ou creature portee par un voleur : le bassin est vide (contrat v2.1)
+	if board.entry.carried or board.entry.mounted then
+		board.timeLabel.Text = if board.entry.carried then "STOLEN" else "RIDING"
+		board.timeLabel.TextColor3 = if board.entry.carried then Theme.Colors.Danger else Theme.Colors.Lagoon
+		return
+	end
+	board.timeLabel.TextColor3 = Theme.Colors.TextDim
 	if left then
 		board.timeLabel.Text = formatLeft(left)
 		board.bar:Set(progress, false)
@@ -225,7 +246,7 @@ local function onState(state)
 			if not board then
 				board = buildBoard(slot, entry)
 				boards[slot] = board
-				Theme.Pop(board.card, 0.2)
+				Theme.Pop(board.card, 0.06)
 			end
 			board.entry = entry
 			refreshBoard(slot, board, now)

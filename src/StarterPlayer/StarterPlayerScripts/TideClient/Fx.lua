@@ -11,12 +11,12 @@ local SHAKE_DECAY = 1.6 -- trauma perdu par seconde
 local SHAKE_MAX_ANGLE = math.rad(1.6)
 local SHAKE_MAX_OFFSET = 0.35
 local EDGE_DEPTH = 0.22 -- part de l'ecran couverte par la lueur des bords
+-- eclats sobres (or, blanc, turquoise du lagon) : pas de couleurs bonbon (DIRECTION_V2)
 local CONFETTI_COLORS = {
-	Color3.fromRGB(255, 122, 138),
-	Color3.fromRGB(255, 204, 64),
-	Color3.fromRGB(22, 160, 168),
-	Color3.fromRGB(255, 178, 90),
-	Color3.fromRGB(255, 255, 255),
+	Color3.fromRGB(240, 190, 70),
+	Color3.fromRGB(242, 245, 248),
+	Color3.fromRGB(38, 196, 196),
+	Color3.fromRGB(200, 160, 80),
 }
 
 local Util, Settings, Theme
