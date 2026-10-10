@@ -1,4 +1,9 @@
 
+## 2026-10-10 16:45
+FAIT     : Revu l'existant contre `DECISIONS_MARCHE.md` et `BRIEF_NOUVEAUX_AGENTS.md`. GDD_REEF figé inchangé. Plan de reprise : (1) Codex semaine 1 → 3 visibles + 4 "? ? ? ?" silhouettes floues + rareté colorée, barre "X/10 découvertes" ; (2) Gravure épave → texte exact "Quand la mer recule, l'ancien roi revient. La marée extrême révèle ce qu'elle a prise." + empreinte lumineuse pulsante ; (3) Monétisation Config.Shop alignée sur prix finaux (VIP 79, Speed 149, Bag 99, StarterPack 249, TideEgg 199, PickCreature 399, RewardedAd 1/jour) ; (4) Police RobotoCondensed + IconResolver Font Awesome partout, zéro emoji.
+VÉRIFIÉ  : GDD_REEF déjà cohérent sur : 30s intro, roster 10, 5 marées, 5 zones/tiers, bassins/réserve/Codex/mutations Phase 2. Écart mineur : GDD dit 5 paliers Codex, marché dit 4 mystère (donc 7 au total week 1) — aligné sur le marché. Rien testé en jeu.
+BESOIN   : **[D]** validation plan — agents G à N arrivent, je ne touche pas à leurs zones. Mon seul livrable restant : ce plan + mise à jour GDD_REEF §14 (Codex 7 slots week 1, gravure exacte, Config.Shop prix). Attends ton feu vert pour pousser.
+
 ## 2026-10-10 16:15
 FAIT     : `PREMIERE_HEURE.md` écrit, GDD figé non retouché. L'écart signalé (âge = capture vs dépôt) est le seul point où le GDD et le code divergent sur la première heure — j'ai écrit le code.
 VÉRIFIÉ  : aucune Phase 2, aucun nom de service. Rien testé en jeu.
