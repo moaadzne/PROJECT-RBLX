@@ -384,6 +384,25 @@ end
 -- Maree extreme : creatures rares sur le recif decouvert (n'importe quel sol sous l'eau, dans le disque du recif)
 function CreatureService.SpawnReef(center, radius, tide)
 	local e = Config.ExtremeTide
+	local tideName = tide or e.mutationTide
+	-- promesse de la maree extreme (decision du 09/10) : au moins une espece mutee sur le recif.
+	-- Meme parade que l'intro (IntroService, startGolden) : on tire d'abord toutes les mutations,
+	-- puis on impose la premiere chance de la maree si aucune n'a mute. Elles sont consommees dans
+	-- l'ordre par les apparitions reussies, donc la garantie tient meme si la mer refuse du sol.
+	local mutations = {}
+	for _ = 1, e.count do
+		table.insert(mutations, Stats.RollMutation(tideName, rng))
+	end
+	local anyMutated = false
+	for _, mutation in ipairs(mutations) do
+		anyMutated = anyMutated or mutation ~= ""
+	end
+	-- meme repli que Stats.RollMutation : une maree inconnue ne doit pas faire planter le recif
+	local odds = (Config.Tides[tideName] or Config.Tides.Normal).odds
+	if not anyMutated and mutations[1] and odds[1] then
+		mutations[1] = odds[1][1]
+	end
+
 	local count = 0
 	for _ = 1, e.count * SPAWN_TRIES do
 		if count >= e.count then
@@ -396,7 +415,8 @@ function CreatureService.SpawnReef(center, radius, tide)
 			local hit = workspace:Raycast(Vector3.new(x, RAY_HEIGHT, z), Vector3.new(0, -RAY_LENGTH, 0), reefRayParams)
 			if hit then
 				local species = Stats.PickWeighted(e.creatures, rng)
-				if place(species, Stats.RollMutation(tide or e.mutationTide, rng), hit.Position, Config.RingAt(hit.Position), nil, nil, true) then
+				local mutation = mutations[count + 1] or ""
+				if place(species, mutation, hit.Position, Config.RingAt(hit.Position), nil, nil, true) then
 					count += 1
 				end
 			end
